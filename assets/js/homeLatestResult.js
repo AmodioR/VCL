@@ -109,7 +109,7 @@
     );
     setLink(
       '[data-home-result-tournament-link]',
-      `turnering.html?tournament=${encodeURIComponent(data.tournament_slug || '')}`
+      data.tournament_url || `turnering.html?tournament=${encodeURIComponent(data.tournament_slug || '')}`
     );
 
     section.hidden = false;

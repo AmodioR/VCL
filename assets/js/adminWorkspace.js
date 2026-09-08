@@ -124,7 +124,7 @@
     !document.querySelector('script[data-admin-home-result-loader]')
   ) {
     const script = document.createElement('script');
-    script.src = 'assets/js/adminHomeLatestResult.js?v=2.1-home-result-01';
+    script.src = 'assets/js/adminHomeLatestResult.js?v=2.1-home-result-02';
     script.dataset.adminHomeResultLoader = 'true';
     document.body.appendChild(script);
   }
