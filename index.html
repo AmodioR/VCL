@@ -70,10 +70,62 @@
       </div>
     </div>
 
-    <a class="home-hero__scroll" href="#championship" aria-label="Scroll til Championship">
+    <a class="home-hero__scroll" href="#latest-result" aria-label="Scroll til seneste resultat">
       <span>Scroll</span>
       <i aria-hidden="true"></i>
     </a>
+  </section>
+
+  <section class="latest-result latest-result--simple home-result" id="latest-result" data-home-latest-result hidden>
+    <div class="container">
+      <div class="home-result__heading reveal">
+        <div>
+          <span class="home-meta">Seneste resultat</span>
+          <h2 data-home-result-tournament>VCL Turnering</h2>
+        </div>
+        <span class="home-result__round" data-home-result-round>Grand Final</span>
+      </div>
+
+      <div class="home-scoreboard reveal">
+        <a class="home-scoreboard__team home-scoreboard__team--left" data-home-result-team-a-link href="teams.html">
+          <img src="assets/teams/default-team.png" alt="" data-home-result-team-a-logo>
+          <strong data-home-result-team-a-name>Hold A</strong>
+        </a>
+
+        <div class="home-scoreboard__score">
+          <span data-home-result-score-a>0</span>
+          <i aria-hidden="true"></i>
+          <span class="home-scoreboard__loss" data-home-result-score-b>0</span>
+          <small data-home-result-winner>Winner</small>
+        </div>
+
+        <a class="home-scoreboard__team home-scoreboard__team--right" data-home-result-team-b-link href="teams.html">
+          <strong data-home-result-team-b-name>Hold B</strong>
+          <img src="assets/teams/default-team.png" alt="" data-home-result-team-b-logo>
+        </a>
+      </div>
+
+      <div class="home-result__footer reveal">
+        <p data-home-result-summary>Seneste officielle VCL-resultat.</p>
+        <a class="home-text-link" data-home-result-tournament-link href="turneringer.html"><span data-home-result-cta-label>Se turnering</span> <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="news-featured-v2 home-featured-news" data-home-featured-news hidden>
+    <div class="container">
+      <div class="home-result__heading reveal">
+        <div>
+          <span class="home-meta">Featured nyhed</span>
+          <h2>Vigtigt fra VCL.</h2>
+        </div>
+        <a class="home-text-link" href="nyheder.html">Alle nyheder <span aria-hidden="true">→</span></a>
+      </div>
+
+      <article class="news-featured-story-v2 reveal" data-home-featured-news-story aria-busy="true">
+        <p class="news-loading-v2">Henter featured nyhed…</p>
+      </article>
+    </div>
   </section>
 
   <section class="champ-hero home-championship" id="championship">
@@ -160,42 +212,6 @@
     </div>
   </section>
 
-  <section class="latest-result latest-result--simple home-result" data-home-latest-result hidden>
-    <div class="container">
-      <div class="home-result__heading reveal">
-        <div>
-          <span class="home-meta">Seneste resultat</span>
-          <h2 data-home-result-tournament>VCL Turnering</h2>
-        </div>
-        <span class="home-result__round" data-home-result-round>Grand Final</span>
-      </div>
-
-      <div class="home-scoreboard reveal">
-        <a class="home-scoreboard__team home-scoreboard__team--left" data-home-result-team-a-link href="teams.html">
-          <img src="assets/teams/default-team.png" alt="" data-home-result-team-a-logo>
-          <strong data-home-result-team-a-name>Hold A</strong>
-        </a>
-
-        <div class="home-scoreboard__score">
-          <span data-home-result-score-a>0</span>
-          <i aria-hidden="true"></i>
-          <span class="home-scoreboard__loss" data-home-result-score-b>0</span>
-          <small data-home-result-winner>Winner</small>
-        </div>
-
-        <a class="home-scoreboard__team home-scoreboard__team--right" data-home-result-team-b-link href="teams.html">
-          <strong data-home-result-team-b-name>Hold B</strong>
-          <img src="assets/teams/default-team.png" alt="" data-home-result-team-b-logo>
-        </a>
-      </div>
-
-      <div class="home-result__footer reveal">
-        <p data-home-result-summary>Seneste officielle VCL-resultat.</p>
-        <a class="home-text-link" data-home-result-tournament-link href="turneringer.html"><span data-home-result-cta-label>Se turnering</span> <span aria-hidden="true">→</span></a>
-      </div>
-    </div>
-  </section>
-
   <section class="recruit-section home-roster">
     <div class="container">
       <div class="home-roster__inner reveal">
@@ -248,5 +264,6 @@
 <script src="assets/js/vclData.js?v=2.1-live-broadcast-01"></script>
 <script src="script.js?v=2.1-live-broadcast-01"></script>
 <script src="assets/js/homeLatestResult.js?v=2.1-home-result-02"></script>
+<script src="assets/js/homeFeaturedNews.js?v=2.1-home-featured-news-01"></script>
 </body>
 </html>
