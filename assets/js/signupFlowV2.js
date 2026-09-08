@@ -5,6 +5,10 @@
 
   const steps = Array.from(form.querySelectorAll('[data-signup-step]'));
   const progressItems = Array.from(form.querySelectorAll('[data-progress-step]'));
+  const teamLogoInput = form.querySelector('[name="team_logo"]');
+  const captainDiscordInput = form.querySelector('[name="captain_discord"]');
+  const allowedLogoTypes = new Set(['image/png', 'image/jpeg', 'image/webp']);
+  const maxLogoSize = 2 * 1024 * 1024;
   let currentStep = 1;
 
   const getStep = (number) =>
@@ -16,6 +20,47 @@
   };
 
   const clearError = (stepNumber) => setError(stepNumber, '');
+
+  function patchOptionalTeamDescription() {
+    if (
+      !window.VCLData?.submitTeamSignup ||
+      window.VCLData.__optionalTeamDescriptionPatched
+    ) {
+      return;
+    }
+
+    const submitTeamSignup = window.VCLData.submitTeamSignup.bind(window.VCLData);
+
+    window.VCLData.submitTeamSignup = (signup = {}) =>
+      submitTeamSignup({
+        team_description: '',
+        ...signup
+      });
+
+    window.VCLData.__optionalTeamDescriptionPatched = true;
+  }
+
+  function validateTeamLogo({ clearInvalid = false } = {}) {
+    const file = teamLogoInput?.files?.[0] || null;
+    if (!file) return true;
+
+    let message = '';
+
+    if (!allowedLogoTypes.has(file.type)) {
+      message = 'Holdlogo skal være PNG, JPG eller WEBP.';
+    } else if (file.size > maxLogoSize) {
+      message = 'Billedet er for stort. Holdlogo må maks. fylde 2 MB.';
+    }
+
+    if (!message) return true;
+
+    if (clearInvalid && teamLogoInput) {
+      teamLogoInput.value = '';
+    }
+
+    setError(1, message);
+    return false;
+  }
 
   function showStep(number, { scroll = true } = {}) {
     const nextStep = getStep(number);
@@ -63,6 +108,11 @@
         field.focus();
         return false;
       }
+    }
+
+    if (!validateTeamLogo()) {
+      teamLogoInput?.focus();
+      return false;
     }
 
     clearError(1);
@@ -117,6 +167,20 @@
     if (stepNumber === 2) return validateRoster();
     return true;
   }
+
+  if (captainDiscordInput) {
+    captainDiscordInput.placeholder = 'Dit Discord-brugernavn';
+  }
+
+  if (teamLogoInput) {
+    teamLogoInput.addEventListener('change', () => {
+      if (!validateTeamLogo({ clearInvalid: true })) return;
+      clearError(1);
+    });
+  }
+
+  patchOptionalTeamDescription();
+  window.addEventListener('vcldata:ready', patchOptionalTeamDescription, { once: true });
 
   form.querySelectorAll('[data-step-next]').forEach((button) => {
     button.addEventListener('click', () => {
