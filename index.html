@@ -160,38 +160,38 @@
     </div>
   </section>
 
-  <section class="latest-result latest-result--simple home-result">
+  <section class="latest-result latest-result--simple home-result" data-home-latest-result hidden>
     <div class="container">
       <div class="home-result__heading reveal">
         <div>
           <span class="home-meta">Seneste resultat</span>
-          <h2>Academy Cup</h2>
+          <h2 data-home-result-tournament>VCL Turnering</h2>
         </div>
-        <span class="home-result__round">Grand Final</span>
+        <span class="home-result__round" data-home-result-round>Grand Final</span>
       </div>
 
       <div class="home-scoreboard reveal">
-        <div class="home-scoreboard__team home-scoreboard__team--left">
-          <img src="assets/teams/frontline.png" alt="Frontline logo">
-          <strong>Frontline</strong>
-        </div>
+        <a class="home-scoreboard__team home-scoreboard__team--left" data-home-result-team-a-link href="teams.html">
+          <img src="assets/teams/default-team.png" alt="" data-home-result-team-a-logo>
+          <strong data-home-result-team-a-name>Hold A</strong>
+        </a>
 
         <div class="home-scoreboard__score">
-          <span>3</span>
+          <span data-home-result-score-a>0</span>
           <i aria-hidden="true"></i>
-          <span class="home-scoreboard__loss">1</span>
-          <small>Winner · Frontline</small>
+          <span class="home-scoreboard__loss" data-home-result-score-b>0</span>
+          <small data-home-result-winner>Winner · —</small>
         </div>
 
-        <div class="home-scoreboard__team home-scoreboard__team--right">
-          <div class="home-scoreboard__placeholder" aria-hidden="true">A</div>
-          <strong>Amigos</strong>
-        </div>
+        <a class="home-scoreboard__team home-scoreboard__team--right" data-home-result-team-b-link href="teams.html">
+          <img src="assets/teams/default-team.png" alt="" data-home-result-team-b-logo>
+          <strong data-home-result-team-b-name>Hold B</strong>
+        </a>
       </div>
 
       <div class="home-result__footer reveal">
-        <p>Frontline sikrede Academy Cup-titlen efter en 3-1 sejr i Grand Final.</p>
-        <a class="home-text-link" href="academy-cup.html">Se Academy Cup <span aria-hidden="true">→</span></a>
+        <p data-home-result-summary>Seneste VCL-resultat.</p>
+        <a class="home-text-link" data-home-result-tournament-link href="turneringer.html"><span data-home-result-cta-label>Se turnering</span> <span aria-hidden="true">→</span></a>
       </div>
     </div>
   </section>
@@ -247,5 +247,6 @@
 <script src="assets/js/supabaseClient.js?v=2.1-live-broadcast-01"></script>
 <script src="assets/js/vclData.js?v=2.1-live-broadcast-01"></script>
 <script src="script.js?v=2.1-live-broadcast-01"></script>
+<script src="assets/js/homeLatestResult.js?v=2.1-home-result-01"></script>
 </body>
 </html>
