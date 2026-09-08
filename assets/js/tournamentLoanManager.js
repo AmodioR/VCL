@@ -147,7 +147,7 @@
       summary.dataset.ready = ready ? 'true' : 'false';
     }
 
-    if (submitButton && !submitButton.closest('[data-roster-locked]')) {
+    if (submitButton) {
       submitButton.disabled = !ready;
     }
   }
@@ -271,6 +271,11 @@
     const canRequestMore = activeCount < maxLoans();
     const footer = rosterBox.querySelector('.tournament-roster-builder-v1__footer');
     if (!footer) return;
+
+    const oldFooterNote = footer.querySelector('small');
+    if (oldFooterNote) {
+      oldFooterNote.textContent = 'Accepterede stand-ins tæller med i lineupet, men ændrer aldrig spillerens permanente VCL-hold.';
+    }
 
     const panel = document.createElement('section');
     panel.className = 'tournament-loan-panel';
@@ -662,8 +667,6 @@
     }
   }
 
-  // Capture the roster submit before the legacy foundation handler. Once the
-  // loan migration exists, v2 is the canonical submit path even with zero loans.
   document.addEventListener('click', (event) => {
     const button = event.target.closest?.('[data-submit-tournament-roster]');
     if (!button || !rosterBox.contains(button) || featureAvailable !== true || !loanContext) return;
@@ -684,7 +687,9 @@
     }
   });
 
-  observer.observe(rosterBox, { childList: true, subtree: true });
+  // The foundation flow replaces the roster builder's direct children. Watching
+  // only that level avoids observer loops when this module updates the summary.
+  observer.observe(rosterBox, { childList: true });
 
   window.addEventListener('vcl:tournament-ready', (event) => {
     tournament = event.detail?.tournament || tournament;
