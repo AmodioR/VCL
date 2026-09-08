@@ -35,7 +35,7 @@ Status: implemented 2026-09-08.
 
 ## Roster, transfer and tournament roster system
 
-A larger redesign is planned for permanent transfers, Free Agency, tournament-specific rosters, substitutes, stand-ins/loans and the Roster Market activity feed.
+A larger redesign covers permanent transfers, Free Agency, tournament-specific rosters, substitutes, stand-ins/loans and the Roster Market activity feed.
 
 Detailed plan:
 
@@ -47,16 +47,16 @@ Key decisions include:
 - captains can send direct transfer invitations to players already on another team,
 - teams can loan players from other teams for a specific tournament,
 - teams can also loan Free Agents from the Roster Market without signing them permanently,
-- tournament registration should explicitly confirm starters and substitutes,
+- tournament registration explicitly confirms starters and substitutes,
 - loan players must never represent two teams in the same tournament,
-- historical tournament rosters must be stored as snapshots,
-- roster movement should automatically create a compact transfer/activity feed.
+- historical tournament rosters are stored as snapshots,
+- roster movement automatically creates a compact transfer/activity feed.
 
 ### Roster Market activity feed
 
 Status: implemented 2026-09-08.
 
-The Roster Market now has a public transfer-history / roster-moves section backed by `roster_activity` and an automatic trigger on player roster state.
+The Roster Market has a public transfer-history / roster-moves section backed by `roster_activity` and an automatic trigger on player roster state.
 
 The feed currently records:
 
@@ -66,10 +66,10 @@ The feed currently records:
 - existing unrostered players entering the Roster Market,
 - brand-new Free Agent profiles entering the Roster Market.
 
-Important implementation rule for the future direct-transfer feature:
+Important direct-transfer implementation rule:
 
-- a direct transfer must update `players.current_team_id` straight from the old team to the new team in one transaction,
-- it must not temporarily set the player to no team / Free Agent,
+- a direct transfer updates `players.current_team_id` straight from the old team to the new team in one transaction,
+- it never temporarily sets the player to no team / Free Agent,
 - this lets the activity trigger create one clean `transfer` event rather than two misleading events.
 
 The transfer feed records new events from the point the Supabase migration is installed; it does not invent historical transfers that were never recorded.
@@ -78,9 +78,9 @@ Loan/stand-in events will be added to the same feed when the tournament loan sys
 
 ### Tournament roster foundation
 
-Status: in progress 2026-09-08. Implementation is prepared on `feature/tournament-roster-foundation` and needs Supabase migration + flow testing before merge.
+Status: implemented 2026-09-08; awaiting first natural captain validation.
 
-Prepared behaviour:
+Current behaviour:
 
 - captain must confirm a tournament-specific lineup before sending registration,
 - the permanent starters are pre-selected automatically,
@@ -93,24 +93,39 @@ Prepared behaviour:
 - admin tournament entries show the submitted starters and substitutes,
 - the data model is already prepared for future `loan_team` and `loan_free_agent` rows.
 
+The production migration has been installed and the feature is merged to `main`. No real captain account was available during implementation, so the first real tournament registration doubles as the live flow validation.
+
+### Direct permanent transfers
+
+Status: implementation prepared 2026-09-08 on `feature/direct-team-transfers`; requires Supabase migration + validation before merge.
+
+Prepared behaviour:
+
+- captain gets a dedicated Direct Transfers workspace in Team Dashboard,
+- captain can search claimed players who currently belong to another VCL team,
+- team captains are excluded until they hand over their captain role,
+- captain can attach an optional message and send a 7-day transfer request,
+- captain can cancel a pending request,
+- player sees incoming direct-transfer requests on Account,
+- player personally accepts or declines,
+- accepted transfer closes the old active membership and joins the receiving permanent roster as `bench`,
+- `players.current_team_id` changes directly Team A -> Team B atomically,
+- the existing Roster Moves trigger therefore records one clean team-to-team transfer,
+- every other pending direct-transfer request for the player is invalidated after acceptance,
+- old-team captain sees the accepted outbound move in the transfer activity on Team Dashboard,
+- transfers are blocked while the player is part of a locked `checkin` / `live` tournament roster.
+
 ### Remaining roster-system work
 
-1. **Finish / validate tournament roster foundation**
-   - run the Supabase migration,
-   - test a captain registration against the next live tournament,
-   - verify admin can see the submitted lineup,
-   - verify edit-before-lock and lock-after-open behaviour,
-   - merge the feature branch after validation.
+1. **Finish / validate direct permanent transfers**
+   - run `20260908_direct_team_transfers.sql` in Supabase,
+   - validate captain search + send request,
+   - validate player accept / decline,
+   - verify old roster closes, new roster membership is `bench`,
+   - verify the existing Roster Moves feed creates exactly one `transfer` event,
+   - merge the feature branch after database installation.
 
-2. **Direct permanent transfers**
-   - captain can invite a player who already belongs to another team,
-   - player personally accepts or declines,
-   - accepted transfer switches directly from Team A -> Team B atomically,
-   - old team is notified,
-   - incompatible pending invitations are invalidated,
-   - transfer automatically appears in the existing Roster Moves feed.
-
-3. **Tournament loans / stand-ins**
+2. **Tournament loans / stand-ins**
    - captain requests a stand-in from a specific tournament roster setup,
    - player may come from another VCL team or from the Roster Market,
    - Free Agents can be loaned without being signed permanently,
@@ -120,6 +135,11 @@ Prepared behaviour:
    - if a full starting roster exists, captain must choose who the stand-in replaces,
    - accepted loans are reserved for that tournament entry,
    - loan activity is added to the existing Roster Moves feed.
+
+3. **VCL 2.1 QA / stabilization**
+   - run the complete user journey on desktop and mobile,
+   - fix real bugs and edge cases only,
+   - defer non-essential new ideas to a later roadmap version.
 
 ---
 
