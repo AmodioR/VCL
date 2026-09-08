@@ -52,7 +52,29 @@ Key decisions include:
 - historical tournament rosters must be stored as snapshots,
 - roster movement should automatically create a compact transfer/activity feed.
 
-Status: planned / not yet implemented.
+### Roster Market activity feed
+
+Status: foundation implemented 2026-09-08.
+
+The Roster Market now has a public transfer-history / roster-moves section backed by `roster_activity` and an automatic trigger on player roster state.
+
+The feed is prepared for:
+
+- team -> team transfers,
+- Free Agent -> team signings,
+- team -> Free Agent moves,
+- existing unrostered players entering the Roster Market,
+- brand-new Free Agent profiles entering the Roster Market.
+
+Important implementation rule for the future direct-transfer feature:
+
+- a direct transfer must update `players.current_team_id` straight from the old team to the new team in one transaction,
+- it must not temporarily set the player to no team / Free Agent,
+- this lets the activity trigger create one clean `transfer` event rather than two misleading events.
+
+The transfer feed records new events from the point the Supabase migration is installed; it does not invent historical transfers that were never recorded.
+
+Remaining roster-system phases (direct transfer requests, tournament roster setup and loans/stand-ins) are still planned.
 
 ---
 
