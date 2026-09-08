@@ -4,11 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Roster Market — VCL</title>
-  <meta name="description" content="Find aktive Free Agents i Viking Call of Duty League.">
+  <meta name="description" content="Find aktive Free Agents og følg roster moves i Viking Call of Duty League.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=2.1-mobile-polish-01">
+  <link rel="stylesheet" href="assets/css/roster-activity.css?v=2.1-roster-activity-01">
 </head>
 
 <body class="theme-light-canvas roster-market-page roster-market-page--v2">
@@ -50,14 +51,47 @@
       <div class="roster-hero-v2__copy">
         <h1>Roster Market</h1>
         <p>
-          Find spillere, der aktivt søger et VCL-hold. Se rolle og niveau,
-          åbn spillerprofilen og invitér direkte, hvis du er captain.
+          Følg roster moves, find spillere der aktivt søger et VCL-hold, se rolle
+          og niveau, og invitér direkte, hvis du er captain.
         </p>
       </div>
 
       <a class="roster-action-v2" href="account.html">
         Administrér Free Agent-profil <span aria-hidden="true">→</span>
       </a>
+    </div>
+  </section>
+
+  <section class="roster-activity-v1" data-roster-activity-section>
+    <div class="container">
+      <header class="roster-activity-v1__head reveal">
+        <div>
+          <span class="roster-activity-v1__eyebrow">Roster Moves</span>
+          <h2>Transferhistorik</h2>
+          <p>
+            Følg officielle roster-bevægelser i VCL: transfers mellem hold,
+            signings fra Free Agency og spillere der bliver tilgængelige på markedet.
+          </p>
+        </div>
+
+        <div class="roster-activity-v1__count" aria-live="polite">
+          <strong data-roster-activity-count>—</strong>
+          <span>Seneste moves</span>
+        </div>
+      </header>
+
+      <div class="roster-activity-list reveal" data-roster-activity-list aria-live="polite" aria-busy="true">
+        <div class="roster-activity-empty">
+          <strong>Henter transferhistorik</strong>
+          <p>De seneste roster moves bliver hentet fra VCL.</p>
+        </div>
+      </div>
+
+      <div class="roster-activity-v1__more" data-roster-activity-more-wrap hidden>
+        <button type="button" data-roster-activity-more>
+          Vis flere roster moves <span aria-hidden="true">↓</span>
+        </button>
+      </div>
     </div>
   </section>
 
@@ -108,5 +142,6 @@
 <script src="assets/js/supabaseClient.js?v=2.1-mobile-polish-01"></script>
 <script src="assets/js/vclData.js?v=2.1-mobile-polish-01"></script>
 <script src="script.js?v=2.1-mobile-polish-01"></script>
+<script src="assets/js/rosterActivity.js?v=2.1-roster-activity-01"></script>
 </body>
 </html>
