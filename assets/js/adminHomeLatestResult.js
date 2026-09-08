@@ -2,6 +2,13 @@
   const tournamentsView = document.querySelector('#admin-tournaments');
   if (!tournamentsView) return;
 
+  const GENERIC_TOURNAMENTS = [
+    { key: 'academy', name: 'Academy Cup', url: 'academy-cup.html' },
+    { key: 'contender', name: 'Contender Series', url: 'contender-series.html' },
+    { key: 'championship', name: 'Championship', url: 'championship.html' },
+    { key: 'dm', name: 'DM', url: 'turneringer.html' }
+  ];
+
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   async function getDb() {
@@ -37,13 +44,13 @@
     <div class="admin-section-title-v2">
       <span>Forside</span>
       <h2>Seneste resultat</h2>
-      <p>Vælg turnering og hold manuelt. Forsiden bruger automatisk turneringens titel/link og holdenes profiler/logoer.</p>
+      <p>Vælg en fast VCL-kategori eller en konkret turnering. Holdnavne, logoer og links hentes automatisk.</p>
     </div>
 
     <form class="admin-form-v2" data-admin-home-result-form>
       <label>
         <span>Turnering</span>
-        <select name="tournament_id" required>
+        <select name="tournament_source" required>
           <option value="">Vælg turnering</option>
         </select>
       </label>
@@ -102,7 +109,7 @@
   }
 
   const form = editor.querySelector('[data-admin-home-result-form]');
-  const tournamentSelect = form.querySelector('[name="tournament_id"]');
+  const tournamentSelect = form.querySelector('[name="tournament_source"]');
   const teamASelect = form.querySelector('[name="team_a_id"]');
   const teamBSelect = form.querySelector('[name="team_b_id"]');
   const scoreAInput = form.querySelector('[name="team_a_score"]');
@@ -126,6 +133,41 @@
     return select?.selectedOptions?.[0]?.textContent?.trim() || '';
   }
 
+  function getSelectedTournament() {
+    const value = String(tournamentSelect.value || '');
+    if (!value) return null;
+
+    if (value.startsWith('generic:')) {
+      const key = value.slice('generic:'.length);
+      const generic = GENERIC_TOURNAMENTS.find((item) => item.key === key);
+      return generic
+        ? {
+            type: 'generic',
+            id: null,
+            key: generic.key,
+            name: generic.name,
+            url: generic.url
+          }
+        : null;
+    }
+
+    if (value.startsWith('db:')) {
+      const id = value.slice('db:'.length);
+      const tournament = tournaments.find((item) => String(item.id) === id);
+      return tournament
+        ? {
+            type: 'db',
+            id: tournament.id,
+            key: null,
+            name: tournament.name,
+            url: `turnering.html?tournament=${encodeURIComponent(tournament.slug || '')}`
+          }
+        : null;
+    }
+
+    return null;
+  }
+
   function updatePreview() {
     const tournament = selectedOptionText(tournamentSelect);
     const teamA = selectedOptionText(teamASelect);
@@ -143,10 +185,34 @@
     preview.dataset.status = 'success';
   }
 
-  function populateSelect(select, items, placeholder, labelKey = 'name') {
+  function populateTournamentSelect() {
+    const genericOptions = GENERIC_TOURNAMENTS
+      .map(
+        (item) =>
+          `<option value="generic:${escapeHTML(item.key)}">${escapeHTML(item.name)}</option>`
+      )
+      .join('');
+
+    const databaseOptions = tournaments
+      .map(
+        (item) =>
+          `<option value="db:${escapeHTML(item.id)}">${escapeHTML(item.name || 'Ukendt turnering')}</option>`
+      )
+      .join('');
+
+    tournamentSelect.innerHTML = `
+      <option value="">Vælg turnering</option>
+      <optgroup label="VCL kategorier">
+        ${genericOptions}
+      </optgroup>
+      ${databaseOptions ? `<optgroup label="Konkrete turneringer">${databaseOptions}</optgroup>` : ''}
+    `;
+  }
+
+  function populateTeamSelect(select, items, placeholder) {
     select.innerHTML = `<option value="">${escapeHTML(placeholder)}</option>` +
       items
-        .map((item) => `<option value="${escapeHTML(item.id)}">${escapeHTML(item[labelKey] || 'Ukendt')}</option>`)
+        .map((item) => `<option value="${escapeHTML(item.id)}">${escapeHTML(item.name || 'Ukendt')}</option>`)
         .join('');
   }
 
@@ -165,13 +231,18 @@
     tournaments = tournamentResult.data || [];
     teams = (teamResult.data || []).filter((team) => team.status !== 'inactive');
 
-    populateSelect(tournamentSelect, tournaments, 'Vælg turnering');
-    populateSelect(teamASelect, teams, 'Vælg hold');
-    populateSelect(teamBSelect, teams, 'Vælg hold');
+    populateTournamentSelect();
+    populateTeamSelect(teamASelect, teams, 'Vælg hold');
+    populateTeamSelect(teamBSelect, teams, 'Vælg hold');
 
     const current = currentResult.data;
     if (current) {
-      tournamentSelect.value = current.tournament_id || '';
+      if (current.tournament_id) {
+        tournamentSelect.value = `db:${current.tournament_id}`;
+      } else if (current.tournament_key) {
+        tournamentSelect.value = `generic:${current.tournament_key}`;
+      }
+
       teamASelect.value = current.team_a_id || '';
       teamBSelect.value = current.team_b_id || '';
       scoreAInput.value = Number(current.team_a_score ?? 0);
@@ -194,6 +265,12 @@
 
     if (!form.reportValidity()) return;
 
+    const selectedTournament = getSelectedTournament();
+    if (!selectedTournament) {
+      setStatus('Vælg en turnering.', 'error');
+      return;
+    }
+
     if (teamASelect.value === teamBSelect.value) {
       setStatus('Vælg to forskellige hold.', 'error');
       return;
@@ -212,8 +289,11 @@
       setStatus('Opdaterer forsidens seneste resultat…', 'info');
 
       const db = await getDb();
-      const { error } = await db.rpc('admin_set_home_latest_result', {
-        p_tournament_id: tournamentSelect.value,
+      const { error } = await db.rpc('admin_set_home_latest_result_v2', {
+        p_tournament_id: selectedTournament.id,
+        p_tournament_key: selectedTournament.key,
+        p_tournament_name: selectedTournament.name,
+        p_tournament_url: selectedTournament.url,
         p_team_a_id: teamASelect.value,
         p_team_a_score: scoreA,
         p_team_b_id: teamBSelect.value,
@@ -253,6 +333,6 @@
 
   loadOptions().catch((error) => {
     console.error(error);
-    setStatus('Kunne ikke indlæse forside-resultat. Kør den nye Supabase-migration først.', 'error');
+    setStatus('Kunne ikke indlæse forside-resultat. Kør de nye Supabase-migrationer først.', 'error');
   });
 })();
