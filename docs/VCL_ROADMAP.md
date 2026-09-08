@@ -58,13 +58,15 @@ Status: implemented 2026-09-08.
 
 The Roster Market has a public transfer-history / roster-moves section backed by `roster_activity` and an automatic trigger on player roster state.
 
-The live feed currently records:
+The live feed records:
 
 - team -> team transfers,
 - Free Agent -> team signings,
 - team -> Free Agent moves,
 - existing unrostered players entering the Roster Market,
-- brand-new Free Agent profiles entering the Roster Market.
+- brand-new Free Agent profiles entering the Roster Market,
+- team-loan events,
+- Free Agent stand-in events.
 
 Important direct-transfer implementation rule:
 
@@ -74,11 +76,9 @@ Important direct-transfer implementation rule:
 
 The transfer feed records new events from the point the Supabase migration is installed; it does not invent historical transfers that were never recorded.
 
-The tournament-loan implementation prepared on `feature/tournament-loans-standins` extends the same feed with visually distinct `loan_from_team` and `loan_free_agent` events, including tournament context.
-
 ### Tournament roster foundation
 
-Status: implemented 2026-09-08; awaiting first natural captain validation.
+Status: implemented 2026-09-08; awaiting first natural full captain registration validation.
 
 Current behaviour:
 
@@ -93,7 +93,7 @@ Current behaviour:
 - admin tournament entries show the submitted starters and substitutes,
 - the data model supports `team`, `loan_team` and `loan_free_agent` roster sources.
 
-The production migration has been installed and the feature is merged to `main`. No real captain account was available during implementation, so the first real tournament registration doubles as the live flow validation.
+The production migration has been installed and the feature is merged to `main`. No full real captain registration has been completed during development, so the first real tournament registration still acts as end-to-end validation.
 
 ### Direct permanent transfers
 
@@ -119,9 +119,9 @@ PR #6 (`Add direct permanent team transfers`) was merged to `main` on 2026-09-08
 
 ### Tournament loans / stand-ins
 
-Status: implementation prepared 2026-09-08 on `feature/tournament-loans-standins`; requires Supabase migration + live validation before merge.
+Status: implemented 2026-09-09 and merged to `main`; live captain-side UI is loading and received a visual polish pass.
 
-Prepared behaviour:
+Current behaviour:
 
 - loans are initiated directly from the tournament roster setup,
 - captain can search claimed eligible players from another VCL team or active Free Agents,
@@ -136,28 +136,21 @@ Prepared behaviour:
 - accepted stand-ins are saved in `tournament_roster_players` as `loan_team` or `loan_free_agent`,
 - permanent players + accepted stand-ins are validated together against starter/substitute limits,
 - locked check-in/live tournament participation blocks permanent team changes at database level,
-- admin roster preview already distinguishes Loan / Stand-in sources,
+- admin roster preview distinguishes Loan / Stand-in sources,
 - saving an accepted loan creates one distinct Roster Moves event with tournament context,
-- the public roster snapshot exposes the stand-in's home team and replacement context where applicable.
+- the public roster snapshot exposes the stand-in's home team and replacement context where applicable,
+- the captain-side tournament roster / stand-in UI has been visually aligned with the dark VCL tournament panel and the candidate list is capped with its own scroll area.
 
-Migration:
-
-- `supabase/migrations/20260908_tournament_loans_standins.sql`
+PR #7 (`Add tournament loans and stand-ins`) was merged to `main` on 2026-09-08. Treat remaining issues as QA / stabilization rather than unfinished feature work.
 
 ### Remaining VCL 2.1 work
 
-1. **Validate / ship tournament loans & stand-ins**
-   - run the Supabase migration,
-   - validate captain search + request from the tournament roster flow,
-   - validate both another-team and Free Agent candidates,
-   - validate player accept / decline on Account,
-   - verify accepted stand-in counts correctly toward lineup limits,
-   - verify one player cannot represent two teams in the same tournament,
-   - verify Roster Moves creates one Loan / Stand-in event after roster submission,
-   - merge the feature branch after database installation.
-
-2. **VCL 2.1 QA / stabilization**
+1. **VCL 2.1 QA / stabilization**
    - run the complete user journey on desktop and mobile,
+   - validate a real captain tournament registration from start to finish,
+   - validate stand-in request -> player accept / decline -> roster submission,
+   - verify one player cannot represent two teams in the same tournament,
+   - verify Roster Moves creates the expected Loan / Stand-in event,
    - fix real bugs and edge cases only,
    - defer non-essential new ideas to a later roadmap version.
 
