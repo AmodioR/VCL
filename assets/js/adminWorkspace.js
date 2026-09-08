@@ -119,5 +119,15 @@
     syncPendingDisplay();
   }
 
+  if (
+    page.querySelector('#admin-tournaments') &&
+    !document.querySelector('script[data-admin-home-result-loader]')
+  ) {
+    const script = document.createElement('script');
+    script.src = 'assets/js/adminHomeLatestResult.js?v=2.1-home-result-01';
+    script.dataset.adminHomeResultLoader = 'true';
+    document.body.appendChild(script);
+  }
+
   refreshTournamentStats();
 })();
