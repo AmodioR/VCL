@@ -132,7 +132,9 @@
   }
 
   const observer = new MutationObserver(scheduleRefresh);
-  observer.observe(entriesRoot, { childList: true, subtree: true });
+  // script.js replaces the direct entry cards when the manager refreshes. Only
+  // observe direct children so injecting the preview itself cannot retrigger us.
+  observer.observe(entriesRoot, { childList: true });
 
   scheduleRefresh();
 })();
