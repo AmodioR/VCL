@@ -89,6 +89,62 @@ create table if not exists public.tournament_roster_players (
   unique (entry_id, player_id)
 );
 
+-- Production may already contain an older tournament_roster_players table.
+-- CREATE TABLE IF NOT EXISTS does not add columns to an existing table, so make
+-- the migration additive before indexes/views/functions reference the new fields.
+alter table public.tournament_roster_players
+  add column if not exists role text,
+  add column if not exists source text,
+  add column if not exists home_team_id uuid references public.teams(id) on delete set null,
+  add column if not exists replaces_player_id uuid references public.players(id) on delete set null,
+  add column if not exists player_alias_snapshot text,
+  add column if not exists player_slug_snapshot text,
+  add column if not exists player_avatar_url_snapshot text,
+  add column if not exists primary_role_snapshot text,
+  add column if not exists created_at timestamptz;
+
+update public.tournament_roster_players
+set
+  role = coalesce(role, 'starter'),
+  source = coalesce(source, 'team'),
+  created_at = coalesce(created_at, now()),
+  player_alias_snapshot = coalesce(
+    nullif(player_alias_snapshot, ''),
+    (
+      select p.alias
+      from public.players p
+      where p.id = tournament_roster_players.player_id
+    ),
+    'Ukendt spiller'
+  )
+where role is null
+   or source is null
+   or created_at is null
+   or player_alias_snapshot is null
+   or player_alias_snapshot = '';
+
+alter table public.tournament_roster_players
+  alter column role set not null,
+  alter column source set default 'team',
+  alter column source set not null,
+  alter column player_alias_snapshot set not null,
+  alter column created_at set default now(),
+  alter column created_at set not null;
+
+alter table public.tournament_roster_players
+  drop constraint if exists tournament_roster_players_role_check;
+
+alter table public.tournament_roster_players
+  add constraint tournament_roster_players_role_check
+  check (role in ('starter', 'substitute'));
+
+alter table public.tournament_roster_players
+  drop constraint if exists tournament_roster_players_source_check;
+
+alter table public.tournament_roster_players
+  add constraint tournament_roster_players_source_check
+  check (source in ('team', 'loan_team', 'loan_free_agent'));
+
 create index if not exists tournament_roster_players_entry_idx
   on public.tournament_roster_players (entry_id, role, created_at);
 
