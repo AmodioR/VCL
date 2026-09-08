@@ -45,6 +45,15 @@
       : `<strong>${label}</strong>`;
   };
 
+  const tournamentLink = (activity) => {
+    const label = escapeHTML(activity.tournament_name || "turneringen");
+    const slug = String(activity.tournament_slug || "").trim();
+
+    return slug
+      ? `<a href="turnering.html?tournament=${encodeURIComponent(slug)}">${label}</a>`
+      : `<strong>${label}</strong>`;
+  };
+
   const formatRelativeTime = (value) => {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "";
@@ -71,7 +80,9 @@
       signed_free_agent: "Signing",
       became_free_agent: "Free Agent",
       joined_roster_market: "Ny spiller",
-      joined_team: "Nyt hold"
+      joined_team: "Nyt hold",
+      loan_from_team: "Loan",
+      loan_free_agent: "Stand-in"
     };
 
     return labels[eventType] || "Roster move";
@@ -81,6 +92,7 @@
     const player = playerLink(activity);
     const fromTeam = teamLink(activity.from_team_name, activity.from_team_slug, "tidligere hold");
     const toTeam = teamLink(activity.to_team_name, activity.to_team_slug, "nyt hold");
+    const tournament = tournamentLink(activity);
 
     switch (activity.event_type) {
       case "transfer":
@@ -93,6 +105,10 @@
         return `${player} er ny på VCL Roster Market.`;
       case "joined_team":
         return `${player} sluttede sig til ${toTeam}.`;
+      case "loan_from_team":
+        return `${toTeam} lånte ${player} fra ${fromTeam} til ${tournament}.`;
+      case "loan_free_agent":
+        return `${toTeam} hentede Free Agent ${player} som stand-in til ${tournament}.`;
       default:
         return `${player} har lavet et roster move.`;
     }
@@ -165,7 +181,7 @@
       list.innerHTML = `
         <div class="roster-activity-empty">
           <strong>Ingen roster moves registreret endnu</strong>
-          <p>Transfers, signings og nye Free Agents bliver automatisk vist her, når de sker.</p>
+          <p>Transfers, signings, stand-ins og nye Free Agents bliver automatisk vist her, når de sker.</p>
         </div>
       `;
 
