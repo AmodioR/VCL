@@ -129,5 +129,22 @@
     document.body.appendChild(script);
   }
 
+  if (page.querySelector('[data-admin-tournament-entries]')) {
+    if (!document.querySelector('link[data-admin-tournament-roster-style]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'assets/css/admin-tournament-roster.css?v=2.1-tournament-roster-01';
+      link.dataset.adminTournamentRosterStyle = 'true';
+      document.head.appendChild(link);
+    }
+
+    if (!document.querySelector('script[data-admin-tournament-roster-loader]')) {
+      const script = document.createElement('script');
+      script.src = 'assets/js/adminTournamentRosterPreview.js?v=2.1-tournament-roster-01';
+      script.dataset.adminTournamentRosterLoader = 'true';
+      document.body.appendChild(script);
+    }
+  }
+
   refreshTournamentStats();
 })();

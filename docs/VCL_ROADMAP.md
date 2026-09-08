@@ -76,16 +76,31 @@ The transfer feed records new events from the point the Supabase migration is in
 
 Loan/stand-in events will be added to the same feed when the tournament loan system exists.
 
+### Tournament roster foundation
+
+Status: in progress 2026-09-08. Implementation is prepared on `feature/tournament-roster-foundation` and needs Supabase migration + flow testing before merge.
+
+Prepared behaviour:
+
+- captain must confirm a tournament-specific lineup before sending registration,
+- the permanent starters are pre-selected automatically,
+- captain can change starters and select substitutes,
+- default tournament rule is exactly 4 starters and up to 2 substitutes,
+- lineup is stored in `tournament_roster_players`, separate from permanent team membership,
+- player alias / slug / avatar / role are snapshotted for historical accuracy,
+- captains can edit the lineup while registration is open and the roster is not locked,
+- rosters lock when the tournament leaves `open` status,
+- admin tournament entries show the submitted starters and substitutes,
+- the data model is already prepared for future `loan_team` and `loan_free_agent` rows.
+
 ### Remaining roster-system work
 
-1. **Tournament roster foundation**
-   - captain confirms the tournament lineup during registration,
-   - primary starters are pre-selected,
-   - starters can be changed,
-   - substitutes are selected explicitly,
-   - tournament roster is stored separately from permanent team membership,
-   - historical roster snapshots are preserved,
-   - registration validates roster size and eligibility.
+1. **Finish / validate tournament roster foundation**
+   - run the Supabase migration,
+   - test a captain registration against the next live tournament,
+   - verify admin can see the submitted lineup,
+   - verify edit-before-lock and lock-after-open behaviour,
+   - merge the feature branch after validation.
 
 2. **Direct permanent transfers**
    - captain can invite a player who already belongs to another team,
