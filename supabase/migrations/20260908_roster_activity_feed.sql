@@ -125,15 +125,16 @@ begin
 
       elsif old.current_team_id is null
             and new.current_team_id is not null then
-        if coalesce(old.is_free_agent, false) = true then
-          v_event_type := 'signed_free_agent';
-        else
-          v_event_type := 'joined_team';
-        end if;
+        -- A player moving from no permanent team to a team is treated as a
+        -- Free Agency signing. This remains correct even if an existing RPC
+        -- clears is_free_agent in a separate statement immediately beforehand.
+        v_event_type := 'signed_free_agent';
 
       elsif old.current_team_id is not null
-            and new.current_team_id is null
-            and coalesce(new.is_free_agent, false) = true then
+            and new.current_team_id is null then
+        -- Existing roster-removal RPCs may set current_team_id and is_free_agent
+        -- in the same statement or in two consecutive statements. Record the
+        -- team exit here so both implementations produce the same feed event.
         v_event_type := 'became_free_agent';
       else
         return new;
@@ -143,6 +144,20 @@ begin
     elsif coalesce(old.is_free_agent, false) = false
           and coalesce(new.is_free_agent, false) = true
           and new.current_team_id is null then
+
+      -- If this status flip is the second statement of a team-removal flow,
+      -- the became_free_agent event was already created above. Do not create a
+      -- duplicate "joined Roster Market" event seconds later.
+      if exists (
+        select 1
+        from public.roster_activity a
+        where a.player_id = new.id
+          and a.event_type = 'became_free_agent'
+          and a.created_at >= now() - interval '5 minutes'
+      ) then
+        return new;
+      end if;
+
       v_event_type := 'joined_roster_market';
     else
       return new;
