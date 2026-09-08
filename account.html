@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=2.1-live-broadcast-01">
+  <link rel="stylesheet" href="assets/css/direct-team-transfers.css?v=2.1-direct-transfers-01">
 </head>
 
 <body class="account-page-v2 theme-light-canvas">
@@ -112,6 +113,17 @@
         </div>
         <div class="account-list-v2 account-list" data-claim-invite-box>
           <article><span>Henter</span><strong>Henter claim invitation</strong><p>Vi kontrollerer linket i Supabase.</p></article>
+        </div>
+      </section>
+
+      <section class="account-flow-section account-attention-item-v3" data-transfer-invites-section hidden>
+        <div class="account-section-heading-v2">
+          <span>Kræver handling</span>
+          <h2>Transferanmodninger</h2>
+          <p>Et andet VCL-hold vil hente dig direkte fra dit nuværende hold. Kun du kan acceptere skiftet.</p>
+        </div>
+        <div class="account-list-v2 account-list" data-transfer-invites-list>
+          <article><span>Henter</span><strong>Henter transferanmodninger</strong><p>VCL kontrollerer, om du har aktive requests.</p></article>
         </div>
       </section>
 
@@ -239,5 +251,6 @@
 <script src="assets/js/vclData.js?v=2.1-live-broadcast-01"></script>
 <script src="script.js?v=2.1-live-broadcast-01"></script>
 <script src="assets/js/accountTeamMembership.js?v=2.1-live-broadcast-01"></script>
+<script src="assets/js/accountTransferInvites.js?v=2.1-direct-transfers-01"></script>
 </body>
 </html>
