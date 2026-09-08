@@ -97,9 +97,9 @@ The production migration has been installed and the feature is merged to `main`.
 
 ### Direct permanent transfers
 
-Status: implementation prepared 2026-09-08 on `feature/direct-team-transfers`; requires Supabase migration + validation before merge.
+Status: implemented 2026-09-08 and merged to `main`; initial live behaviour appears to work.
 
-Prepared behaviour:
+Current behaviour:
 
 - captain gets a dedicated Direct Transfers workspace in Team Dashboard,
 - captain can search claimed players who currently belong to another VCL team,
@@ -115,17 +115,11 @@ Prepared behaviour:
 - old-team captain sees the accepted outbound move in the transfer activity on Team Dashboard,
 - transfers are blocked while the player is part of a locked `checkin` / `live` tournament roster.
 
+PR #6 (`Add direct permanent team transfers`) was merged to `main` on 2026-09-08. Treat any later issues as stabilization bugs rather than unfinished feature work.
+
 ### Remaining roster-system work
 
-1. **Finish / validate direct permanent transfers**
-   - run `20260908_direct_team_transfers.sql` in Supabase,
-   - validate captain search + send request,
-   - validate player accept / decline,
-   - verify old roster closes, new roster membership is `bench`,
-   - verify the existing Roster Moves feed creates exactly one `transfer` event,
-   - merge the feature branch after database installation.
-
-2. **Tournament loans / stand-ins**
+1. **Tournament loans / stand-ins**
    - captain requests a stand-in from a specific tournament roster setup,
    - player may come from another VCL team or from the Roster Market,
    - Free Agents can be loaned without being signed permanently,
@@ -136,7 +130,7 @@ Prepared behaviour:
    - accepted loans are reserved for that tournament entry,
    - loan activity is added to the existing Roster Moves feed.
 
-3. **VCL 2.1 QA / stabilization**
+2. **VCL 2.1 QA / stabilization**
    - run the complete user journey on desktop and mobile,
    - fix real bugs and edge cases only,
    - defer non-essential new ideas to a later roadmap version.
