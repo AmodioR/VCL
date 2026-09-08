@@ -54,11 +54,11 @@ Key decisions include:
 
 ### Roster Market activity feed
 
-Status: foundation implemented 2026-09-08.
+Status: implemented 2026-09-08.
 
 The Roster Market now has a public transfer-history / roster-moves section backed by `roster_activity` and an automatic trigger on player roster state.
 
-The feed is prepared for:
+The feed currently records:
 
 - team -> team transfers,
 - Free Agent -> team signings,
@@ -74,7 +74,37 @@ Important implementation rule for the future direct-transfer feature:
 
 The transfer feed records new events from the point the Supabase migration is installed; it does not invent historical transfers that were never recorded.
 
-Remaining roster-system phases (direct transfer requests, tournament roster setup and loans/stand-ins) are still planned.
+Loan/stand-in events will be added to the same feed when the tournament loan system exists.
+
+### Remaining roster-system work
+
+1. **Tournament roster foundation**
+   - captain confirms the tournament lineup during registration,
+   - primary starters are pre-selected,
+   - starters can be changed,
+   - substitutes are selected explicitly,
+   - tournament roster is stored separately from permanent team membership,
+   - historical roster snapshots are preserved,
+   - registration validates roster size and eligibility.
+
+2. **Direct permanent transfers**
+   - captain can invite a player who already belongs to another team,
+   - player personally accepts or declines,
+   - accepted transfer switches directly from Team A -> Team B atomically,
+   - old team is notified,
+   - incompatible pending invitations are invalidated,
+   - transfer automatically appears in the existing Roster Moves feed.
+
+3. **Tournament loans / stand-ins**
+   - captain requests a stand-in from a specific tournament roster setup,
+   - player may come from another VCL team or from the Roster Market,
+   - Free Agents can be loaned without being signed permanently,
+   - player accepts or declines the tournament-specific request,
+   - one player cannot represent two teams in the same tournament,
+   - roster lock / eligibility / suspension / roster-size checks are enforced,
+   - if a full starting roster exists, captain must choose who the stand-in replaces,
+   - accepted loans are reserved for that tournament entry,
+   - loan activity is added to the existing Roster Moves feed.
 
 ---
 
