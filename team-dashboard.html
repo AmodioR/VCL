@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=2.1-live-broadcast-01">
+  <link rel="stylesheet" href="assets/css/direct-team-transfers.css?v=2.1-direct-transfers-01">
 </head>
 
 <body class="theme-light-canvas team-dashboard-shell-v2">
@@ -104,6 +105,7 @@
       <div class="team-dashboard-tools-v2__label">Captain tools</div>
       <nav class="team-dashboard-tools-v2__nav" aria-label="Team dashboard sektioner">
         <a href="#roster">Roster <span>Administrér lineup og claims</span></a>
+        <a href="#transfers">Transfers <span>Hent spillere direkte fra andre hold</span></a>
         <a href="#team-info">Holdoplysninger <span>Navn, tekst og status</span></a>
         <a href="#captain-role">Captain-rolle <span>Overdrag ejerskab</span></a>
       </nav>
@@ -128,6 +130,63 @@
           <strong>Henter roster</strong>
           <p>Spillerne bliver hentet fra VCL-databasen.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="direct-transfer-section" id="transfers" data-direct-transfer-section data-captain-dashboard hidden>
+    <div class="container">
+      <header class="direct-transfer-head reveal">
+        <div class="direct-transfer-head__title">
+          <span>Permanent roster moves</span>
+          <h2>Direkte transfers</h2>
+          <p>Søg blandt claimed VCL-spillere på andre hold og send en transferanmodning direkte. Spilleren bestemmer selv, om skiftet gennemføres.</p>
+        </div>
+        <div class="direct-transfer-head__aside">
+          <strong>Ingen Free Agent-mellemstation</strong>
+          <p>Ved accept skifter spilleren direkte fra sit nuværende hold til <span data-transfer-team-label>dit hold</span>. Spilleren lander som substitute, og Roster Moves registrerer transferen automatisk.</p>
+        </div>
+      </header>
+
+      <div class="direct-transfer-workspace reveal">
+        <section class="direct-transfer-panel">
+          <span class="direct-transfer-panel__eyebrow">Find spiller</span>
+          <div class="direct-transfer-panel__controls">
+            <label>
+              <span>Søg spiller, hold eller rolle</span>
+              <input type="search" data-transfer-search placeholder="Fx AmodioR, Dyseria eller SMG" autocomplete="off">
+            </label>
+            <label>
+              <span>Valgfri besked til spilleren</span>
+              <textarea data-transfer-message maxlength="280" placeholder="Fx Vi mangler en fast SMG til næste split."></textarea>
+            </label>
+          </div>
+
+          <div class="direct-transfer-candidates" data-transfer-candidates>
+            <div class="direct-transfer-empty">
+              <strong>Henter spillere</strong>
+              <p>VCL finder spillere, der er eligible til en direkte transfer.</p>
+            </div>
+          </div>
+        </section>
+
+        <aside class="direct-transfer-history">
+          <div class="direct-transfer-history__head">
+            <div>
+              <span>Transfer desk</span>
+              <h3>Requests & moves</h3>
+            </div>
+            <small>Seneste 20</small>
+          </div>
+          <div class="direct-transfer-history__list" data-transfer-history>
+            <div class="direct-transfer-empty direct-transfer-empty--compact">
+              <strong>Henter aktivitet</strong>
+              <p>Sendte requests og gennemførte transfers vises her.</p>
+            </div>
+          </div>
+        </aside>
+
+        <p class="notice" data-transfer-workspace-status aria-live="polite"></p>
       </div>
     </div>
   </section>
@@ -243,5 +302,6 @@
 <script src="assets/js/supabaseClient.js?v=2.1-live-broadcast-01"></script>
 <script src="assets/js/vclData.js?v=2.1-live-broadcast-01"></script>
 <script src="script.js?v=2.1-live-broadcast-01"></script>
+<script src="assets/js/teamTransferManager.js?v=2.1-direct-transfers-01"></script>
 </body>
 </html>
