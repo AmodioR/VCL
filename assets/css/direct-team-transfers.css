@@ -1,0 +1,560 @@
+.direct-transfer-section {
+  border-top: 1px solid rgba(45, 79, 118, .12);
+  border-bottom: 1px solid rgba(45, 79, 118, .12);
+  background:
+    radial-gradient(circle at 85% 10%, rgba(36, 157, 255, .06), transparent 30%),
+    #f4f6f8;
+}
+
+.direct-transfer-section .container {
+  padding-top: 76px;
+  padding-bottom: 76px;
+}
+
+.direct-transfer-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 430px);
+  gap: 48px;
+  align-items: end;
+  margin-bottom: 34px;
+}
+
+.direct-transfer-head__title > span,
+.direct-transfer-panel__eyebrow,
+.direct-transfer-history__head > span {
+  display: block;
+  margin-bottom: 8px;
+  color: #176df1;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.direct-transfer-head h2 {
+  color: #101720;
+  font-size: clamp(36px, 5vw, 66px);
+}
+
+.direct-transfer-head p {
+  color: #5e6a78;
+}
+
+.direct-transfer-head__aside {
+  padding-left: 24px;
+  border-left: 2px solid rgba(23, 109, 241, .2);
+}
+
+.direct-transfer-head__aside strong {
+  display: block;
+  margin-bottom: 7px;
+  color: #17212d;
+  font-size: .9rem;
+}
+
+.direct-transfer-head__aside p {
+  font-size: .82rem;
+  line-height: 1.6;
+}
+
+.direct-transfer-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr);
+  gap: 34px;
+  align-items: start;
+}
+
+.direct-transfer-panel,
+.direct-transfer-history {
+  min-width: 0;
+}
+
+.direct-transfer-panel__controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.direct-transfer-panel__controls label {
+  display: grid;
+  gap: 7px;
+}
+
+.direct-transfer-panel__controls label > span {
+  color: #667484;
+  font-size: .69rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.direct-transfer-panel__controls input,
+.direct-transfer-panel__controls textarea {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid rgba(65, 102, 146, .2);
+  border-radius: 0;
+  outline: none;
+  color: #16202b;
+  background: rgba(255, 255, 255, .82);
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.direct-transfer-panel__controls input {
+  padding: 0 14px;
+}
+
+.direct-transfer-panel__controls textarea {
+  min-height: 82px;
+  padding: 12px 14px;
+  resize: vertical;
+}
+
+.direct-transfer-panel__controls input:focus,
+.direct-transfer-panel__controls textarea:focus {
+  border-color: rgba(23, 109, 241, .55);
+  box-shadow: 0 0 0 3px rgba(23, 109, 241, .08);
+}
+
+.direct-transfer-candidates,
+.direct-transfer-history__list {
+  border-top: 1px solid rgba(57, 92, 131, .14);
+}
+
+.direct-transfer-candidate {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(170px, .8fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(57, 92, 131, .14);
+}
+
+.direct-transfer-candidate__player,
+.direct-transfer-candidate__team,
+.direct-transfer-history-row__identity {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  min-width: 0;
+}
+
+.direct-transfer-candidate__player > div,
+.direct-transfer-candidate__team > div,
+.direct-transfer-history-row__identity > div {
+  min-width: 0;
+}
+
+.direct-transfer-candidate__player a,
+.direct-transfer-candidate__team strong,
+.direct-transfer-history-row__identity strong {
+  display: block;
+  overflow: hidden;
+  color: #18222d;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.direct-transfer-candidate__player a:hover {
+  color: #176df1;
+}
+
+.direct-transfer-candidate__player span,
+.direct-transfer-candidate__team small {
+  display: block;
+  margin-top: 3px;
+  color: #7a8794;
+  font-size: .72rem;
+}
+
+.direct-transfer-avatar,
+.direct-transfer-team-logo {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  overflow: hidden;
+  border: 1px solid rgba(67, 107, 154, .18);
+  background: #e8edf3;
+  color: #176df1;
+  font-weight: 900;
+}
+
+.direct-transfer-team-logo {
+  width: 36px;
+  height: 36px;
+  background: #fff;
+}
+
+.direct-transfer-avatar img,
+.direct-transfer-team-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.direct-transfer-team-logo img {
+  object-fit: contain;
+  padding: 3px;
+}
+
+.direct-transfer-candidate__action {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.direct-transfer-candidate__action button,
+.direct-transfer-history-row__state button,
+.account-transfer-invite__actions button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(23, 109, 241, .36);
+  border-radius: 0;
+  color: #fff;
+  background: #176df1;
+  font-size: .69rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.direct-transfer-candidate__action button:hover:not(:disabled),
+.direct-transfer-history-row__state button:hover:not(:disabled),
+.account-transfer-invite__actions button:hover:not(:disabled) {
+  background: #105fcf;
+}
+
+.direct-transfer-candidate__action button:disabled,
+.account-transfer-invite__actions button:disabled {
+  cursor: default;
+  opacity: .48;
+}
+
+.direct-transfer-candidate__action small {
+  color: #8a96a2;
+  font-size: .66rem;
+}
+
+.direct-transfer-history {
+  position: sticky;
+  top: 100px;
+}
+
+.direct-transfer-history__head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 15px;
+}
+
+.direct-transfer-history__head h3 {
+  color: #17212c;
+  font-size: 1.55rem;
+}
+
+.direct-transfer-history__head small {
+  color: #8090a0;
+  text-align: right;
+}
+
+.direct-transfer-history-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px 16px;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(57, 92, 131, .14);
+}
+
+.direct-transfer-history-row__identity {
+  grid-column: 1 / -1;
+}
+
+.direct-transfer-history-row__identity p {
+  margin-top: 2px;
+  color: #758290;
+  font-size: .72rem;
+  line-height: 1.5;
+}
+
+.direct-transfer-history-row__route {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.direct-transfer-history-row__route .direct-transfer-team-logo {
+  width: 30px;
+  height: 30px;
+}
+
+.direct-transfer-history-row__route > span {
+  color: #8c98a5;
+  font-weight: 900;
+}
+
+.direct-transfer-history-row__state {
+  display: grid;
+  justify-items: end;
+  align-content: center;
+  gap: 4px;
+}
+
+.direct-transfer-history-row__state > span {
+  padding: 4px 7px;
+  border: 1px solid rgba(71, 104, 143, .18);
+  color: #667585;
+  background: rgba(255, 255, 255, .52);
+  font-size: .62rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.direct-transfer-history-row__state > span[data-transfer-state="accepted"] {
+  border-color: rgba(34, 144, 91, .22);
+  color: #18744a;
+  background: rgba(34, 144, 91, .07);
+}
+
+.direct-transfer-history-row__state > span[data-transfer-state="pending"] {
+  border-color: rgba(23, 109, 241, .22);
+  color: #176df1;
+  background: rgba(23, 109, 241, .06);
+}
+
+.direct-transfer-history-row__state > span[data-transfer-state="declined"],
+.direct-transfer-history-row__state > span[data-transfer-state="cancelled"],
+.direct-transfer-history-row__state > span[data-transfer-state="invalidated"],
+.direct-transfer-history-row__state > span[data-transfer-state="expired"] {
+  color: #7c8792;
+}
+
+.direct-transfer-history-row__state small {
+  color: #94a0ac;
+  font-size: .63rem;
+}
+
+.direct-transfer-history-row__state button {
+  min-height: 30px;
+  padding: 0 9px;
+  border-color: rgba(116, 134, 154, .25);
+  color: #5e6b79;
+  background: transparent;
+  font-size: .59rem;
+}
+
+.direct-transfer-empty {
+  padding: 28px 0;
+  border-bottom: 1px solid rgba(57, 92, 131, .14);
+}
+
+.direct-transfer-empty strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #1c2733;
+}
+
+.direct-transfer-empty p {
+  color: #7a8794;
+  font-size: .78rem;
+}
+
+.direct-transfer-empty.is-error strong {
+  color: #a23f32;
+}
+
+.direct-transfer-workspace > .notice {
+  grid-column: 1 / -1;
+}
+
+/* Account transfer invitation */
+.account-transfer-invite {
+  display: grid;
+  grid-template-columns: minmax(220px, .65fr) minmax(0, 1fr) auto;
+  gap: 26px;
+  align-items: center;
+  padding: 24px 0;
+  border-top: 1px solid rgba(71, 104, 143, .14);
+}
+
+.account-transfer-invite:last-child {
+  border-bottom: 1px solid rgba(71, 104, 143, .14);
+}
+
+.account-transfer-invite__route {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.account-transfer-invite__route > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.account-transfer-invite__route > b {
+  color: #176df1;
+}
+
+.account-transfer-invite__route small,
+.account-transfer-invite__route strong {
+  display: block;
+}
+
+.account-transfer-invite__route small {
+  color: #8592a0;
+  font-size: .62rem;
+  text-transform: uppercase;
+}
+
+.account-transfer-invite__route strong {
+  max-width: 110px;
+  overflow: hidden;
+  color: #18232e;
+  font-size: .76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.direct-transfer-team-logo--account {
+  width: 38px;
+  height: 38px;
+}
+
+.account-transfer-invite__copy > span {
+  display: block;
+  margin-bottom: 5px;
+  color: #176df1;
+  font-size: .63rem;
+  font-weight: 900;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.account-transfer-invite__copy h3 {
+  color: #17212c;
+  font-size: 1.45rem;
+}
+
+.account-transfer-invite__copy p {
+  margin-top: 8px;
+  color: #657381;
+  font-size: .78rem;
+  line-height: 1.6;
+}
+
+.account-transfer-invite__copy p strong {
+  color: #2b3948;
+}
+
+.account-transfer-invite__copy blockquote {
+  margin: 10px 0 0;
+  padding-left: 12px;
+  border-left: 2px solid rgba(23, 109, 241, .28);
+  color: #5e6b79;
+  font-size: .76rem;
+  font-style: italic;
+}
+
+.account-transfer-invite__copy > small {
+  display: block;
+  margin-top: 8px;
+  color: #8a96a2;
+  font-size: .66rem;
+}
+
+.account-transfer-invite__actions {
+  display: grid;
+  gap: 7px;
+  min-width: 150px;
+}
+
+.account-transfer-invite__actions .is-secondary {
+  border-color: rgba(76, 99, 123, .22);
+  color: #5f6c79;
+  background: transparent;
+}
+
+.account-transfer-invite__status {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 980px) {
+  .direct-transfer-head,
+  .direct-transfer-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .direct-transfer-history {
+    position: static;
+  }
+
+  .account-transfer-invite {
+    grid-template-columns: 1fr;
+  }
+
+  .account-transfer-invite__actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .direct-transfer-section .container {
+    padding-top: 54px;
+    padding-bottom: 54px;
+  }
+
+  .direct-transfer-head {
+    gap: 24px;
+  }
+
+  .direct-transfer-head__aside {
+    padding-left: 16px;
+  }
+
+  .direct-transfer-panel__controls {
+    grid-template-columns: 1fr;
+  }
+
+  .direct-transfer-candidate {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .direct-transfer-candidate__action {
+    justify-items: stretch;
+  }
+
+  .direct-transfer-candidate__action button {
+    width: 100%;
+  }
+
+  .direct-transfer-history-row {
+    grid-template-columns: 1fr;
+  }
+
+  .direct-transfer-history-row__identity {
+    grid-column: auto;
+  }
+
+  .direct-transfer-history-row__state {
+    justify-items: start;
+  }
+
+  .account-transfer-invite__route {
+    justify-content: flex-start;
+  }
+
+  .account-transfer-invite__actions {
+    grid-template-columns: 1fr;
+  }
+}
