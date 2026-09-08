@@ -1,0 +1,656 @@
+.tournament-loan-panel {
+  margin: 26px 0 0;
+  padding: 26px 0 4px;
+  border-top: 1px solid rgba(25, 74, 126, .16);
+}
+
+.tournament-loan-panel__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 22px;
+}
+
+.tournament-loan-panel__head > div:first-child {
+  max-width: 720px;
+}
+
+.tournament-loan-panel__head > div:first-child > span,
+.tournament-loan-dialog__eyebrow {
+  display: block;
+  margin-bottom: 7px;
+  color: #176df1;
+  font-size: .7rem;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.tournament-loan-panel__head h3 {
+  color: #101a24;
+  font-size: clamp(26px, 3.5vw, 38px);
+}
+
+.tournament-loan-panel__head p {
+  margin-top: 8px;
+  color: #657382;
+  line-height: 1.55;
+}
+
+.tournament-loan-panel__count {
+  flex: 0 0 auto;
+  min-width: 130px;
+  padding-left: 20px;
+  border-left: 1px solid rgba(25, 74, 126, .14);
+  text-align: right;
+}
+
+.tournament-loan-panel__count strong,
+.tournament-loan-panel__count span {
+  display: block;
+}
+
+.tournament-loan-panel__count strong {
+  color: #101a24;
+  font-family: var(--head);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.tournament-loan-panel__count span {
+  margin-top: 5px;
+  color: #7c8996;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.tournament-loan-panel__requests,
+.tournament-loan-panel__finder {
+  border-top: 1px solid rgba(25, 74, 126, .12);
+}
+
+.tournament-loan-panel__finder {
+  margin-top: 20px;
+}
+
+.tournament-loan-panel__subhead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 0 11px;
+}
+
+.tournament-loan-panel__subhead strong {
+  color: #18232e;
+  font-size: .75rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.tournament-loan-panel__subhead span {
+  color: #82909d;
+  font-size: .73rem;
+}
+
+.tournament-loan-request,
+.tournament-loan-candidate {
+  display: grid;
+  align-items: center;
+  gap: 18px;
+  min-height: 78px;
+  padding: 13px 14px;
+  border-top: 1px solid rgba(25, 74, 126, .1);
+  background: rgba(255, 255, 255, .42);
+}
+
+.tournament-loan-request {
+  grid-template-columns: minmax(0, 1.25fr) minmax(190px, .9fr) minmax(150px, .7fr) auto;
+}
+
+.tournament-loan-request[data-status="accepted"] {
+  background: rgba(23, 109, 241, .045);
+  box-shadow: inset 3px 0 0 #176df1;
+}
+
+.tournament-loan-candidate {
+  grid-template-columns: minmax(0, 1fr) minmax(160px, .55fr) auto;
+}
+
+.tournament-loan-request__identity,
+.tournament-loan-candidate__identity {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 12px;
+}
+
+.tournament-loan-request__identity > div,
+.tournament-loan-candidate__identity > div {
+  min-width: 0;
+}
+
+.tournament-loan-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  overflow: hidden;
+  border: 1px solid rgba(23, 109, 241, .16);
+  background: #f4f8fd;
+  color: #176df1;
+  font-family: var(--head);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.tournament-loan-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tournament-loan-request__identity strong,
+.tournament-loan-candidate__identity strong {
+  display: block;
+  overflow: hidden;
+  color: #13202b;
+  font-size: .9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tournament-loan-request__identity span,
+.tournament-loan-candidate__identity span,
+.tournament-loan-candidate__meta small {
+  color: #7b8895;
+  font-size: .72rem;
+}
+
+.tournament-loan-request__role small,
+.tournament-loan-request__state small {
+  display: block;
+  color: #8a96a2;
+  font-size: .65rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.tournament-loan-request__role strong {
+  display: block;
+  margin-top: 4px;
+  color: #344250;
+  font-size: .78rem;
+}
+
+.tournament-loan-request__state > span,
+.tournament-loan-candidate__meta > span {
+  display: inline-flex;
+  width: fit-content;
+  padding: 5px 8px;
+  border: 1px solid rgba(25, 74, 126, .13);
+  color: #607080;
+  background: #f6f8fa;
+  font-size: .67rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.tournament-loan-request__state > span[data-state="accepted"] {
+  border-color: rgba(23, 109, 241, .2);
+  color: #155eef;
+  background: rgba(23, 109, 241, .06);
+}
+
+.tournament-loan-request__state small {
+  margin-top: 5px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.tournament-loan-request__cancel,
+.tournament-loan-candidate > button,
+.tournament-loan-search button {
+  min-height: 39px;
+  padding: 0 13px;
+  border: 1px solid rgba(23, 109, 241, .22);
+  color: #155eef;
+  background: #fff;
+  font-size: .7rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tournament-loan-candidate > button {
+  min-width: 150px;
+  color: #fff;
+  background: #176df1;
+  border-color: #176df1;
+}
+
+.tournament-loan-candidate > button:disabled {
+  color: #8995a1;
+  background: #eef2f5;
+  border-color: rgba(25, 74, 126, .1);
+  cursor: not-allowed;
+}
+
+.tournament-loan-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.tournament-loan-search input {
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid rgba(25, 74, 126, .16);
+  color: #17222d;
+  background: #fff;
+  outline: none;
+}
+
+.tournament-loan-search input:focus {
+  border-color: rgba(23, 109, 241, .55);
+  box-shadow: 0 0 0 3px rgba(23, 109, 241, .08);
+}
+
+.tournament-loan-candidates {
+  border-bottom: 1px solid rgba(25, 74, 126, .1);
+}
+
+.tournament-loan-empty {
+  padding: 20px 14px;
+  border-top: 1px solid rgba(25, 74, 126, .1);
+}
+
+.tournament-loan-empty strong {
+  color: #263442;
+}
+
+.tournament-loan-empty p,
+.tournament-loan-limit {
+  margin-top: 5px;
+  color: #7a8794;
+  font-size: .78rem;
+  line-height: 1.5;
+}
+
+.tournament-loan-limit {
+  padding: 14px 0 0;
+  border-top: 1px solid rgba(25, 74, 126, .1);
+}
+
+.tournament-loan-dialog {
+  width: min(600px, calc(100% - 28px));
+  max-height: calc(100vh - 40px);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #14202b;
+}
+
+.tournament-loan-dialog::backdrop {
+  background: rgba(5, 10, 17, .72);
+  backdrop-filter: blur(4px);
+}
+
+.tournament-loan-dialog__panel {
+  position: relative;
+  display: grid;
+  gap: 18px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  padding: 30px;
+  border: 1px solid rgba(93, 130, 171, .24);
+  background: #f8fafc;
+  box-shadow: 0 28px 90px rgba(4, 13, 24, .32);
+}
+
+.tournament-loan-dialog__panel h2 {
+  color: #101a24;
+  font-size: clamp(30px, 6vw, 46px);
+}
+
+.tournament-loan-dialog__panel > p {
+  color: #657382;
+}
+
+.tournament-loan-dialog__close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(25, 74, 126, .14);
+  color: #4b5967;
+  background: #fff;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+.tournament-loan-dialog__panel label {
+  display: grid;
+  gap: 7px;
+}
+
+.tournament-loan-dialog__panel label > span {
+  color: #4f5d6a;
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.tournament-loan-dialog__panel select,
+.tournament-loan-dialog__panel textarea {
+  width: 100%;
+  border: 1px solid rgba(25, 74, 126, .18);
+  border-radius: 0;
+  color: #16212c;
+  background: #fff;
+}
+
+.tournament-loan-dialog__panel select {
+  min-height: 44px;
+  padding: 0 12px;
+}
+
+.tournament-loan-dialog__panel textarea {
+  min-height: 90px;
+  padding: 11px 12px;
+  resize: vertical;
+}
+
+.tournament-loan-dialog__panel label > small {
+  color: #81909d;
+  font-size: .72rem;
+  line-height: 1.45;
+}
+
+.tournament-loan-dialog__panel [data-loan-replacement-field][data-required="true"] > span::after {
+  content: " · krævet";
+  color: #b42318;
+}
+
+.tournament-loan-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.tournament-loan-dialog__actions button {
+  min-height: 43px;
+  padding: 0 16px;
+  border: 1px solid #176df1;
+  color: #fff;
+  background: #176df1;
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tournament-loan-dialog__actions button.is-secondary {
+  border-color: rgba(25, 74, 126, .16);
+  color: #52616f;
+  background: #fff;
+}
+
+/* Account inbox */
+.account-loan-invite {
+  display: grid;
+  grid-template-columns: minmax(260px, .9fr) minmax(0, 1.25fr) auto;
+  gap: 24px;
+  align-items: center;
+  padding: 24px 0;
+  border-top: 1px solid rgba(43, 76, 113, .12);
+}
+
+.account-loan-invite:last-child {
+  border-bottom: 1px solid rgba(43, 76, 113, .12);
+}
+
+.account-loan-invite__route {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.account-loan-invite__route > div {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 9px;
+}
+
+.account-loan-invite__route > b {
+  color: #98a6b4;
+}
+
+.account-loan-team-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  overflow: hidden;
+  border: 1px solid rgba(23, 109, 241, .16);
+  background: #f3f7fc;
+  color: #176df1;
+  font-family: var(--head);
+  font-weight: 800;
+}
+
+.account-loan-team-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.account-loan-invite__route small,
+.account-loan-invite__route strong {
+  display: block;
+}
+
+.account-loan-invite__route small {
+  color: #8a96a2;
+  font-size: .62rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.account-loan-invite__route strong {
+  max-width: 110px;
+  overflow: hidden;
+  color: #273543;
+  font-size: .75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-loan-invite__copy > span {
+  color: #176df1;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.account-loan-invite__copy h3 {
+  margin-top: 5px;
+  color: #15212c;
+  font-size: 1.35rem;
+}
+
+.account-loan-invite__copy p {
+  margin-top: 6px;
+  color: #657382;
+  font-size: .8rem;
+  line-height: 1.5;
+}
+
+.account-loan-invite__copy p a,
+.account-loan-invite__copy p strong {
+  color: #23384c;
+  font-weight: 800;
+}
+
+.account-loan-invite__copy blockquote {
+  margin: 9px 0 0;
+  padding-left: 11px;
+  border-left: 2px solid rgba(23, 109, 241, .3);
+  color: #536271;
+  font-size: .78rem;
+  line-height: 1.45;
+}
+
+.account-loan-invite__copy > small {
+  display: block;
+  margin-top: 7px;
+  color: #8995a1;
+  font-size: .68rem;
+}
+
+.account-loan-invite__actions {
+  display: grid;
+  gap: 8px;
+  min-width: 150px;
+}
+
+.account-loan-invite__actions button {
+  min-height: 40px;
+  padding: 0 13px;
+  border: 1px solid #176df1;
+  color: #fff;
+  background: #176df1;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.account-loan-invite__actions button.is-secondary {
+  border-color: rgba(40, 70, 104, .14);
+  color: #526170;
+  background: #fff;
+}
+
+.account-loan-invite__status {
+  grid-column: 1 / -1;
+  margin: -8px 0 0;
+}
+
+@media (max-width: 900px) {
+  .tournament-loan-request {
+    grid-template-columns: minmax(0, 1fr) minmax(160px, .7fr);
+  }
+
+  .tournament-loan-request__state,
+  .tournament-loan-request__cancel {
+    grid-column: 2;
+  }
+
+  .tournament-loan-candidate {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .tournament-loan-candidate__meta {
+    grid-column: 1;
+    padding-left: 54px;
+  }
+
+  .tournament-loan-candidate > button {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .account-loan-invite {
+    grid-template-columns: 1fr auto;
+  }
+
+  .account-loan-invite__copy {
+    grid-column: 1;
+  }
+
+  .account-loan-invite__actions {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+}
+
+@media (max-width: 620px) {
+  .tournament-loan-panel__head,
+  .tournament-loan-panel__subhead {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .tournament-loan-panel__count {
+    min-width: 0;
+    padding: 12px 0 0;
+    border-top: 1px solid rgba(25, 74, 126, .12);
+    border-left: 0;
+    text-align: left;
+  }
+
+  .tournament-loan-request,
+  .tournament-loan-candidate,
+  .account-loan-invite {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .tournament-loan-request__state,
+  .tournament-loan-request__cancel,
+  .tournament-loan-candidate__meta,
+  .tournament-loan-candidate > button,
+  .account-loan-invite__copy,
+  .account-loan-invite__actions {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .tournament-loan-candidate__meta {
+    padding-left: 54px;
+  }
+
+  .tournament-loan-candidate > button,
+  .account-loan-invite__actions,
+  .account-loan-invite__actions button {
+    width: 100%;
+  }
+
+  .tournament-loan-search {
+    grid-template-columns: 1fr;
+  }
+
+  .tournament-loan-dialog__panel {
+    padding: 24px 18px;
+  }
+
+  .tournament-loan-dialog__actions {
+    flex-direction: column-reverse;
+  }
+
+  .tournament-loan-dialog__actions button {
+    width: 100%;
+  }
+
+  .account-loan-invite__route {
+    align-items: flex-start;
+  }
+}
