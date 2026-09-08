@@ -1,9 +1,0 @@
-.team-dashboard-shell-v2 .team-dashboard-tools-v2__nav {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-@media (max-width: 780px) {
-  .team-dashboard-shell-v2 .team-dashboard-tools-v2__nav {
-    grid-template-columns: 1fr;
-  }
-}
