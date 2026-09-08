@@ -1,0 +1,346 @@
+.roster-activity-v1 {
+  padding: 72px 0 64px;
+  background: #f7f9fc;
+  border-top: 1px solid rgba(16, 24, 40, 0.08);
+  border-bottom: 1px solid rgba(16, 24, 40, 0.08);
+}
+
+.roster-activity-v1__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 28px;
+}
+
+.roster-activity-v1__eyebrow {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: #1f6fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.roster-activity-v1__head h2 {
+  margin: 0;
+  color: #101828;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 0.98;
+}
+
+.roster-activity-v1__head p {
+  max-width: 680px;
+  margin: 12px 0 0;
+  color: #667085;
+  line-height: 1.65;
+}
+
+.roster-activity-v1__count {
+  flex: 0 0 auto;
+  min-width: 116px;
+  padding-left: 24px;
+  border-left: 1px solid rgba(16, 24, 40, 0.12);
+}
+
+.roster-activity-v1__count strong,
+.roster-activity-v1__count span {
+  display: block;
+}
+
+.roster-activity-v1__count strong {
+  color: #101828;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 2.15rem;
+  line-height: 1;
+}
+
+.roster-activity-v1__count span {
+  margin-top: 4px;
+  color: #667085;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.roster-activity-list {
+  border-top: 1px solid rgba(16, 24, 40, 0.12);
+}
+
+.roster-activity-row {
+  display: grid;
+  grid-template-columns: 145px minmax(0, 1fr) minmax(220px, auto);
+  align-items: center;
+  gap: 24px;
+  min-height: 92px;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(16, 24, 40, 0.1);
+}
+
+.roster-activity-row__time time,
+.roster-activity-row__time span {
+  display: block;
+}
+
+.roster-activity-row__time time {
+  color: #475467;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.roster-activity-row__time span {
+  width: max-content;
+  margin-top: 7px;
+  padding: 4px 8px;
+  border: 1px solid rgba(16, 24, 40, 0.12);
+  border-radius: 999px;
+  color: #667085;
+  background: #fff;
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.roster-activity-row[data-event-type="transfer"] .roster-activity-row__time span {
+  color: #155eef;
+  border-color: rgba(21, 94, 239, 0.2);
+  background: rgba(21, 94, 239, 0.06);
+}
+
+.roster-activity-row[data-event-type="signed_free_agent"] .roster-activity-row__time span {
+  color: #027a48;
+  border-color: rgba(2, 122, 72, 0.2);
+  background: rgba(2, 122, 72, 0.06);
+}
+
+.roster-activity-row[data-event-type="became_free_agent"] .roster-activity-row__time span,
+.roster-activity-row[data-event-type="joined_roster_market"] .roster-activity-row__time span {
+  color: #6941c6;
+  border-color: rgba(105, 65, 198, 0.2);
+  background: rgba(105, 65, 198, 0.06);
+}
+
+.roster-activity-row__story {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 14px;
+}
+
+.roster-activity-row__avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border: 1px solid rgba(16, 24, 40, 0.1);
+  border-radius: 50%;
+  background: #fff;
+  color: #101828;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 1.05rem;
+}
+
+.roster-activity-row__avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.roster-activity-row__story p {
+  min-width: 0;
+  margin: 0;
+  color: #475467;
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+.roster-activity-row__story a,
+.roster-activity-row__story strong {
+  color: #101828;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.roster-activity-row__story a:hover {
+  color: #155eef;
+}
+
+.roster-activity-route {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.roster-activity-route__team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: #344054;
+  text-decoration: none;
+}
+
+.roster-activity-route__team small {
+  max-width: 104px;
+  overflow: hidden;
+  color: #667085;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.roster-activity-route__logo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  overflow: hidden;
+  border: 1px solid rgba(16, 24, 40, 0.1);
+  border-radius: 9px;
+  background: #fff;
+  color: #101828;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 800;
+}
+
+.roster-activity-route__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.roster-activity-route__arrow {
+  color: #98a2b3;
+  font-size: 1rem;
+}
+
+.roster-activity-route__free-agent {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgba(105, 65, 198, 0.16);
+  border-radius: 999px;
+  color: #6941c6;
+  background: rgba(105, 65, 198, 0.06);
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.roster-activity-empty {
+  padding: 34px 0;
+  border-bottom: 1px solid rgba(16, 24, 40, 0.1);
+}
+
+.roster-activity-empty strong {
+  display: block;
+  color: #101828;
+  font-size: 1rem;
+}
+
+.roster-activity-empty p {
+  margin: 6px 0 0;
+  color: #667085;
+  line-height: 1.55;
+}
+
+.roster-activity-empty--error strong {
+  color: #b42318;
+}
+
+.roster-activity-v1__more {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 22px;
+}
+
+.roster-activity-v1__more button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #155eef;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.roster-activity-v1__more button:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .roster-activity-row {
+    grid-template-columns: 110px minmax(0, 1fr);
+  }
+
+  .roster-activity-route {
+    grid-column: 2;
+    justify-content: flex-start;
+    padding-left: 58px;
+  }
+}
+
+@media (max-width: 640px) {
+  .roster-activity-v1 {
+    padding: 52px 0 44px;
+  }
+
+  .roster-activity-v1__head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .roster-activity-v1__count {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .roster-activity-v1__count span {
+    margin-top: 0;
+  }
+
+  .roster-activity-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 20px 0;
+  }
+
+  .roster-activity-row__time {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .roster-activity-row__time span {
+    margin-top: 0;
+  }
+
+  .roster-activity-route {
+    grid-column: 1;
+    justify-content: flex-start;
+    padding-left: 58px;
+  }
+
+  .roster-activity-route__team small {
+    display: none;
+  }
+}
