@@ -1,0 +1,16 @@
+.roster-activity-row[data-event-type="loan_from_team"] .roster-activity-row__time span,
+.roster-activity-row[data-event-type="loan_free_agent"] .roster-activity-row__time span {
+  color: #b54708;
+  border-color: rgba(181, 71, 8, .2);
+  background: rgba(247, 144, 9, .08);
+}
+
+.roster-activity-row[data-event-type="loan_from_team"],
+.roster-activity-row[data-event-type="loan_free_agent"] {
+  background: linear-gradient(90deg, rgba(247, 144, 9, .035), transparent 55%);
+}
+
+.roster-activity-row[data-event-type="loan_from_team"] .roster-activity-route__arrow,
+.roster-activity-row[data-event-type="loan_free_agent"] .roster-activity-route__arrow {
+  color: #d97706;
+}
