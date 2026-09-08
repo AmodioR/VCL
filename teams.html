@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Teams — VCL</title>
+  <meta name="description" content="Aktive danske og VCL hold">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2.1-live-broadcast-01">
+</head>
+<body class="theme-light-canvas teams-shell--v2">
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand brand--logo-only" href="index.html" aria-label="VCL forside">
+      <img src="assets/vcl-logo-v2.png" alt="VCL logo">
+    </a>
+
+    <nav class="nav-links" aria-label="Primær navigation">
+      <a data-nav href="index.html">Forside</a>
+      <a data-nav href="turneringer.html">Turneringer</a>
+      <a data-nav href="registrer-hold.html">Registrer hold</a>
+      <a data-nav href="nyheder.html">Nyheder</a>
+      <a data-nav href="roster-market.html">Roster Market</a>
+      <a data-nav href="teams.html">Teams</a>
+      <a data-nav href="leaderboard.html">Leaderboard</a>
+      <a data-nav href="regler.html">Regler</a>
+      <a data-nav href="about.html">About</a>
+
+    </nav>
+
+    <div class="nav-actions">
+      <a class="btn btn-small btn-primary" href="login.html">
+  <span>Login</span>
+</a>
+
+      <button class="menu-toggle" data-menu-toggle aria-label="Åbn menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main data-teams-page class="teams-page--v2">
+  <section class="teams-hero-v2">
+    <div class="container teams-hero-v2__inner reveal">
+      <div class="teams-hero-v2__copy">
+        <h1>TEAMS</h1>
+        <p>Mød de hold, der konkurrerer i VCL. Se roster, niveau og resultater — og gå videre til holdets fulde profil.</p>
+      </div>
+
+      <a class="teams-hero-v2__cta" href="registrer-hold.html">
+        <span>REGISTRER HOLD</span>
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="teams-directory-v2">
+    <div class="container">
+      <div class="teams-directory-v2__head reveal">
+        <div>
+          <span class="teams-directory-v2__eyebrow">VCL HOLD</span>
+          <h2>Holdregister</h2>
+        </div>
+
+        <div class="teams-directory-v2__count">
+          <strong data-team-count>—</strong>
+          <span>godkendte hold</span>
+        </div>
+      </div>
+
+      <div class="teams-directory-v2__status" data-teams-status>Indlæser hold...</div>
+      <div class="teams-directory-v2__list reveal" data-teams-list></div>
+    </div>
+  </section>
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© 2026 VCL — Viking Call of Duty League</span>
+    <div class="footer-links">
+      <a href="about.html">Kontakt</a>
+      <a href="regler.html">Regler</a>
+      
+    </div>
+    <span>Website concept by NOVEX</span>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabaseClient.js?v=2.1-live-broadcast-01"></script>
+<script src="assets/js/vclData.js?v=2.1-live-broadcast-01"></script>
+<script src="script.js?v=2.1-live-broadcast-01"></script>
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Forside — VCL</title>
+  <meta name="description" content="Viking Call of Duty League — dansk competitive Call of Duty, turneringer, teams og community.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2.1-live-broadcast-01">
+</head>
+<body class="theme-light-canvas home-page home-page--v2">
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand brand--logo-only" href="index.html" aria-label="VCL forside">
+      <img src="assets/vcl-logo-v2.png" alt="VCL logo">
+    </a>
+
+    <nav class="nav-links" aria-label="Primær navigation">
+      <a data-nav href="index.html">Forside</a>
+      <a data-nav href="turneringer.html">Turneringer</a>
+      <a data-nav href="registrer-hold.html">Registrer hold</a>
+      <a data-nav href="nyheder.html">Nyheder</a>
+      <a data-nav href="roster-market.html">Roster Market</a>
+      <a data-nav href="teams.html">Teams</a>
+      <a data-nav href="leaderboard.html">Leaderboard</a>
+      <a data-nav href="regler.html">Regler</a>
+      <a data-nav href="about.html">About</a>
+    </nav>
+
+    <div class="nav-actions">
+      <a class="btn btn-small btn-primary" href="login.html"><span>Login</span></a>
+
+      <button class="menu-toggle" data-menu-toggle aria-label="Åbn menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero-video home-hero">
+    <video class="hero-video__media" autoplay muted loop playsinline preload="metadata">
+      <source src="assets/vcl-hero.mp4" type="video/mp4">
+    </video>
+
+    <div class="hero-video__shade"></div>
+
+    <div class="container hero-video__content reveal">
+      <div class="home-hero__copy">
+        <span class="home-meta">Viking Call of Duty League</span>
+        <h1>Viking CoD League</h1>
+        <p class="hero-video__sub">Danish Competitive Call of Duty</p>
+        <p class="home-hero__lead">
+          Dansk Call of Duty-konkurrence samlet ét sted. Hold, turneringer,
+          rivaliseringer og vejen mod VCL Championship.
+        </p>
+
+        <div class="home-hero__actions">
+          <a href="turneringer.html" class="home-button home-button--primary">
+            Se turneringer <span aria-hidden="true">→</span>
+          </a>
+          <a href="#vcl-structure" class="home-button home-button--text">
+            Sådan fungerer VCL <span aria-hidden="true">↓</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <a class="home-hero__scroll" href="#championship" aria-label="Scroll til Championship">
+      <span>Scroll</span>
+      <i aria-hidden="true"></i>
+    </a>
+  </section>
+
+  <section class="champ-hero home-championship" id="championship">
+    <div class="container home-championship__layout reveal">
+      <div class="home-championship__copy">
+        <span class="home-meta">Championship</span>
+        <h2>Toppen af dansk COD.</h2>
+        <p>
+          VCL Championship er ligaens øverste scene, hvor de stærkeste danske
+          hold mødes om titlen. Adgang sker via invitation eller kvalifikation
+          gennem VCL-systemet.
+        </p>
+
+        <div class="home-championship__champions">
+          <span>Reigning Champions</span>
+          <strong>Dysteria</strong>
+          <small>2026</small>
+        </div>
+
+        <a class="home-text-link" href="championship.html">
+          Se Championship <span aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <a class="home-championship__visual" href="championship.html" aria-label="Se VCL Championship">
+        <img src="assets/champions-2026.jpg" alt="VCL Champions 2026 - Dysteria">
+        <span class="home-championship__image-label">VCL Champions · 2026</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="vcl-roadmap home-pathway" id="vcl-structure">
+    <div class="container">
+      <div class="home-section-intro reveal">
+        <span class="home-meta">Din vej gennem VCL</span>
+        <h2>Fra første kamp til toppen.</h2>
+        <p>
+          Tre konkurrenceniveauer med ét klart mål: at give hold en naturlig vej
+          fra deres første VCL-kampe til den øverste scene.
+        </p>
+      </div>
+
+      <div class="home-pathway__track reveal">
+        <a class="home-pathway__stage home-pathway__stage--academy" href="academy-cup.html">
+          <div class="home-pathway__topline">
+            <span class="home-pathway__number">01</span>
+            <span class="home-pathway__node" aria-hidden="true"></span>
+          </div>
+          <h3>Academy</h3>
+          <p>En balanceret introduktion til VCL for nye spillere og nye rosters.</p>
+          <span class="home-pathway__link">Se Academy <b aria-hidden="true">→</b></span>
+        </a>
+
+        <a class="home-pathway__stage home-pathway__stage--contender" href="contender-series.html">
+          <div class="home-pathway__topline">
+            <span class="home-pathway__number">02</span>
+            <span class="home-pathway__node" aria-hidden="true"></span>
+          </div>
+          <h3>Contender</h3>
+          <p>Åben konkurrence for hold, der vil bevise niveauet mod stærkere modstand.</p>
+          <span class="home-pathway__link">Se Contender <b aria-hidden="true">→</b></span>
+        </a>
+
+        <a class="home-pathway__stage home-pathway__stage--championship" href="championship.html">
+          <div class="home-pathway__topline">
+            <span class="home-pathway__number">03</span>
+            <span class="home-pathway__node" aria-hidden="true"></span>
+          </div>
+          <h3>Championship</h3>
+          <p>VCL's højeste niveau. Her bliver ligaens bedste hold og mestre fundet.</p>
+          <span class="home-pathway__link">Se Championship <b aria-hidden="true">→</b></span>
+        </a>
+      </div>
+
+      <div class="home-pathway__cta reveal">
+        <div>
+          <h3>Klar til at stille hold?</h3>
+          <p>Registrer holdet, få rosteren godkendt og kom ind i VCL-systemet.</p>
+        </div>
+        <a class="home-button home-button--primary" href="registrer-hold.html">
+          Registrer hold <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="latest-result latest-result--simple home-result">
+    <div class="container">
+      <div class="home-result__heading reveal">
+        <div>
+          <span class="home-meta">Seneste resultat</span>
+          <h2>Academy Cup</h2>
+        </div>
+        <span class="home-result__round">Grand Final</span>
+      </div>
+
+      <div class="home-scoreboard reveal">
+        <div class="home-scoreboard__team home-scoreboard__team--left">
+          <img src="assets/teams/frontline.png" alt="Frontline logo">
+          <strong>Frontline</strong>
+        </div>
+
+        <div class="home-scoreboard__score">
+          <span>3</span>
+          <i aria-hidden="true"></i>
+          <span class="home-scoreboard__loss">1</span>
+          <small>Winner · Frontline</small>
+        </div>
+
+        <div class="home-scoreboard__team home-scoreboard__team--right">
+          <div class="home-scoreboard__placeholder" aria-hidden="true">A</div>
+          <strong>Amigos</strong>
+        </div>
+      </div>
+
+      <div class="home-result__footer reveal">
+        <p>Frontline sikrede Academy Cup-titlen efter en 3-1 sejr i Grand Final.</p>
+        <a class="home-text-link" href="academy-cup.html">Se Academy Cup <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="recruit-section home-roster">
+    <div class="container">
+      <div class="home-roster__inner reveal">
+        <div class="home-roster__copy">
+          <span class="home-meta">Roster Market</span>
+          <h2>Find den manglende spiller.</h2>
+          <p>
+            Find Free Agents, roller og nye muligheder i VCL-communityet — uden
+            at forsiden skal bruge en hel skærm på at fortælle dig det.
+          </p>
+        </div>
+
+        <div class="home-roster__utility">
+          <div class="home-roster__signal">
+            <span>Free Agents</span>
+            <strong>Find spillere</strong>
+          </div>
+          <div class="home-roster__signal">
+            <span>Teams</span>
+            <strong>Byg dit roster</strong>
+          </div>
+          <a class="home-button home-button--primary" href="roster-market.html">
+            Åbn Roster Market <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-final-cta">
+    <div class="container home-final-cta__inner reveal">
+      <img src="assets/vcl-logo-v2.png" alt="" aria-hidden="true">
+      <h2>Klar til at konkurrere?</h2>
+      <p>Registrer jeres hold i VCL og bliv klar til kommende turneringer.</p>
+      <a class="home-button home-button--primary" href="registrer-hold.html">
+        Kom i gang <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© 2026 VCL — Viking Call of Duty League</span>
+    <span>Website concept by NOVEX</span>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabaseClient.js?v=2.1-live-broadcast-01"></script>
+<script src="assets/js/vclData.js?v=2.1-live-broadcast-01"></script>
+<script src="script.js?v=2.1-live-broadcast-01"></script>
+</body>
+</html>

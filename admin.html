@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin — VCL</title>
+  <meta name="description" content="VCL league operations dashboard til turneringer, hold, spillere og nyheder.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2.1-live-broadcast-01">
+</head>
+
+<body class="admin-page admin-v2 theme-light-canvas">
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand brand--logo-only" href="index.html" aria-label="VCL forside">
+      <img src="assets/vcl-logo-v2.png" alt="VCL logo">
+    </a>
+
+    <nav class="nav-links" aria-label="Primær navigation">
+      <a data-nav href="index.html">Forside</a>
+      <a data-nav href="turneringer.html">Turneringer</a>
+      <a data-nav href="registrer-hold.html">Registrer hold</a>
+      <a data-nav href="nyheder.html">Nyheder</a>
+      <a data-nav href="roster-market.html">Roster Market</a>
+      <a data-nav href="teams.html">Teams</a>
+      <a data-nav href="leaderboard.html">Leaderboard</a>
+      <a data-nav href="regler.html">Regler</a>
+      <a data-nav href="about.html">About</a>
+    </nav>
+
+    <div class="nav-actions">
+      <a class="btn btn-small btn-primary" href="account.html"><span>Account</span></a>
+      <button class="menu-toggle" data-menu-toggle aria-label="Åbn menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<main class="admin-main-v2">
+  <section class="admin-gate-v2">
+    <div class="container">
+      <div class="admin-access-v2" data-admin-loading>
+        <span>VCL Admin</span>
+        <strong>Kontrollerer adgang</strong>
+        <p>Vi henter din konto og bekræfter dine administratorrettigheder.</p>
+      </div>
+
+      <div class="admin-access-v2 admin-access-v2--denied" data-admin-denied hidden>
+        <span>Ingen adgang</span>
+        <strong>Du har ikke adminrettigheder</strong>
+        <p>Adminpanelet er kun tilgængeligt for godkendte VCL-administratorer.</p>
+        <a href="account.html">Tilbage til account <span aria-hidden="true">→</span></a>
+      </div>
+
+      <div data-admin-dashboard hidden>
+        <div class="admin-app-v2">
+          <aside class="admin-rail-v2">
+            <div class="admin-rail-v2__identity">
+              <span class="admin-rail-v2__mark">VCL</span>
+              <div>
+                <strong>League Ops</strong>
+                <small>Administrator</small>
+              </div>
+            </div>
+
+            <nav class="admin-nav-v2" aria-label="Admin navigation" data-admin-workspace-nav>
+              <a href="#admin-overview" data-admin-workspace-link data-label="Overblik">
+                <span>01</span><strong>Overblik</strong>
+              </a>
+              <a href="#admin-tournaments" data-admin-workspace-link data-label="Turneringer">
+                <span>02</span><strong>Turneringer</strong>
+              </a>
+              <a href="#admin-team-approvals" data-admin-workspace-link data-label="Hold">
+                <span>03</span><strong>Hold</strong>
+              </a>
+              <a href="#admin-unclaimed-profiles" data-admin-workspace-link data-label="Spillere">
+                <span>04</span><strong>Spillere</strong>
+              </a>
+              <a href="#admin-news" data-admin-workspace-link data-label="Nyheder">
+                <span>05</span><strong>Nyheder</strong>
+              </a>
+            </nav>
+
+            <div class="admin-rail-v2__footer">
+              <a href="index.html">Åbn VCL <span aria-hidden="true">↗</span></a>
+              <a href="account.html">Min account <span aria-hidden="true">→</span></a>
+            </div>
+          </aside>
+
+          <div class="admin-work-v2">
+            <header class="admin-topbar-v2">
+              <div>
+                <span>VCL League Operations</span>
+                <strong data-admin-current-view>Overblik</strong>
+              </div>
+              <div class="admin-topbar-v2__links">
+                <a href="turneringer.html">Offentlige turneringer</a>
+                <a href="index.html">Se hjemmesiden ↗</a>
+              </div>
+            </header>
+
+            <div class="admin-content-v2" data-admin-workspace-content>
+              <!-- OVERVIEW -->
+              <section class="admin-view-v2" id="admin-overview" data-admin-view data-admin-view-label="Overblik">
+                <header class="admin-heading-v2">
+                  <div>
+                    <span>League operations</span>
+                    <h1>Kontrolcenter</h1>
+                  </div>
+                  <div class="admin-heading-v2__aside">
+                    <strong>Admin adgang aktiv</strong>
+                    <p>Prioritér det, der kræver handling, og gå direkte til den relevante arbejdsgang.</p>
+                  </div>
+                </header>
+
+                <div class="admin-metrics-v2" aria-label="Admin status">
+                  <a href="#admin-team-approvals" data-admin-view-link>
+                    <span>Afventer hold</span>
+                    <strong data-admin-team-signups-count>0</strong>
+                    <small>Registreringer til review</small>
+                  </a>
+                  <a href="#admin-tournaments" data-admin-view-link>
+                    <span>Turneringer</span>
+                    <strong data-admin-tournament-count>0</strong>
+                    <small><b data-admin-active-tournament-count>0</b> åbne eller aktive</small>
+                  </a>
+                  <a href="#admin-news" data-admin-view-link>
+                    <span>Nyheder</span>
+                    <strong data-admin-news-count>0</strong>
+                    <small>Oprettede opslag</small>
+                  </a>
+                  <a href="#admin-unclaimed-profiles" data-admin-view-link>
+                    <span>Unclaimed</span>
+                    <strong data-admin-unclaimed-count>0</strong>
+                    <small>Spillerprofiler uden konto</small>
+                  </a>
+                </div>
+
+                <div class="admin-overview-v2">
+                  <section class="admin-priority-v2">
+                    <div class="admin-section-title-v2">
+                      <span>Kræver handling</span>
+                      <h2>Operations queue</h2>
+                    </div>
+
+                    <div class="admin-task-list-v2">
+                      <a href="#admin-team-approvals" data-admin-view-link>
+                        <div>
+                          <span>Hold</span>
+                          <strong>Gennemgå registreringer</strong>
+                          <p>Godkend eller afvis nye hold, før de bliver aktive på VCL.</p>
+                        </div>
+                        <b data-admin-team-signups-count-display>Åbn</b>
+                      </a>
+                      <a href="#admin-unclaimed-profiles" data-admin-view-link>
+                        <div>
+                          <span>Spillere</span>
+                          <strong>Håndtér profile claims</strong>
+                          <p>Find profiler uden konto og opret sikre claim-links.</p>
+                        </div>
+                        <b>Åbn →</b>
+                      </a>
+                      <a href="#admin-tournaments" data-admin-view-link>
+                        <div>
+                          <span>Turneringer</span>
+                          <strong>Turneringsdrift</strong>
+                          <p>Entries, seeds, bracket, kampe, streams og pointafregning.</p>
+                        </div>
+                        <b>Åbn →</b>
+                      </a>
+                    </div>
+                  </section>
+
+                  <aside class="admin-shortcuts-v2">
+                    <div class="admin-section-title-v2">
+                      <span>Genveje</span>
+                      <h2>Start en opgave</h2>
+                    </div>
+                    <a href="#admin-tournaments" data-admin-view-link><span>Turnering</span><strong>Opret eller redigér →</strong></a>
+                    <a href="#admin-news" data-admin-view-link><span>Nyheder</span><strong>Publicér update →</strong></a>
+                    <a href="#admin-team-approvals" data-admin-view-link><span>Hold</span><strong>Åbn approvals →</strong></a>
+                    <a href="account.html"><span>Konto</span><strong>Min account →</strong></a>
+                  </aside>
+                </div>
+              </section>
+
+              <!-- TOURNAMENTS -->
+              <section class="admin-view-v2" id="admin-tournaments" data-admin-view data-admin-view-label="Turneringer" hidden>
+                <header class="admin-heading-v2 admin-heading-v2--compact">
+                  <div>
+                    <span>Tournament operations</span>
+                    <h1>Turneringer</h1>
+                  </div>
+                  <p>Opret eventet, administrér deltagerlisten og kør bracketen fra ét samlet workspace.</p>
+                </header>
+
+                <div class="admin-tournament-layout admin-tournament-layout-v2">
+                  <section class="admin-editor-v2">
+                    <div class="admin-section-title-v2">
+                      <span>Opsætning</span>
+                      <h2>Turneringsdata</h2>
+                      <p>Opret en ny turnering eller vælg Redigér på en eksisterende.</p>
+                    </div>
+
+                    <form class="admin-form-v2 admin-tournament-form" data-admin-tournament-form>
+                      <input name="tournament_id" type="hidden">
+                      <div class="admin-form-grid-v2">
+                        <label><span>Navn</span><input name="name" placeholder="Fx Contender Series August" required type="text"></label>
+                        <label><span>Slug</span><input name="slug" placeholder="contender-august-2026" required type="text"></label>
+                      </div>
+                      <div class="admin-form-grid-v2">
+                        <label><span>Serie</span><select name="series_slug" required><option value="academy">Academy Cup</option><option value="contender">Contender Series</option><option value="championship">Championship</option><option value="community">Community</option></select></label>
+                        <label><span>Status</span><select name="status" required><option value="draft">Draft</option><option value="open">Åben tilmelding</option><option value="checkin">Check-in</option><option value="live">Live</option><option value="completed">Afsluttet</option><option value="archived">Arkiveret</option></select></label>
+                      </div>
+                      <div class="admin-form-grid-v2">
+                        <label><span>Starttidspunkt</span><input name="starts_at" type="datetime-local"></label>
+                        <label><span>Tilmeldingsfrist</span><input name="signup_closes_at" type="datetime-local"></label>
+                      </div>
+                      <div class="admin-form-grid-v2">
+                        <label><span>Check-in åbner</span><input name="checkin_opens_at" type="datetime-local"></label>
+                        <label><span>Check-in lukker</span><input name="checkin_closes_at" type="datetime-local"></label>
+                      </div>
+                      <div class="admin-form-grid-v2">
+                        <label><span>Maks. hold</span><input max="64" min="2" name="max_teams" required type="number" value="16"></label>
+                        <label><span>Map-rækkefølge</span><input name="map_order" type="text" value="HP · SND · OL · HP · SND"></label>
+                      </div>
+                      <label><span>Beskrivelse</span><textarea name="description" placeholder="Kort offentlig beskrivelse af turneringen." rows="4"></textarea></label>
+                      <label><span>Regellink</span><input name="rules_url" placeholder="Valgfrit — ellers bruges regler.html" type="url"></label>
+                      <div class="admin-tournament-form__actions admin-form-actions-v2">
+                        <button type="submit">Gem turnering</button>
+                        <button data-admin-tournament-reset type="button">Nulstil</button>
+                      </div>
+                      <p class="notice" data-admin-tournament-status></p>
+                    </form>
+                  </section>
+
+                  <section class="admin-index-v2">
+                    <div class="admin-section-title-v2">
+                      <span>Event register</span>
+                      <h2>Turneringer</h2>
+                      <p>Vælg Redigér for opsætning eller Administrer for live drift.</p>
+                    </div>
+                    <div class="admin-tournament-list" data-admin-tournament-list>
+                      <article><span>Henter</span><strong>Henter turneringer</strong><p>Turneringerne bliver hentet fra Supabase.</p></article>
+                    </div>
+                  </section>
+                </div>
+
+                <section class="admin-tournament-manager admin-manager-v2" data-admin-tournament-manager hidden>
+                  <div class="admin-tournament-manager__head">
+                    <div><span>Live workspace</span><h2 data-admin-managed-tournament-name>Turnering</h2><p data-admin-managed-tournament-meta></p></div>
+                    <div class="admin-tournament-manager__actions"><a data-admin-open-tournament href="turnering.html" rel="noopener" target="_blank">Åbn offentlig side ↗</a><button data-admin-generate-bracket type="button">Generér bracket</button></div>
+                  </div>
+                  <p class="notice" data-admin-tournament-manager-status></p>
+
+                  <section class="admin-live-broadcast-v2" aria-label="Livestream">
+                    <div>
+                      <span>Live broadcast</span>
+                      <h3>Livestream</h3>
+                      <p>Linket bruges på turneringssiden og i LIVE-bjælken, når turneringen har status Live.</p>
+                    </div>
+                    <div class="admin-live-broadcast-v2__controls">
+                      <input type="url" placeholder="https://twitch.tv/... eller YouTube-link" data-admin-tournament-stream-url>
+                      <button type="button" data-admin-save-tournament-stream>Gem stream</button>
+                      <a href="#" target="_blank" rel="noopener" data-admin-open-tournament-stream hidden>Åbn stream ↗</a>
+                    </div>
+                    <p class="notice" data-admin-tournament-stream-status></p>
+                  </section>
+
+                  <div class="admin-tournament-manager__grid">
+                    <section><div class="admin-subhead-v2"><span>Deltagere</span><h3>Tilmeldinger & seeds</h3></div><div class="admin-tournament-entry-list" data-admin-tournament-entries><p>Vælg en turnering for at hente hold.</p></div></section>
+                    <section><div class="admin-subhead-v2"><span>Bracket</span><h3>Kampe & streams</h3></div><div class="admin-tournament-match-list" data-admin-tournament-matches><p>Generér bracketen, når deltagerlisten er klar.</p></div></section>
+                  </div>
+
+                  <section class="admin-tournament-settlement" data-admin-tournament-settlement>
+                    <div class="admin-tournament-settlement__head">
+                      <div><span>Afslut turnering</span><h3>Placeringer & VCL Points</h3><p>Kontrollér resultatet, før point skrives permanent til leaderboardet.</p></div>
+                      <button type="button" data-admin-refresh-settlement>Beregn preview</button>
+                    </div>
+                    <div class="admin-tournament-settlement__body" data-admin-settlement-preview><div class="tournament-empty-state"><strong>Afventer kampresultater</strong><p>Previewet bliver klar, når finalen og alle nødvendige kampe har en vinder.</p></div></div>
+                    <div class="admin-tournament-settlement__footer"><p class="notice" data-admin-settlement-status></p><button class="admin-tournament-settlement__confirm" type="button" data-admin-finalize-tournament disabled>Afslut turnering og uddel points</button></div>
+                  </section>
+                </section>
+              </section>
+
+              <!-- TEAMS -->
+              <section class="admin-view-v2" id="admin-team-approvals" data-admin-view data-admin-view-label="Hold" hidden>
+                <header class="admin-heading-v2 admin-heading-v2--compact">
+                  <div><span>Team operations</span><h1>Hold</h1></div>
+                  <p>Gennemgå registreringer, godkend nye VCL-hold og håndtér claim-links til den godkendte roster.</p>
+                </header>
+
+                <div class="admin-toolbar-v2">
+                  <div class="admin-status-filters" role="group" aria-label="Filtrer holdregistreringer">
+                    <button class="active" data-admin-signup-filter="pending" type="button">Afventer</button>
+                    <button data-admin-signup-filter="approved" type="button">Godkendt</button>
+                    <button data-admin-signup-filter="rejected" type="button">Afvist</button>
+                    <button data-admin-signup-filter="all" type="button">Alle</button>
+                  </div>
+                  <span data-admin-team-signups-history-count>Viser afventende registreringer</span>
+                </div>
+
+                <div class="admin-list admin-record-list-v2" data-admin-team-signups-list>
+                  <article><span>Henter</span><strong>Henter holdregistreringer</strong><p>Registreringer bliver hentet fra Supabase.</p></article>
+                </div>
+              </section>
+
+              <!-- PLAYERS -->
+              <section class="admin-view-v2" id="admin-unclaimed-profiles" data-admin-view data-admin-view-label="Spillere" hidden>
+                <header class="admin-heading-v2 admin-heading-v2--compact">
+                  <div><span>Player operations</span><h1>Spillere</h1></div>
+                  <p>Moderér nye profilbilleder og administrér claim-links til VCL-profiler uden konto.</p>
+                </header>
+
+                <section class="admin-avatar-queue-v1" data-admin-avatar-queue>
+                  <div class="admin-avatar-queue-v1__heading">
+                    <div><span>Moderation</span><h2>Profilbilleder</h2></div>
+                    <p>Nye spilleravatars bliver aldrig offentlige automatisk. Godkend eller afvis dem her.</p>
+                  </div>
+                  <div data-admin-avatar-list>
+                    <article><span>Henter</span><strong>Henter profilbilleder</strong><p>Afventer data fra Supabase.</p></article>
+                  </div>
+                </section>
+
+                <div class="admin-search-bar admin-search-v2">
+                  <input autocomplete="off" data-admin-unclaimed-search placeholder="Søg spiller, hold, rolle eller slug…" type="search">
+                  <span data-admin-unclaimed-search-count>Alle unclaimed profiler</span>
+                </div>
+
+                <div class="admin-list admin-record-list-v2" data-admin-unclaimed-list>
+                  <article><span>Henter</span><strong>Henter spillerprofiler</strong><p>Profilerne bliver hentet fra Supabase.</p></article>
+                </div>
+              </section>
+
+              <!-- NEWS -->
+              <section class="admin-view-v2" id="admin-news" data-admin-view data-admin-view-label="Nyheder" hidden>
+                <header class="admin-heading-v2 admin-heading-v2--compact">
+                  <div><span>Editorial operations</span><h1>Nyheder</h1></div>
+                  <p>Publicér officielle VCL-opdateringer og administrér eksisterende historier i det samme workspace.</p>
+                </header>
+
+                <div class="admin-news-layout-v2">
+                  <section class="admin-editor-v2">
+                    <div class="admin-section-title-v2"><span>Composer</span><h2>Ny historie</h2><p>Skriv teaser og hele opslaget. Previewet på Nyheder bruger teaser eller starten af brødteksten.</p></div>
+                    <form class="admin-form-v2 admin-news-form" data-admin-news-form>
+                      <label><span>Titel</span><input name="title" placeholder="Fx Contender Series åbner snart" required type="text"></label>
+                      <label><span>Kort teaser</span><textarea name="excerpt" placeholder="Valgfrit — ellers bruges starten af opslaget" rows="3"></textarea></label>
+                      <label><span>Indhold</span><textarea name="body" placeholder="Skriv hele VCL-opslaget her" required rows="9"></textarea></label>
+                      <div class="admin-form-grid-v2">
+                        <label><span>Kategori</span><select name="category"><option value="Announcement">Announcement</option><option value="Tournament">Tournament</option><option value="Roster">Roster</option><option value="Update">Update</option><option value="Community">Community</option></select></label>
+                        <label><span>Status</span><select name="status"><option value="published">Published</option><option value="draft">Draft</option><option value="archived">Archived</option></select></label>
+                      </div>
+                      <label class="admin-check-v2"><input name="is_pinned" type="checkbox"><span>Featured øverst på Nyheder</span></label>
+                      <div class="admin-form-actions-v2"><button type="submit">Publicér nyhed</button></div>
+                      <p class="notice" data-admin-news-status></p>
+                    </form>
+                  </section>
+
+                  <section class="admin-index-v2 admin-news-index-v2">
+                    <div class="admin-section-title-v2"><span>News register</span><h2>Publiceret indhold</h2><p>Redigér, pin, arkivér eller fjern eksisterende opslag.</p></div>
+                    <div class="admin-list admin-record-list-v2" data-admin-news-list>
+                      <article><span>Henter</span><strong>Henter nyheder</strong><p>Nyheder bliver hentet fra Supabase.</p></article>
+                    </div>
+                  </section>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="admin-delete-dialog" data-admin-delete-tournament-dialog hidden>
+  <button aria-label="Luk" class="admin-delete-dialog__backdrop" data-admin-delete-tournament-cancel type="button"></button>
+  <section aria-labelledby="admin-delete-tournament-title" aria-modal="true" class="admin-delete-dialog__panel" role="dialog">
+    <span>Permanent handling</span>
+    <h2 id="admin-delete-tournament-title">Slet turnering?</h2>
+    <p><strong data-admin-delete-tournament-name>Turneringen</strong> fjernes sammen med bracket, kampe og turneringsentries. Handlingen kan ikke fortrydes.</p>
+    <div class="admin-delete-dialog__actions"><button data-admin-delete-tournament-cancel type="button">Behold turnering</button><button class="admin-delete-dialog__confirm" data-admin-delete-tournament-confirm type="button">Slet turnering</button></div>
+    <p aria-live="polite" class="notice" data-admin-delete-tournament-status></p>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabaseClient.js?v=2.1-live-broadcast-01"></script>
+<script src="assets/js/vclData.js?v=2.1-live-broadcast-01"></script>
+<script src="script.js?v=2.1-live-broadcast-01"></script>
+<script src="assets/js/adminWorkspace.js?v=2.1-live-broadcast-01"></script>
+</body>
+</html>

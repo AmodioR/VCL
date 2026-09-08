@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Roster Market — VCL</title>
+  <meta name="description" content="Find aktive Free Agents i Viking Call of Duty League.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2.1-mobile-polish-01">
+</head>
+
+<body class="theme-light-canvas roster-market-page roster-market-page--v2">
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand brand--logo-only" href="index.html" aria-label="VCL forside">
+      <img src="assets/vcl-logo-v2.png" alt="VCL logo">
+    </a>
+
+    <nav class="nav-links" aria-label="Primær navigation">
+      <a data-nav href="index.html">Forside</a>
+      <a data-nav href="turneringer.html">Turneringer</a>
+      <a data-nav href="registrer-hold.html">Registrer hold</a>
+      <a data-nav href="nyheder.html">Nyheder</a>
+      <a data-nav href="roster-market.html">Roster Market</a>
+      <a data-nav href="teams.html">Teams</a>
+      <a data-nav href="leaderboard.html">Leaderboard</a>
+      <a data-nav href="regler.html">Regler</a>
+      <a data-nav href="about.html">About</a>
+    </nav>
+
+    <div class="nav-actions">
+      <a class="btn btn-small btn-primary" href="login.html">
+        <span>Login</span>
+      </a>
+
+      <button class="menu-toggle" data-menu-toggle aria-label="Åbn menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="roster-market-main-v2">
+  <section class="roster-hero-v2">
+    <div class="container roster-hero-v2__inner reveal">
+      <div class="roster-hero-v2__copy">
+        <h1>Roster Market</h1>
+        <p>
+          Find spillere, der aktivt søger et VCL-hold. Se rolle og niveau,
+          åbn spillerprofilen og invitér direkte, hvis du er captain.
+        </p>
+      </div>
+
+      <a class="roster-action-v2" href="account.html">
+        Administrér Free Agent-profil <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="roster-directory-v2">
+    <div class="container">
+      <header class="roster-directory-v2__head reveal">
+        <div>
+          <h2>Spillere der søger hold</h2>
+          <p>Kun spillere, der selv har slået Free Agent-status til, vises på markedet.</p>
+        </div>
+
+        <div class="roster-directory-v2__count" aria-live="polite">
+          <strong data-free-agent-count>—</strong>
+          <span>Free Agents</span>
+        </div>
+      </header>
+
+      <div class="roster-directory-v2__hint reveal">
+        <span class="roster-directory-v2__signal" aria-hidden="true"></span>
+        <p><strong>Captain?</strong> Når du er logget ind som captain, kan du invitere spillere direkte fra listen.</p>
+      </div>
+
+      <div class="market-player-list market-player-list--v2 reveal" data-live-free-agents aria-live="polite">
+        <div class="market-player-state market-player-state--v2">
+          <div>
+            <h3>Henter Free Agents</h3>
+            <p>Spilleroversigten bliver hentet fra VCL.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© 2026 VCL — Viking Call of Duty League</span>
+    <div class="footer-links">
+      <a href="about.html">Kontakt</a>
+      <a href="regler.html">Regler</a>
+      
+    </div>
+    <span>Website concept by NOVEX</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabaseClient.js?v=2.1-mobile-polish-01"></script>
+<script src="assets/js/vclData.js?v=2.1-mobile-polish-01"></script>
+<script src="script.js?v=2.1-mobile-polish-01"></script>
+</body>
+</html>

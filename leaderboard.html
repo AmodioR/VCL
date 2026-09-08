@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leaderboard — VCL</title>
+  <meta name="description" content="VCL leaderboard med officielle VCL Points og turneringssejre.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2.1-mobile-polish-01">
+</head>
+<body class="theme-light-canvas leaderboard-shell--v2">
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand brand--logo-only" href="index.html" aria-label="VCL forside">
+      <img src="assets/vcl-logo-v2.png" alt="VCL logo">
+    </a>
+
+    <nav class="nav-links" aria-label="Primær navigation">
+      <a data-nav href="index.html">Forside</a>
+      <a data-nav href="turneringer.html">Turneringer</a>
+      <a data-nav href="registrer-hold.html">Registrer hold</a>
+      <a data-nav href="nyheder.html">Nyheder</a>
+      <a data-nav href="roster-market.html">Roster Market</a>
+      <a data-nav href="teams.html">Teams</a>
+      <a data-nav href="leaderboard.html">Leaderboard</a>
+      <a data-nav href="regler.html">Regler</a>
+      <a data-nav href="about.html">About</a>
+    </nav>
+
+    <div class="nav-actions">
+      <a class="btn btn-small btn-primary" href="login.html"><span>Login</span></a>
+
+      <button class="menu-toggle" data-menu-toggle aria-label="Åbn menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main data-leaderboard-page class="leaderboard-page-v2">
+  <section class="leaderboard-hero-v2">
+    <div class="container leaderboard-hero-v2__inner reveal">
+      <div>
+        <h1>LEADERBOARD</h1>
+        <p>Den officielle VCL-rangliste. Følg spillerne gennem sæsonen og se, hvem der fører på VCL Points og resultater fra ligaens turneringer.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="leaderboard-directory-v2">
+    <div class="container">
+      <div class="leaderboard-directory-v2__head reveal">
+        <div>
+          <span class="leaderboard-directory-v2__eyebrow">VCL RANGLISTE</span>
+          <h2>Spillerrangering</h2>
+        </div>
+
+        <div class="leaderboard-directory-v2__summary">
+          <div class="leaderboard-directory-v2__count">
+            <strong data-leaderboard-count>—</strong>
+            <span>rankede spillere</span>
+          </div>
+
+          <div class="leaderboard-directory-v2__leader">
+            <span>Førende spiller</span>
+            <strong data-top-player>—</strong>
+            <small data-top-player-meta>Henter rangliste...</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="leaderboard-tools-v2 reveal">
+        <label class="leaderboard-search-v2">
+          <span class="sr-only">Søg efter spiller eller hold</span>
+          <input type="search" placeholder="Søg efter spiller eller hold..." data-leaderboard-search>
+          <span aria-hidden="true">SØG</span>
+        </label>
+      </div>
+
+      <div class="leaderboard-board-v2 reveal">
+        <div class="leaderboard-table__head leaderboard-table__head--series leaderboard-table__head--v2 desktop-only">
+          <span>Rank</span>
+          <span>Spiller</span>
+          <span>Hold</span>
+          <span>VCL Points</span>
+          <span>Championship</span>
+          <span>Contender</span>
+          <span>Academy</span>
+        </div>
+
+        <div class="leaderboard-table__body leaderboard-table__body--v2" data-leaderboard-list>
+          <div class="leaderboard-loading leaderboard-state-v2">
+            <strong>Indlæser leaderboard...</strong>
+            <span>Henter VCL-ranglisten</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="points-system-v2">
+    <div class="container points-system-v2__inner reveal">
+      <div class="points-system-v2__intro">
+        <span>VCL POINTS</span>
+        <h2>Sådan optjenes point</h2>
+        <p>VCL Points gives ud fra placeringer i turneringer. Større formater og bedre placeringer giver flere point til den enkelte spiller.</p>
+      </div>
+
+      <div class="points-system-v2__table" aria-label="VCL Points oversigt">
+        <div class="points-system-v2__row points-system-v2__row--head">
+          <span>Format</span>
+          <span>1. plads</span>
+          <span>2. plads</span>
+          <span>3. plads</span>
+        </div>
+        <div class="points-system-v2__row">
+          <strong>4v4</strong>
+          <span>200 VP</span>
+          <span>125 VP</span>
+          <span>100 VP</span>
+        </div>
+        <div class="points-system-v2__row">
+          <strong>3v3</strong>
+          <span>150 VP</span>
+          <span>95 VP</span>
+          <span>75 VP</span>
+        </div>
+        <div class="points-system-v2__row">
+          <strong>2v2</strong>
+          <span>100 VP</span>
+          <span>60 VP</span>
+          <span>50 VP</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© 2026 VCL — Viking Call of Duty League</span>
+    <div class="footer-links">
+      <a href="about.html">Kontakt</a>
+      <a href="regler.html">Regler</a>
+      
+    </div>
+    <span>Website concept by NOVEX</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabaseClient.js?v=2.1-mobile-polish-01"></script>
+<script src="assets/js/vclData.js?v=2.1-mobile-polish-01"></script>
+<script src="script.js?v=2.1-mobile-polish-01"></script>
+</body>
+</html>

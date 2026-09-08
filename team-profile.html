@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Holdprofil — VCL</title>
+  <meta name="description" content="Offentlig VCL holdprofil med roster, niveau og officielle resultater.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2.1-live-broadcast-01">
+</head>
+
+<body class="theme-light-canvas team-profile-shell-v3">
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand brand--logo-only" href="index.html" aria-label="VCL forside">
+      <img src="assets/vcl-logo-v2.png" alt="VCL logo">
+    </a>
+
+    <nav class="nav-links" aria-label="Primær navigation">
+      <a data-nav href="index.html">Forside</a>
+      <a data-nav href="turneringer.html">Turneringer</a>
+      <a data-nav href="registrer-hold.html">Registrer hold</a>
+      <a data-nav href="nyheder.html">Nyheder</a>
+      <a data-nav href="roster-market.html">Roster Market</a>
+      <a data-nav href="teams.html">Teams</a>
+      <a data-nav href="leaderboard.html">Leaderboard</a>
+      <a data-nav href="regler.html">Regler</a>
+      <a data-nav href="about.html">About</a>
+    </nav>
+
+    <div class="nav-actions">
+      <a class="btn btn-small btn-primary" href="login.html"><span>Login</span></a>
+      <button class="menu-toggle" data-menu-toggle aria-label="Åbn menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="team-profile-v3" data-team-profile-page>
+  <section class="team-profile-hero-v3">
+    <div class="container team-profile-hero-v3__inner reveal">
+      <div class="team-profile-hero-v3__identity">
+        <div class="team-profile-logo-v3">
+          <img data-team-profile-logo src="assets/teams/default-team.png" alt="Holdlogo">
+        </div>
+
+        <div class="team-profile-hero-v3__copy">
+          <div class="team-profile-hero-v3__meta">
+            <span>VCL TEAM</span>
+            <strong data-team-profile-tier>Loader...</strong>
+            <b data-side-team-status>—</b>
+          </div>
+
+          <h1 data-team-profile-name>Loader hold...</h1>
+          <p class="team-profile-hero-v3__tagline" data-team-profile-tagline>Henter holdets profil.</p>
+          <p class="team-profile-hero-v3__description" data-team-profile-description>Henter holdinformation fra VCL.</p>
+
+          <div class="team-profile-hero-v3__actions">
+            <a href="teams.html">Alle hold <span aria-hidden="true">→</span></a>
+            <a href="roster-market.html">Roster Market <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </div>
+
+      <aside class="team-profile-captain-v3" aria-label="Holdets captain">
+        <span>Captain</span>
+        <strong data-side-team-captain>—</strong>
+        <p>Holdets primære VCL-kontakt og ansvarlige for rosteren.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="team-profile-performance-v3" aria-label="Holdoversigt">
+    <div class="container team-profile-performance-v3__grid reveal">
+      <div class="team-profile-performance-v3__item">
+        <span>Serie</span>
+        <strong data-side-team-tier>—</strong>
+        <small>Aktuelt niveau</small>
+      </div>
+
+      <div class="team-profile-performance-v3__item">
+        <span>Aktiv roster</span>
+        <strong data-team-profile-roster-count>—</strong>
+        <small>Registrerede spillere</small>
+      </div>
+
+      <div class="team-profile-performance-v3__item">
+        <span>Resultater</span>
+        <strong data-team-profile-achievement-count>0</strong>
+        <small>Officielle VCL-events</small>
+      </div>
+
+      <div class="team-profile-performance-v3__item">
+        <span>Sejre</span>
+        <strong data-team-profile-win-count>0</strong>
+        <small>Førstepladser</small>
+      </div>
+    </div>
+  </section>
+
+  <section class="team-profile-roster-v3">
+    <div class="container">
+      <header class="team-profile-section-head-v3 reveal">
+        <div>
+          <span>Aktiv roster</span>
+          <h2>Lineup</h2>
+        </div>
+        <p>Holdets aktuelle startopstilling, captain og eventuelle substitutes.</p>
+      </header>
+
+      <div class="team-profile-roster-v3__grid reveal" data-public-team-roster>
+        <div class="team-profile-empty-v3">
+          <strong>Henter roster</strong>
+          <p>Spillerne bliver hentet fra VCL-databasen.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="team-profile-results-v3">
+    <div class="container">
+      <header class="team-profile-section-head-v3 team-profile-section-head-v3--results reveal">
+        <div>
+          <span>VCL history</span>
+          <h2>Resultater og trofæer</h2>
+        </div>
+        <p>Officielle placeringer med det roster, der repræsenterede holdet ved eventet.</p>
+      </header>
+
+      <div class="team-profile-results-v3__list reveal" data-public-team-achievements>
+        <div class="team-profile-empty-v3">
+          <strong>Henter resultater</strong>
+          <p>Placeringer og historiske rosters bliver hentet fra VCL-databasen.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© 2026 VCL — Viking Call of Duty League</span>
+    <div class="footer-links">
+      <a href="about.html">Kontakt</a>
+      <a href="regler.html">Regler</a>
+      
+    </div>
+    <span>Website concept by NOVEX</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabaseClient.js?v=2.1-live-broadcast-01"></script>
+<script src="assets/js/vclData.js?v=2.1-live-broadcast-01"></script>
+<script src="script.js?v=2.1-live-broadcast-01"></script>
+</body>
+</html>

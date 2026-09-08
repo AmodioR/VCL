@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Turneringer — VCL</title>
+  <meta name="description" content="Følg kommende, aktive og afsluttede VCL-turneringer.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2.1-live-broadcast-01">
+</head>
+<body class="theme-light-canvas tournaments-page--v2">
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand brand--logo-only" href="index.html" aria-label="VCL forside">
+      <img src="assets/vcl-logo-v2.png" alt="VCL logo">
+    </a>
+    <nav class="nav-links" aria-label="Primær navigation">
+      <a data-nav href="index.html">Forside</a>
+      <a data-nav href="turneringer.html">Turneringer</a>
+      <a data-nav href="registrer-hold.html">Registrer hold</a>
+      <a data-nav href="nyheder.html">Nyheder</a>
+      <a data-nav href="roster-market.html">Roster Market</a>
+      <a data-nav href="teams.html">Teams</a>
+      <a data-nav href="leaderboard.html">Leaderboard</a>
+      <a data-nav href="regler.html">Regler</a>
+      <a data-nav href="about.html">About</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn btn-small btn-primary" href="login.html"><span>Login</span></a>
+      <button class="menu-toggle" data-menu-toggle aria-label="Åbn menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="tournaments-page tournaments-page-v2" data-tournaments-page>
+  <section class="tournaments-hero-v2">
+    <div class="container tournaments-hero-v2__inner reveal">
+      <div class="tournaments-hero-v2__copy">
+        <h1>Turneringer</h1>
+        <p>
+          Find din næste VCL-turnering, følg konkurrencen live og gå tilbage i tidligere resultater. Alt fra Academy til Championship samlet ét sted.
+        </p>
+      </div>
+      <a class="tournament-action-v2 tournament-action-v2--primary" href="registrer-hold.html">
+        Registrer hold <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="tournament-hub-v2">
+    <div class="container">
+      <div class="tournament-list-v2" data-tournament-list>
+        <div class="tournament-empty-v2 tournament-empty-v2--loading" role="status">
+          <p>Henter de seneste turneringer…</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© 2026 VCL — Viking Call of Duty League</span>
+    <div class="footer-links">
+      <a href="about.html">Kontakt</a>
+      <a href="regler.html">Regler</a>
+      
+    </div>
+    <span>Website concept by NOVEX</span>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabaseClient.js?v=2.1-live-broadcast-01"></script>
+<script src="assets/js/vclData.js?v=2.1-live-broadcast-01"></script>
+<script src="script.js?v=2.1-live-broadcast-01"></script>
+</body>
+</html>

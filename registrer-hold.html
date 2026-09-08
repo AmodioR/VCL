@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Registrer hold — VCL</title>
+  <meta name="description" content="Registrer dit hold på VCL og få rosteren godkendt til competitive play.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2.1-flex-roster-01">
+  <link rel="stylesheet" href="assets/css/signup-player-linking.css?v=2.1-flex-roster-01">
+</head>
+<body class="theme-light-canvas signup-page--v2 team-registration-page--v3 team-registration-page--v4">
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand brand--logo-only" href="index.html" aria-label="VCL forside">
+      <img src="assets/vcl-logo-v2.png" alt="VCL logo">
+    </a>
+    <nav class="nav-links" aria-label="Primær navigation">
+      <a data-nav href="index.html">Forside</a>
+      <a data-nav href="turneringer.html">Turneringer</a>
+      <a data-nav href="registrer-hold.html">Registrer hold</a>
+      <a data-nav href="nyheder.html">Nyheder</a>
+      <a data-nav href="roster-market.html">Roster Market</a>
+      <a data-nav href="teams.html">Teams</a>
+      <a data-nav href="leaderboard.html">Leaderboard</a>
+      <a data-nav href="regler.html">Regler</a>
+      <a data-nav href="about.html">About</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn btn-small btn-primary" href="login.html"><span>Login</span></a>
+      <button class="menu-toggle" data-menu-toggle aria-label="Åbn menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="registration-page registration-page-v2" data-signup-page>
+  <section class="registration-hero-v2">
+    <div class="container registration-hero-v2__inner reveal">
+      <div>
+        <h1>Registrer hold</h1>
+        <p>Få jeres hold oprettet i VCL, få rosteren godkendt og bliv vurderet til de konkurrencer, der passer til jeres niveau.</p>
+        <div class="registration-purpose-v3">
+          <strong>Holdregistrering er ikke turneringstilmelding.</strong>
+          <span>Når holdet er godkendt, tilmelder captain jer direkte på den enkelte turneringsside.</span>
+        </div>
+      </div>
+      <a href="teams.html">Se VCL-hold <span aria-hidden="true">→</span></a>
+    </div>
+  </section>
+
+  <section class="registration-workspace-v2">
+    <div class="container registration-shell-v2">
+      <form class="vcl-signup-form registration-form-v2" data-netlify="true" method="POST" name="vcl-signup">
+        <input name="form-name" type="hidden" value="vcl-signup">
+
+        <div class="registration-progress-v2" data-signup-progress>
+          <div class="registration-progress-v2__item is-active" data-progress-step="1">
+            <span>01</span><strong>Hold</strong>
+          </div>
+          <div class="registration-progress-v2__item" data-progress-step="2">
+            <span>02</span><strong>Roster</strong>
+          </div>
+          <div class="registration-progress-v2__item" data-progress-step="3">
+            <span>03</span><strong>Bekræft</strong>
+          </div>
+        </div>
+
+        <section class="registration-step-v2" data-signup-step="1" id="registration-team">
+          <header class="registration-step-v2__head">
+            <span class="registration-step-v2__number">01</span>
+            <div>
+              <h2>Hold og captain</h2>
+              <p>Fortæl os hvem I er. Captain bliver VCL's kontaktperson og får mulighed for at tilmelde holdet til relevante events efter godkendelse.</p>
+            </div>
+          </header>
+
+          <div class="registration-team-v2">
+            <section class="registration-form-section-v2">
+              <h3>Hold</h3>
+              <div class="registration-fields-v2">
+                <label>
+                  <span>Holdnavn</span>
+                  <input autocomplete="organization" name="team_name" placeholder="Fx Frontline" required type="text">
+                </label>
+                <label>
+                  <span>Niveau</span>
+                  <select name="team_level" required>
+                    <option value="">Vælg niveau</option>
+                    <option value="Academy">Academy</option>
+                    <option value="Contender">Contender</option>
+                    <option value="Championship">Championship</option>
+                  </select>
+                  <em class="registration-field-help-v2">VCL vurderer niveauet endeligt ved godkendelsen.</em>
+                </label>
+                <label class="registration-file-field-v2 registration-file-field-v2--wide">
+                  <span>Holdlogo <small>valgfrit</small></span>
+                  <input accept="image/png,image/jpeg,image/webp" name="team_logo" type="file">
+                  <em>PNG, JPG eller WEBP · maks. 2 MB</em>
+                </label>
+              </div>
+            </section>
+
+            <section class="registration-form-section-v2 registration-form-section-v2--captain">
+              <h3>Captain</h3>
+              <input name="captain_player_id" type="hidden">
+              <div class="registration-linked-captain" data-linked-captain hidden>
+                <span aria-hidden="true" class="registration-linked-captain__mark">✓</span>
+                <span>
+                  <strong data-linked-captain-name>VCL Player</strong>
+                  <small data-linked-captain-meta>Eksisterende spillerprofil koblet</small>
+                </span>
+                <button data-unlink-captain type="button">Brug manuel captain</button>
+              </div>
+              <p class="registration-captain-link-status" data-captain-link-status>
+                Er din account koblet til en spillerprofil, udfyldes captain automatisk.
+              </p>
+              <div class="registration-fields-v2 registration-fields-v2--captain">
+                <label>
+                  <span>Captain-navn</span>
+                  <input autocomplete="name" name="captain_name" placeholder="Navn eller alias" required type="text">
+                </label>
+                <label>
+                  <span>Discord</span>
+                  <input name="captain_discord" placeholder="Fx patrickamodio" required type="text">
+                </label>
+                <label>
+                  <span>E-mail</span>
+                  <input autocomplete="email" name="captain_email" placeholder="mail@example.com" required type="email">
+                </label>
+                <label>
+                  <span>Telefon <small>valgfrit</small></span>
+                  <input autocomplete="tel" name="captain_phone" placeholder="Telefonnummer" type="tel">
+                </label>
+              </div>
+            </section>
+          </div>
+
+          <div class="registration-step-v2__actions">
+            <span></span>
+            <button type="button" class="registration-next-v2" data-step-next="2">Fortsæt <span aria-hidden="true">→</span></button>
+          </div>
+          <p class="registration-step-error-v2" data-step-error="1" aria-live="polite"></p>
+        </section>
+
+        <section class="registration-step-v2 registration-step-v2--roster" data-signup-step="2" id="registration-roster" hidden>
+          <header class="registration-step-v2__head registration-step-v2__head--roster">
+            <span class="registration-step-v2__number">02</span>
+            <div>
+              <h2>Roster</h2>
+              <p>Tilføj mindst 2 og op til 4 starters. I kan desuden have op til 2 substitutes, så et hold maksimalt består af 6 spillere. Søg efter eksisterende VCL-profiler for at undgå dubletter; findes spilleren ikke, kan du vælge “Opret som ny spiller”.</p>
+            </div>
+            <button class="registration-add-my-player" data-add-my-player-to-roster hidden type="button">Tilføj mig</button>
+          </header>
+
+          <p class="registration-roster-linking-status" data-roster-linking-status>
+            Vælg en eksisterende profil. Hvis søgningen ikke finder spilleren, kan du vælge “Opret som ny spiller”. Tomme slots er valgfrie.
+          </p>
+
+          <div class="registration-roster-v2">
+            <div class="registration-roster-v2__group">
+              <div class="registration-roster-v2__group-head">
+                <h3>Startopstilling</h3><span>2–4 spillere</span>
+              </div>
+
+              <div class="registration-roster-entry-v2" data-player-picker>
+                <span class="registration-roster-entry-v2__slot">01</span>
+                <div class="registration-player-picker">
+                  <input aria-expanded="false" autocomplete="off" data-player-search name="player_1" placeholder="Søg alias / gamertag" type="text">
+                  <input data-player-id name="player_1_player_id" type="hidden">
+                  <input data-player-link-type name="player_1_link_type" type="hidden">
+                  <small class="registration-player-state" data-player-state>Søg efter en eksisterende spiller, eller vælg at oprette en ny.</small>
+                  <div class="registration-player-suggestions" data-player-suggestions hidden></div>
+                </div>
+              </div>
+
+              <div class="registration-roster-entry-v2" data-player-picker>
+                <span class="registration-roster-entry-v2__slot">02</span>
+                <div class="registration-player-picker">
+                  <input aria-expanded="false" autocomplete="off" data-player-search name="player_2" placeholder="Søg alias / gamertag" type="text">
+                  <input data-player-id name="player_2_player_id" type="hidden">
+                  <input data-player-link-type name="player_2_link_type" type="hidden">
+                  <small class="registration-player-state" data-player-state>Søg efter en eksisterende spiller, eller vælg at oprette en ny.</small>
+                  <div class="registration-player-suggestions" data-player-suggestions hidden></div>
+                </div>
+              </div>
+
+              <div class="registration-roster-entry-v2" data-player-picker>
+                <span class="registration-roster-entry-v2__slot">03</span>
+                <div class="registration-player-picker">
+                  <input aria-expanded="false" autocomplete="off" data-player-search name="player_3" placeholder="Søg alias / gamertag" type="text">
+                  <input data-player-id name="player_3_player_id" type="hidden">
+                  <input data-player-link-type name="player_3_link_type" type="hidden">
+                  <small class="registration-player-state" data-player-state>Søg efter en eksisterende spiller, eller vælg at oprette en ny.</small>
+                  <div class="registration-player-suggestions" data-player-suggestions hidden></div>
+                </div>
+              </div>
+
+              <div class="registration-roster-entry-v2" data-player-picker>
+                <span class="registration-roster-entry-v2__slot">04</span>
+                <div class="registration-player-picker">
+                  <input aria-expanded="false" autocomplete="off" data-player-search name="player_4" placeholder="Søg alias / gamertag" type="text">
+                  <input data-player-id name="player_4_player_id" type="hidden">
+                  <input data-player-link-type name="player_4_link_type" type="hidden">
+                  <small class="registration-player-state" data-player-state>Søg efter en eksisterende spiller, eller vælg at oprette en ny.</small>
+                  <div class="registration-player-suggestions" data-player-suggestions hidden></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="registration-roster-v2__group registration-roster-v2__group--subs">
+              <div class="registration-roster-v2__group-head">
+                <h3>Substitutes</h3><span>Valgfrit · maks. 2</span>
+              </div>
+
+              <div class="registration-roster-entry-v2" data-player-picker>
+                <span class="registration-roster-entry-v2__slot">S1</span>
+                <div class="registration-player-picker">
+                  <input aria-expanded="false" autocomplete="off" data-player-search name="sub_1" placeholder="Søg alias / gamertag" type="text">
+                  <input data-player-id name="sub_1_player_id" type="hidden">
+                  <input data-player-link-type name="sub_1_link_type" type="hidden">
+                  <small class="registration-player-state" data-player-state>Søg efter en eksisterende spiller, eller vælg at oprette en ny.</small>
+                  <div class="registration-player-suggestions" data-player-suggestions hidden></div>
+                </div>
+              </div>
+
+              <div class="registration-roster-entry-v2" data-player-picker>
+                <span class="registration-roster-entry-v2__slot">S2</span>
+                <div class="registration-player-picker">
+                  <input aria-expanded="false" autocomplete="off" data-player-search name="sub_2" placeholder="Søg alias / gamertag" type="text">
+                  <input data-player-id name="sub_2_player_id" type="hidden">
+                  <input data-player-link-type name="sub_2_link_type" type="hidden">
+                  <small class="registration-player-state" data-player-state>Søg efter en eksisterende spiller, eller vælg at oprette en ny.</small>
+                  <div class="registration-player-suggestions" data-player-suggestions hidden></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="registration-step-v2__actions">
+            <button type="button" class="registration-back-v2" data-step-back="1">← Tilbage</button>
+            <button type="button" class="registration-next-v2" data-step-next="3">Fortsæt <span aria-hidden="true">→</span></button>
+          </div>
+          <p class="registration-step-error-v2" data-step-error="2" aria-live="polite"></p>
+        </section>
+
+        <section class="registration-step-v2 registration-step-v2--confirm" data-signup-step="3" id="registration-confirm" hidden>
+          <header class="registration-step-v2__head">
+            <span class="registration-step-v2__number">03</span>
+            <div>
+              <h2>Bekræft registrering</h2>
+              <p>VCL gennemgår holdet, rosteren og niveauet. Først efter godkendelse bliver holdet oprettet som et aktivt VCL-hold.</p>
+            </div>
+          </header>
+
+          <div class="registration-review-path-v3" aria-label="Hvad sker der efter registrering">
+            <div><span>01</span><strong>Registrering</strong><p>I sender hold og roster til VCL.</p></div>
+            <i aria-hidden="true">→</i>
+            <div><span>02</span><strong>VCL-vurdering</strong><p>Vi gennemgår roster og konkurrenceniveau.</p></div>
+            <i aria-hidden="true">→</i>
+            <div><span>03</span><strong>Godkendt hold</strong><p>Captain kan derefter tilmelde holdet på relevante turneringssider.</p></div>
+          </div>
+
+          <div class="registration-confirm-v2">
+            <section class="registration-confirm-v2__rules">
+              <h3>Før du sender</h3>
+              <p>Alle spillere skal være en del af VCL-communityet, og holdet skal følge VCL's generelle regelsæt.</p>
+              <div class="registration-confirm-v2__links">
+                <a data-vcl-discord-link href="https://discord.gg/kKvKBGE6F" rel="noopener" target="_blank">VCL Discord ↗</a>
+                <a href="regler.html">Læs regler →</a>
+              </div>
+
+              <div class="registration-checklist-v2">
+                <label>
+                  <input name="discord_confirmed" required type="checkbox">
+                  <span><b>Alle spillere er på VCL Discord</b></span>
+                </label>
+                <label>
+                  <input name="rules_acceptance" required type="checkbox">
+                  <span><b>Vi har læst og accepterer VCL-reglerne</b></span>
+                </label>
+              </div>
+            </section>
+
+            <section class="registration-confirm-v2__message">
+              <label>
+                <span>Kommentar til VCL <small>valgfrit</small></span>
+                <textarea name="message" placeholder="Særlige forhold omkring rosteren eller andet VCL bør vide." rows="7"></textarea>
+              </label>
+            </section>
+          </div>
+
+          <div class="registration-submit-v2">
+            <div>
+              <small>Holdregistrering</small>
+              <strong>Send til VCL</strong>
+              <span>Registreringen sendes som afventende, indtil VCL har gennemgået og godkendt holdet.</span>
+            </div>
+            <button type="submit">Send hold til godkendelse <span aria-hidden="true">→</span></button>
+          </div>
+
+          <div class="registration-step-v2__actions registration-step-v2__actions--confirm">
+            <button type="button" class="registration-back-v2" data-step-back="2">← Tilbage</button>
+          </div>
+          <p class="registration-step-error-v2" data-step-error="3" aria-live="polite"></p>
+          <p aria-live="polite" class="notice registration-status" data-signup-status></p>
+        </section>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© 2026 VCL — Viking Call of Duty League</span>
+    <div class="footer-links">
+      <a href="about.html">Kontakt</a>
+      <a href="regler.html">Regler</a>
+      
+    </div>
+    <span>Website concept by NOVEX</span>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabaseClient.js?v=2.1-flex-roster-01"></script>
+<script src="assets/js/vclData.js?v=2.1-flex-roster-01"></script>
+<script src="assets/js/signupPlayerLinking.js?v=2.1-flex-roster-01"></script>
+<script src="script.js?v=2.1-flex-roster-01"></script>
+<script src="assets/js/signupFlowV2.js?v=2.1-flex-roster-01"></script>
+</body>
+</html>

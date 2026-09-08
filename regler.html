@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Regler — VCL</title>
+  <meta name="description" content="VCL ruleset og competitive regler for Viking Call of Duty League.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2.1-live-broadcast-01">
+</head>
+<body class="theme-light-canvas rules-page-v2">
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand brand--logo-only" href="index.html" aria-label="VCL forside">
+      <img src="assets/vcl-logo-v2.png" alt="VCL logo">
+    </a>
+
+    <nav class="nav-links" aria-label="Primær navigation">
+      <a data-nav href="index.html">Forside</a>
+      <a data-nav href="turneringer.html">Turneringer</a>
+      <a data-nav href="registrer-hold.html">Registrer hold</a>
+      <a data-nav href="nyheder.html">Nyheder</a>
+      <a data-nav href="roster-market.html">Roster Market</a>
+      <a data-nav href="teams.html">Teams</a>
+      <a data-nav href="leaderboard.html">Leaderboard</a>
+      <a data-nav href="regler.html">Regler</a>
+      <a data-nav href="about.html">About</a>
+    </nav>
+
+    <div class="nav-actions">
+      <a class="btn btn-small btn-primary" href="login.html"><span>Login</span></a>
+      <button class="menu-toggle" data-menu-toggle aria-label="Åbn menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="rules2-hero">
+    <div class="container rules2-hero__inner reveal">
+      <div class="rules2-hero__copy">
+        <span class="rules2-eyebrow">VCL RULEBOOK</span>
+        <h1>REGLER</h1>
+        <p>Det officielle VCL ruleset samlet ét sted. Brug indholdsoversigten til hurtigt at finde veto-format, bans og gældende GA's.</p>
+      </div>
+
+      <div class="rules2-hero__meta" aria-label="Ruleset status">
+        <div>
+          <span>Grundlag</span>
+          <strong>CDL-baseret</strong>
+        </div>
+        <div>
+          <span>Afgørelser</span>
+          <strong>VCL-admins har sidste ord</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="rules2-document">
+    <div class="container rules2-layout">
+      <aside class="rules2-sidebar reveal" aria-label="Indholdsfortegnelse">
+        <div class="rules2-sidebar__sticky">
+          <span class="rules2-sidebar__label">INDHOLD</span>
+          <nav class="rules2-toc">
+            <a href="#veto"><span>01</span><strong>Veto Rules</strong></a>
+            <a href="#bans"><span>02</span><strong>Official Bans</strong></a>
+            <a href="#gas"><span>03</span><strong>VCL GA's</strong></a>
+          </nav>
+
+          <p class="rules2-sidebar__note">Ruleset og restrictions kan blive opdateret før en turnering. Tournament-specifik information vil fremgå på den enkelte turneringsside.</p>
+        </div>
+      </aside>
+
+      <div class="rules2-content">
+        <article class="rules2-chapter reveal" id="veto">
+          <header class="rules2-chapter__header">
+            <span class="rules2-chapter__number">01</span>
+            <div>
+              <span class="rules2-chapter__kicker">MATCH FORMAT</span>
+              <h2>Veto Rules</h2>
+              <p>Map pool, Team A/B, bans og picks for VCL-kampe spillet som Best of 5.</p>
+            </div>
+          </header>
+
+          <div class="rules2-facts" aria-label="Veto quick facts">
+            <div><span>Format</span><strong>Best of 5</strong><p>Første hold til 3 map wins vinder kampen.</p></div>
+            <div><span>Map order</span><strong>HP · SnD · OL · HP · SnD</strong><p>Standard VCL maprækkefølge.</p></div>
+            <div><span>Side choice</span><strong>Højeste seed vælger</strong><p>Hjemmehold vælger Team A eller Team B.</p></div>
+          </div>
+
+          <section class="rules2-subsection">
+            <div class="rules2-subsection__heading">
+              <span>01.1</span>
+              <h3>Map pool</h3>
+            </div>
+            <div class="rules2-map-pool">
+              <div><strong>Hardpoint</strong><p>Den · Exposure · Gridlock · Scar · Sake</p></div>
+              <div><strong>Search &amp; Destroy</strong><p>Den · Hacienda · Fringe · Gridlock · Raid · Sake</p></div>
+              <div><strong>Overload</strong><p>Den · Exposure · Scar · Gridlock</p></div>
+            </div>
+          </section>
+
+          <section class="rules2-subsection">
+            <div class="rules2-subsection__heading">
+              <span>01.2</span>
+              <h3>Veto sequence</h3>
+            </div>
+
+            <div class="rules2-veto-table">
+              <div class="rules2-veto-mode">
+                <div class="rules2-veto-mode__title"><strong>Hardpoint</strong><span>Maps 1 &amp; 4</span></div>
+                <ol>
+                  <li><span>01</span>Team A banner 1 map</li>
+                  <li><span>02</span>Team B banner 1 map</li>
+                  <li><span>03</span>Team A vælger map 1</li>
+                  <li><span>04</span>Team B vælger map 4</li>
+                </ol>
+              </div>
+
+              <div class="rules2-veto-mode">
+                <div class="rules2-veto-mode__title"><strong>Search &amp; Destroy</strong><span>Maps 2 &amp; 5</span></div>
+                <ol>
+                  <li><span>01</span>Team B banner 2 maps</li>
+                  <li><span>02</span>Team A banner 1 map</li>
+                  <li><span>03</span>Team B vælger map 2</li>
+                  <li><span>04</span>Team A vælger map 5</li>
+                </ol>
+              </div>
+
+              <div class="rules2-veto-mode">
+                <div class="rules2-veto-mode__title"><strong>Overload</strong><span>Map 3</span></div>
+                <ol>
+                  <li><span>01</span>Team A banner 1 map</li>
+                  <li><span>02</span>Team B banner 1 map</li>
+                  <li><span>03</span>Team A vælger map 3</li>
+                </ol>
+              </div>
+            </div>
+          </section>
+
+          <div class="rules2-callout">
+            <span>Bracket reset</span>
+            <p>Første bannede maps fjernes fra puljen til 2nd Bo5, hvis der spilles bracket reset.</p>
+          </div>
+        </article>
+
+        <article class="rules2-chapter reveal" id="bans">
+          <header class="rules2-chapter__header">
+            <span class="rules2-chapter__number">02</span>
+            <div>
+              <span class="rules2-chapter__kicker">RESTRICTIONS</span>
+              <h2>Official Bans</h2>
+              <p>VCL følger som udgangspunkt de gældende CDL competitive restrictions.</p>
+            </div>
+          </header>
+
+          <div class="rules2-rule-lines">
+            <div>
+              <span>Baseline</span>
+              <strong>CDL Competitive Settings</strong>
+              <p>Hvis et våben, attachment, perk eller andet item er restricted i det gældende CDL ruleset, er det som udgangspunkt også banned i VCL.</p>
+            </div>
+            <div>
+              <span>Penalty</span>
+              <strong>Restricted items</strong>
+              <p>Brug af banned items kan medføre map loss, game forfeit eller match forfeit afhængigt af situationen og admin ruling.</p>
+            </div>
+          </div>
+
+          <section class="rules2-subsection">
+            <div class="rules2-subsection__heading">
+              <span>02.1</span>
+              <h3>Restricted categories</h3>
+            </div>
+            <div class="rules2-tags" aria-label="Restricted categories">
+              <span>Weapons</span><span>Attachments</span><span>Perks</span><span>Field upgrades</span><span>Scorestreaks</span><span>Equipment</span>
+            </div>
+          </section>
+
+          <div class="rules2-callout">
+            <span>Aktuelt ruleset</span>
+            <p>Den konkrete ban-liste opdateres efter det aktuelle CDL ruleset før hver VCL-turnering.</p>
+          </div>
+        </article>
+
+        <article class="rules2-chapter reveal" id="gas">
+          <header class="rules2-chapter__header">
+            <span class="rules2-chapter__number">03</span>
+            <div>
+              <span class="rules2-chapter__kicker">COMMUNITY RULES</span>
+              <h2>VCL GA's</h2>
+              <p>Ekstra competitive restrictions og community-aftaler annonceret af VCL-admins.</p>
+            </div>
+          </header>
+
+          <div class="rules2-rule-lines">
+            <div>
+              <span>Meaning</span>
+              <strong>Gentlemen's Agreements</strong>
+              <p>GA's er ekstra community-aftaler ud over de officielle bans og bruges til at beskytte competitive integrity.</p>
+            </div>
+            <div>
+              <span>Valid when</span>
+              <strong>Announced by VCL</strong>
+              <p>I VCL gælder kun de GA's, som VCL-admins har annonceret før den pågældende turnering.</p>
+            </div>
+          </div>
+
+          <section class="rules2-subsection">
+            <div class="rules2-subsection__heading">
+              <span>03.1</span>
+              <h3>Typiske GA-kategorier</h3>
+            </div>
+            <div class="rules2-tags">
+              <span>Overpowered weapons</span><span>Specifikke attachments</span><span>Broken perks</span><span>Broken equipment</span><span>Exploits / glitch spots</span><span>Unintended mechanics</span>
+            </div>
+          </section>
+
+          <div class="rules2-callout">
+            <span>Standard</span>
+            <p>Hvis noget ikke er annonceret som en VCL GA, gælder det officielle CDL ruleset som udgangspunkt.</p>
+          </div>
+        </article>
+
+        <div class="rules2-footer-note reveal">
+          <span>Har du fundet en uklar regel?</span>
+          <p>Ved disputes, bugs eller situationer som ikke er dækket tydeligt af rulesettet, træffer VCL-admins den endelige afgørelse.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© 2026 VCL — Viking Call of Duty League</span>
+    <div class="footer-links">
+      <a href="about.html">Kontakt</a>
+      <a href="regler.html">Regler</a>
+      
+    </div>
+    <span>Website concept by NOVEX</span>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabaseClient.js?v=2.1-live-broadcast-01"></script>
+<script src="assets/js/vclData.js?v=2.1-live-broadcast-01"></script>
+<script src="script.js?v=2.1-live-broadcast-01"></script>
+</body>
+</html>

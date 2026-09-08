@@ -1,0 +1,392 @@
+/* VCL 2.1 — team registration player linking
+   Active VCL 2.1 light-canvas component. */
+
+[data-linked-captain][hidden],
+[data-add-my-player-to-roster][hidden] {
+  display: none !important;
+}
+
+.registration-linked-captain {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 18px;
+  padding: 14px 0;
+  border: 0;
+  border-top: 1px solid rgba(44,177,91,.24);
+  border-bottom: 1px solid rgba(44,177,91,.18);
+  background: transparent;
+}
+
+.registration-linked-captain__mark {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #2cb15b;
+  font-weight: 900;
+}
+
+.registration-linked-captain strong,
+.registration-linked-captain small {
+  display: block;
+}
+
+.registration-linked-captain strong {
+  color: #101828;
+}
+
+.registration-linked-captain small {
+  margin-top: 2px;
+  color: #667085;
+}
+
+.registration-linked-captain button,
+.registration-add-my-player {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(31,111,235,.28);
+  border-radius: 6px;
+  color: #1557b0;
+  background: #eef6ff;
+  font: 800 .7rem/1 Inter, sans-serif;
+  letter-spacing: .05em;
+  cursor: pointer;
+  transition: border-color .18s ease, background .18s ease, color .18s ease;
+}
+
+.registration-linked-captain button:hover,
+.registration-add-my-player:hover {
+  border-color: rgba(31,111,235,.5);
+  color: #0f4c9a;
+  background: #e5f1ff;
+}
+
+.registration-captain-link-status,
+.registration-roster-linking-status {
+  margin: 0 0 18px;
+  color: #667085;
+  font-size: .78rem;
+  line-height: 1.5;
+}
+
+.registration-captain-link-status[data-status="success"],
+.registration-roster-linking-status[data-status="success"],
+.registration-player-state[data-state="linked"] {
+  color: #168a4a;
+}
+
+.registration-captain-link-status[data-status="warning"],
+.registration-roster-linking-status[data-status="warning"],
+.registration-player-state[data-state="new"] {
+  color: #0877d1;
+}
+
+.registration-roster-linking-status[data-status="error"],
+.registration-player-state[data-state="warning"] {
+  color: #d92d20;
+}
+
+.registration-field-group--captain input[readonly] {
+  border-color: rgba(44,177,91,.32) !important;
+  color: #344054 !important;
+  background: #f7fbf8 !important;
+  cursor: default;
+}
+
+.registration-roster-heading {
+  align-items: end;
+}
+
+.registration-add-my-player {
+  flex: 0 0 auto;
+  margin-bottom: 2px;
+}
+
+.registration-roster-list .registration-roster-entry {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(112px,.34fr) minmax(0,1fr);
+  align-items: start;
+  gap: 18px;
+  padding: 15px 0;
+  border-bottom: 1px solid #d9e1ea;
+}
+
+.registration-roster-list .registration-roster-entry:last-child {
+  border-bottom: 0;
+}
+
+.registration-roster-entry__label {
+  padding-top: 11px;
+}
+
+.registration-roster-entry__label b,
+.registration-roster-entry__label small {
+  display: block;
+}
+
+.registration-roster-entry__label b {
+  color: #344054;
+  font-family: Rajdhani, sans-serif;
+  font-size: .94rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.registration-roster-entry__label small {
+  margin-top: 2px;
+  color: #667085;
+  font-size: .7rem;
+}
+
+.registration-player-picker {
+  position: relative;
+  min-width: 0;
+}
+
+.registration-player-picker > input[data-player-search] {
+  width: 100%;
+}
+
+.registration-player-picker--linked > input[data-player-search] {
+  border-color: rgba(44,177,91,.42) !important;
+  color: #101828 !important;
+  background: linear-gradient(90deg,#f5fbf7,#fff 28%) !important;
+}
+
+.registration-player-picker--new > input[data-player-search] {
+  border-color: rgba(22,140,255,.48) !important;
+  color: #101828 !important;
+  background: linear-gradient(90deg,#f1f8ff,#fff 28%) !important;
+}
+
+.registration-player-picker--invalid > input[data-player-search] {
+  border-color: rgba(217,45,32,.52) !important;
+  background: #fffafa !important;
+}
+
+.registration-player-state {
+  display: block;
+  min-height: 18px;
+  margin-top: 7px;
+  color: #667085;
+  font-size: .7rem;
+  line-height: 1.4;
+}
+
+.registration-player-suggestions {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% - 21px);
+  right: 0;
+  left: 0;
+  max-height: 328px;
+  overflow-y: auto;
+  border: 1px solid #cfd9e5;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 20px 45px rgba(32,52,80,.14);
+}
+
+.registration-player-option {
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr) auto;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 11px 12px;
+  border: 0;
+  border-bottom: 1px solid #e5eaf0;
+  color: #101828;
+  text-align: left;
+  background: #fff;
+  cursor: pointer;
+}
+
+.registration-player-option:last-child {
+  border-bottom: 0;
+}
+
+.registration-player-option:hover,
+.registration-player-option:focus-visible {
+  outline: none;
+  background: #eef6ff;
+}
+
+.registration-player-option--new {
+  background: #f7fbff;
+}
+
+.registration-player-option__avatar {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #b8d9f7;
+  border-radius: 7px;
+  color: #0877d1;
+  background: #eef7ff;
+  font-weight: 900;
+}
+
+.registration-player-option strong,
+.registration-player-option small {
+  display: block;
+}
+
+.registration-player-option strong {
+  color: #101828;
+  font-size: .84rem;
+}
+
+.registration-player-option small {
+  margin-top: 2px;
+  color: #667085;
+  font-size: .68rem;
+  line-height: 1.35;
+}
+
+.registration-player-option em {
+  color: #0877d1;
+  font-size: .66rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.registration-player-options-empty {
+  margin: 0;
+  padding: 13px;
+  color: #667085;
+  font-size: .75rem;
+}
+
+.registration-player-option--unavailable,
+.registration-player-option--unavailable:hover,
+.registration-player-option--unavailable:focus-visible {
+  color: #98a2b3;
+  background: #f8fafc;
+  cursor: not-allowed;
+}
+
+.registration-player-option--unavailable strong,
+.registration-player-option--unavailable small {
+  color: #98a2b3;
+}
+
+.registration-player-option--unavailable .registration-player-option__avatar {
+  border-color: #d0d5dd;
+  color: #667085;
+  background: #f2f4f7;
+}
+
+.registration-player-option--unavailable em {
+  max-width: 120px;
+  color: #d92d20;
+  text-align: right;
+}
+
+.registration-membership-lock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 0 26px;
+  padding: 22px 24px;
+  border: 1px solid rgba(36,157,255,.18);
+  border-left: 3px solid #168cff;
+  background: linear-gradient(135deg,rgba(255,255,255,.82),rgba(235,244,255,.96));
+  box-shadow: 0 18px 44px rgba(11,19,32,.06);
+}
+
+.registration-membership-lock span,
+.registration-membership-lock strong,
+.registration-membership-lock p,
+.registration-membership-lock a {
+  display: block;
+}
+
+.registration-membership-lock span {
+  color: #1f6feb;
+  font: 800 .72rem/1.2 Inter,sans-serif;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.registration-membership-lock strong {
+  margin-top: 6px;
+  color: #101828;
+  font-family: Rajdhani,sans-serif;
+  font-size: 1.24rem;
+  line-height: 1.05;
+}
+
+.registration-membership-lock p {
+  max-width: 72ch;
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: .88rem;
+  line-height: 1.55;
+}
+
+.registration-membership-lock a {
+  flex: 0 0 auto;
+  padding: 11px 16px;
+  border: 1px solid rgba(36,157,255,.26);
+  border-radius: 8px;
+  color: #1f6feb;
+  background: rgba(36,157,255,.06);
+  font-size: .74rem;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease;
+}
+
+.registration-membership-lock a:hover,
+.registration-membership-lock a:focus-visible {
+  border-color: rgba(36,157,255,.42);
+  color: #1158c7;
+  background: rgba(36,157,255,.12);
+  transform: translateY(-1px);
+}
+
+.registration-form--membership-locked [type="submit"][data-membership-locked="true"] {
+  opacity: .42;
+  cursor: not-allowed;
+}
+
+@media (max-width:760px) {
+  .registration-linked-captain {
+    grid-template-columns: auto minmax(0,1fr);
+  }
+
+  .registration-linked-captain button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .registration-roster-heading { align-items: start; }
+  .registration-add-my-player { width: 100%; }
+
+  .registration-roster-list .registration-roster-entry {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .registration-roster-entry__label { padding-top: 0; }
+
+  .registration-membership-lock {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .registration-membership-lock a { text-align: center; }
+}

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Turnering — VCL</title>
+  <meta name="description" content="Turneringsside med bracket, hold og live kampe i VCL.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2.1-live-broadcast-01">
+</head>
+<body class="theme-light-canvas tournament-detail-page--v3">
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand brand--logo-only" href="index.html" aria-label="VCL forside">
+      <img src="assets/vcl-logo-v2.png" alt="VCL logo">
+    </a>
+    <nav class="nav-links" aria-label="Primær navigation">
+      <a data-nav href="index.html">Forside</a>
+      <a data-nav href="turneringer.html">Turneringer</a>
+      <a data-nav href="registrer-hold.html">Registrer hold</a>
+      <a data-nav href="nyheder.html">Nyheder</a>
+      <a data-nav href="roster-market.html">Roster Market</a>
+      <a data-nav href="teams.html">Teams</a>
+      <a data-nav href="leaderboard.html">Leaderboard</a>
+      <a data-nav href="regler.html">Regler</a>
+      <a data-nav href="about.html">About</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn btn-small btn-primary" href="login.html"><span>Login</span></a>
+      <button class="menu-toggle" data-menu-toggle aria-label="Åbn menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="tournament-page" data-tournament-page>
+  <section class="tournament-detail-hero">
+    <div class="container tournament-detail-hero__inner reveal">
+      <div>
+        <div class="tournament-status-line">
+          <span data-tournament-series>VCL</span>
+          <span data-tournament-status>Loading</span>
+        </div>
+        <h1 data-tournament-name>Henter turnering</h1>
+        <p data-tournament-description>Turneringsdata bliver hentet fra Supabase.</p>
+        <div class="tournament-hero-actions">
+          <button class="btn btn-primary" type="button" data-tournament-entry-button hidden>Tilmeld hold</button>
+          <a class="btn btn-live" href="#" data-tournament-live-button target="_blank" rel="noopener" hidden>Se live</a>
+          <a class="btn btn-ghost" href="turneringer.html">Alle turneringer</a>
+        </div>
+      </div>
+
+      <aside class="tournament-meta-card">
+        <div><span>Start</span><strong data-tournament-start>—</strong></div>
+        <div><span>Tilmeldingsfrist</span><strong data-tournament-deadline>—</strong></div>
+        <div><span>Hold</span><strong data-tournament-team-count>0 / 0</strong></div>
+        <div><span>Format</span><strong data-tournament-format>Single elimination</strong></div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="tournament-entry-section-v2" data-tournament-entry-section hidden>
+    <div class="container">
+      <div class="tournament-entry-panel-v2" data-tournament-entry-panel>
+        <div class="tournament-entry-panel-v2__copy">
+          <span data-tournament-entry-kicker>Turneringstilmelding</span>
+          <h2 data-tournament-entry-title>Kontrollerer dit hold…</h2>
+          <p data-tournament-entry-copy>VCL henter din holdstatus og adgang til turneringen.</p>
+        </div>
+        <div class="tournament-entry-panel-v2__action" data-tournament-entry-action></div>
+        <p class="notice tournament-entry-panel-v2__status" data-tournament-entry-status aria-live="polite"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="tournament-live-section" data-tournament-live-section hidden>
+    <div class="container">
+      <div class="tournament-live-banner" data-tournament-live-match></div>
+    </div>
+  </section>
+
+  <section class="tournament-results-section" data-tournament-results-section hidden>
+    <div class="container">
+      <div class="tournament-results-head">
+        <div>
+          <p class="section-kicker">Final standings</p>
+          <h2>Turneringsresultat</h2>
+        </div>
+        <p>Placeringer og VCL Points er endeligt godkendt af VCL-admin.</p>
+      </div>
+      <div class="tournament-results-list" data-tournament-results></div>
+    </div>
+  </section>
+
+  <section class="tournament-content-section">
+    <div class="container tournament-content-grid">
+      <div class="tournament-main-column">
+        <section class="tournament-panel">
+          <div class="profile-section-head">
+            <p class="section-kicker">Bracket</p>
+            <h2>Turneringsforløb</h2>
+            <p>Resultater og næste kampe bliver opdateret løbende af VCL-admin.</p>
+          </div>
+          <div class="tournament-bracket" data-tournament-bracket>
+            <div class="tournament-empty-state">
+              <strong>Bracketen er ikke klar endnu</strong>
+              <p>Den bliver vist her, når VCL har låst deltagerlisten og genereret kampene.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="tournament-side-column">
+        <section class="tournament-panel">
+          <div class="profile-section-head">
+            <p class="section-kicker">Confirmed teams</p>
+            <h2>Godkendte hold</h2>
+          </div>
+          <div class="tournament-team-list" data-tournament-teams>
+            <p>Henter hold...</p>
+          </div>
+        </section>
+
+        <section class="tournament-panel tournament-info-panel">
+          <div class="profile-section-head">
+            <p class="section-kicker">Format</p>
+            <h2>Praktisk info</h2>
+          </div>
+          <div class="tournament-info-list">
+            <div><span>Map-rækkefølge</span><strong data-tournament-map-order>—</strong></div>
+            <div><span>Check-in</span><strong data-tournament-checkin>—</strong></div>
+          </div>
+          <a href="regler.html" data-tournament-rules-link>Læs VCL-reglerne</a>
+        </section>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© 2026 VCL — Viking Call of Duty League</span>
+    <div class="footer-links">
+      <a href="about.html">Kontakt</a>
+      <a href="regler.html">Regler</a>
+      
+    </div>
+    <span>Website concept by NOVEX</span>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabaseClient.js?v=2.1-live-broadcast-01"></script>
+<script src="assets/js/vclData.js?v=2.1-live-broadcast-01"></script>
+<script src="script.js?v=2.1-live-broadcast-01"></script>
+<script src="assets/js/tournamentEntryFlow.js?v=2.1-live-broadcast-01"></script>
+</body>
+</html>

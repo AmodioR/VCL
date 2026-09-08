@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Team Dashboard — VCL</title>
+  <meta name="description" content="Captain workspace til administration af et VCL-hold.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2.1-live-broadcast-01">
+</head>
+
+<body class="theme-light-canvas team-dashboard-shell-v2">
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand brand--logo-only" href="index.html" aria-label="VCL forside">
+      <img src="assets/vcl-logo-v2.png" alt="VCL logo">
+    </a>
+
+    <nav class="nav-links" aria-label="Primær navigation">
+      <a data-nav href="index.html">Forside</a>
+      <a data-nav href="turneringer.html">Turneringer</a>
+      <a data-nav href="registrer-hold.html">Registrer hold</a>
+      <a data-nav href="nyheder.html">Nyheder</a>
+      <a data-nav href="roster-market.html">Roster Market</a>
+      <a data-nav href="teams.html">Teams</a>
+      <a data-nav href="leaderboard.html">Leaderboard</a>
+      <a data-nav href="regler.html">Regler</a>
+      <a data-nav href="about.html">About</a>
+    </nav>
+
+    <div class="nav-actions">
+      <a class="btn btn-small btn-primary" href="account.html"><span>Account</span></a>
+      <button class="menu-toggle" data-menu-toggle aria-label="Åbn menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="team-dashboard-v2" data-team-dashboard-page>
+  <section class="team-dashboard-hero-v2">
+    <div class="container team-dashboard-hero-v2__inner reveal">
+      <div class="team-dashboard-hero-v2__identity">
+        <div class="team-dashboard-logo-v2" data-team-dashboard-avatar>V</div>
+
+        <div class="team-dashboard-hero-v2__copy">
+          <div class="team-dashboard-hero-v2__meta">
+            <span>Captain workspace</span>
+            <strong data-team-dashboard-access>Kontrollerer adgang...</strong>
+          </div>
+
+          <h1 data-team-dashboard-title>Team Dashboard</h1>
+          <p data-team-dashboard-description>Henter dit hold og captain-adgang fra VCL.</p>
+
+          <div class="team-dashboard-hero-v2__actions" data-captain-dashboard hidden>
+            <a href="teams.html" data-public-team-link>Se offentlig holdprofil <span aria-hidden="true">→</span></a>
+            <a href="roster-market.html">Find spillere <span aria-hidden="true">→</span></a>
+            <a href="account.html">Mit VCL <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </div>
+
+      <aside class="team-dashboard-summary-v2" data-captain-dashboard hidden aria-label="Holdstatus">
+        <div>
+          <span>Hold</span>
+          <strong data-side-team-name>—</strong>
+        </div>
+        <div>
+          <span>Captain</span>
+          <strong data-side-captain-name>—</strong>
+        </div>
+        <div>
+          <span>Roster</span>
+          <strong data-side-roster-count>—</strong>
+        </div>
+        <div>
+          <span>VCL-niveau</span>
+          <strong data-side-team-tier>—</strong>
+        </div>
+        <div>
+          <span>Status</span>
+          <strong data-side-team-status>—</strong>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="team-dashboard-no-access-v2" data-no-captain-access hidden>
+    <div class="container reveal">
+      <span>Captain-adgang kræves</span>
+      <h2>Du har ikke et hold at administrere.</h2>
+      <p>Din VCL-konto er ikke koblet til en spillerprofil, der er registreret som captain for et hold. Hvis det burde være tilfældet, skal holdets captain eller en VCL-admin kontrollere koblingen.</p>
+      <div class="team-dashboard-no-access-v2__actions">
+        <a href="account.html">Tilbage til Mit VCL <span aria-hidden="true">→</span></a>
+        <a href="teams.html">Se VCL-hold <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="team-dashboard-tools-v2" data-captain-dashboard hidden>
+    <div class="container reveal">
+      <div class="team-dashboard-tools-v2__label">Captain tools</div>
+      <nav class="team-dashboard-tools-v2__nav" aria-label="Team dashboard sektioner">
+        <a href="#roster">Roster <span>Administrér lineup og claims</span></a>
+        <a href="#team-info">Holdoplysninger <span>Navn, tekst og status</span></a>
+        <a href="#captain-role">Captain-rolle <span>Overdrag ejerskab</span></a>
+      </nav>
+    </div>
+  </section>
+
+  <section class="team-dashboard-section-v2 team-dashboard-roster-section-v2" id="roster" data-captain-dashboard hidden>
+    <div class="container">
+      <header class="team-dashboard-section-head-v2 reveal">
+        <div>
+          <span>Aktiv roster</span>
+          <h2>Administrér lineup</h2>
+        </div>
+        <div>
+          <p>Se hvem der er starter eller substitute, fjern spillere og opret claim-links til profiler, der endnu ikke er koblet til en VCL-konto.</p>
+          <a href="roster-market.html">Åbn Roster Market <span aria-hidden="true">→</span></a>
+        </div>
+      </header>
+
+      <div class="team-dashboard-roster-v2 reveal" data-team-roster-list>
+        <div class="team-dashboard-empty-v2">
+          <strong>Henter roster</strong>
+          <p>Spillerne bliver hentet fra VCL-databasen.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="team-dashboard-section-v2 team-dashboard-info-section-v2" id="team-info" data-captain-dashboard hidden>
+    <div class="container team-dashboard-edit-layout-v2">
+      <header class="team-dashboard-section-head-v2 team-dashboard-section-head-v2--stacked reveal">
+        <div>
+          <span>Holdprofil</span>
+          <h2>Holdoplysninger</h2>
+        </div>
+        <p>Det her er de oplysninger, der vises på den offentlige holdprofil. Holdets VCL-niveau tildeles af ligaen og kan ikke ændres af captain.</p>
+      </header>
+
+      <form class="team-dashboard-form-v2 reveal" data-team-settings-form>
+        <input type="hidden" name="tier" value="Academy">
+
+        <div class="team-dashboard-logo-editor-v2" data-team-logo-editor>
+          <div class="team-dashboard-logo-editor-v2__preview" data-team-logo-editor-preview aria-label="Nuværende teamlogo">
+            <span aria-hidden="true">V</span>
+          </div>
+
+          <div class="team-dashboard-logo-editor-v2__content">
+            <div>
+              <span class="team-dashboard-logo-editor-v2__eyebrow">Teamlogo</span>
+              <h3>Holdets visuelle identitet</h3>
+              <p>Logoet bruges automatisk på holdprofilen, Teams, Leaderboard og andre steder på VCL. PNG, JPG eller WEBP · maks. 2 MB.</p>
+            </div>
+
+            <input type="file" accept="image/png,image/jpeg,image/webp" data-team-logo-input hidden>
+
+            <div class="team-dashboard-logo-editor-v2__actions">
+              <button type="button" class="team-dashboard-logo-editor-v2__pick" data-team-logo-pick>Vælg nyt logo</button>
+              <button type="button" class="team-dashboard-logo-editor-v2__save" data-team-logo-save disabled>Gem logo</button>
+            </div>
+
+            <p class="notice team-dashboard-logo-editor-v2__status" data-team-logo-status></p>
+          </div>
+        </div>
+
+        <div class="team-dashboard-form-v2__grid">
+          <label>
+            <span>Holdnavn</span>
+            <input type="text" name="name" placeholder="Holdnavn" required>
+          </label>
+
+          <label>
+            <span>Status</span>
+            <select name="status">
+              <option value="active">Aktiv</option>
+              <option value="looking">Søger spillere</option>
+              <option value="inactive">Inaktiv</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          <span>Tagline / kort beskrivelse</span>
+          <input type="text" name="tagline" placeholder="Fx Academy Cup Winners">
+        </label>
+
+        <label>
+          <span>Om holdet</span>
+          <textarea name="description" rows="5" placeholder="Skriv kort om holdet, ambitioner og historik."></textarea>
+        </label>
+
+        <div class="team-dashboard-form-v2__footer">
+          <p class="notice" data-team-settings-status></p>
+          <button type="submit">Gem ændringer <span aria-hidden="true">→</span></button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="team-dashboard-section-v2 team-dashboard-captain-section-v2" id="captain-role" data-captain-dashboard hidden>
+    <div class="container team-dashboard-captain-layout-v2">
+      <div class="team-dashboard-captain-copy-v2 reveal">
+        <span>Captain-adgang</span>
+        <h2>Overdrag captain-rollen</h2>
+        <p>Den nye captain får adgang til at administrere roster og holdoplysninger. Når overdragelsen er gennemført, mister du selv captain-adgangen til dette dashboard.</p>
+      </div>
+
+      <form class="team-dashboard-transfer-v2 reveal" data-captain-transfer-form>
+        <label>
+          <span>Ny captain</span>
+          <select name="new_captain_player_id" required>
+            <option value="">Vælg spiller fra roster</option>
+          </select>
+        </label>
+
+        <p class="team-dashboard-transfer-v2__warning">Denne handling ændrer ejerskabet af holdets captain-værktøjer og kræver en ekstra bekræftelse.</p>
+        <p class="notice" data-captain-transfer-status></p>
+
+        <button type="submit">Overdrag captain-rolle</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© 2026 VCL — Viking Call of Duty League</span>
+    <div class="footer-links">
+      <a href="about.html">Kontakt</a>
+      <a href="regler.html">Regler</a>
+      
+    </div>
+    <span>Website concept by NOVEX</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabaseClient.js?v=2.1-live-broadcast-01"></script>
+<script src="assets/js/vclData.js?v=2.1-live-broadcast-01"></script>
+<script src="script.js?v=2.1-live-broadcast-01"></script>
+</body>
+</html>

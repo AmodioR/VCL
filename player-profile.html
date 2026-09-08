@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spillerprofil — VCL</title>
+  <meta name="description" content="Offentlig VCL spillerprofil med hold, rangering, VCL Points og turneringshistorik.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2.1-live-broadcast-01">
+</head>
+
+<body class="theme-light-canvas player-profile-shell-v3">
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand brand--logo-only" href="index.html" aria-label="VCL forside">
+      <img src="assets/vcl-logo-v2.png" alt="VCL logo">
+    </a>
+
+    <nav class="nav-links" aria-label="Primær navigation">
+      <a data-nav href="index.html">Forside</a>
+      <a data-nav href="turneringer.html">Turneringer</a>
+      <a data-nav href="registrer-hold.html">Registrer hold</a>
+      <a data-nav href="nyheder.html">Nyheder</a>
+      <a data-nav href="roster-market.html">Roster Market</a>
+      <a data-nav href="teams.html">Teams</a>
+      <a data-nav href="leaderboard.html">Leaderboard</a>
+      <a data-nav href="regler.html">Regler</a>
+      <a data-nav href="about.html">About</a>
+    </nav>
+
+    <div class="nav-actions">
+      <a class="btn btn-small btn-primary" href="login.html"><span>Login</span></a>
+      <button class="menu-toggle" data-menu-toggle aria-label="Åbn menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="player-profile-page player-profile-v3">
+  <section class="player-hero-v3">
+    <div class="container player-hero-v3__inner reveal">
+      <div class="player-hero-v3__identity">
+        <div class="player-avatar-v3" aria-hidden="true">
+          <span data-player-avatar>A</span>
+        </div>
+
+        <div class="player-hero-v3__copy">
+          <div class="player-hero-v3__meta">
+            <span>VCL PLAYER</span>
+            <strong data-player-roster-status>Free Agent</strong>
+          </div>
+
+          <h1 data-player-name>Amodio</h1>
+          <p data-player-bio>Denne spiller har ikke skrevet en profiltekst endnu.</p>
+
+          <div class="player-tags-v3" data-player-tags>
+            <span>SMG</span>
+            <span>Academy / Contender</span>
+          </div>
+        </div>
+      </div>
+
+      <aside class="player-team-v3" aria-label="Nuværende hold">
+        <span class="player-team-v3__label">Nuværende hold</span>
+
+        <a class="player-team-v3__link" data-player-team-pill href="teams.html" hidden>
+          <img src="assets/teams/default-team.png" alt="" data-player-team-logo>
+          <span>
+            <strong data-player-team-name>Team</strong>
+            <small>Se holdprofil <span aria-hidden="true">→</span></small>
+          </span>
+        </a>
+
+        <div class="player-team-v3__fallback" data-player-team-fallback>
+          <strong data-player-team-fallback-title>Free Agent</strong>
+          <p data-player-team-fallback-copy>Spilleren er tilgængelig via Roster Market.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="player-performance-v3" aria-label="VCL performance">
+    <div class="container player-performance-v3__grid reveal">
+      <a class="player-performance-v3__item" href="leaderboard.html">
+        <span>Leaderboard</span>
+        <strong data-player-rank>—</strong>
+        <small data-player-rank-tier>Unranked</small>
+      </a>
+
+      <div class="player-performance-v3__item">
+        <span>VCL Points</span>
+        <strong data-player-points>0</strong>
+        <small>Career total</small>
+      </div>
+
+      <div class="player-performance-v3__item">
+        <span>Championship</span>
+        <strong data-player-championship-wins>0</strong>
+        <small>Sejre</small>
+      </div>
+
+      <div class="player-performance-v3__item">
+        <span>Contender</span>
+        <strong data-player-contender-wins>0</strong>
+        <small>Sejre</small>
+      </div>
+
+      <div class="player-performance-v3__item">
+        <span>Academy</span>
+        <strong data-player-academy-wins>0</strong>
+        <small>Sejre</small>
+      </div>
+    </div>
+  </section>
+
+  <section class="player-competition-v3">
+    <div class="container">
+      <header class="player-section-head-v3 reveal">
+        <div>
+          <span>Competition profile</span>
+          <h2>Spillerinfo</h2>
+        </div>
+        <p>Det vigtigste competitive overblik for spillerens nuværende VCL-status.</p>
+      </header>
+
+      <dl class="player-facts-v3 reveal">
+        <div>
+          <dt>Primær rolle</dt>
+          <dd data-player-info-primary>—</dd>
+        </div>
+        <div>
+          <dt>Niveau</dt>
+          <dd data-player-info-level>—</dd>
+        </div>
+        <div>
+          <dt>Roster-status</dt>
+          <dd data-player-info-status>—</dd>
+        </div>
+        <div>
+          <dt>Discord</dt>
+          <dd data-player-info-discord>—</dd>
+        </div>
+      </dl>
+
+      <a class="player-roster-action-v3" data-player-roster-action href="roster-market.html">
+        <span>Se spilleren på Roster Market</span>
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="player-history-v3">
+    <div class="container">
+      <header class="player-section-head-v3 player-section-head-v3--history reveal">
+        <div>
+          <span>VCL Career</span>
+          <h2>Turneringshistorik</h2>
+        </div>
+        <p>Registrerede placeringer fra officielle VCL-turneringer og events.</p>
+      </header>
+
+      <div class="player-history-v3__list reveal" data-player-history-list>
+        <article class="player-history-v3__item player-history-v3__item--loading">
+          <span class="player-history-v3__placement">—</span>
+          <div>
+            <strong>Henter VCL-historik</strong>
+            <p>Placeringer bliver hentet fra VCL-databasen.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© 2026 VCL — Viking Call of Duty League</span>
+    <div class="footer-links">
+      <a href="about.html">Kontakt</a>
+      <a href="regler.html">Regler</a>
+      
+    </div>
+    <span>Website concept by NOVEX</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabaseClient.js?v=2.1-live-broadcast-01"></script>
+<script src="assets/js/vclData.js?v=2.1-live-broadcast-01"></script>
+<script src="script.js?v=2.1-live-broadcast-01"></script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Opret spillerprofil — VCL</title>
+  <meta name="description" content="Opret din VCL-konto og spillerprofil.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2.1-live-broadcast-01">
+</head>
+<body class="theme-light-canvas player-signup-page-v2">
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand brand--logo-only" href="index.html" aria-label="VCL forside">
+      <img src="assets/vcl-logo-v2.png" alt="VCL logo">
+    </a>
+    <nav class="nav-links" aria-label="Primær navigation">
+      <a data-nav href="index.html">Forside</a>
+      <a data-nav href="turneringer.html">Turneringer</a>
+      <a data-nav href="registrer-hold.html">Registrer hold</a>
+      <a data-nav href="nyheder.html">Nyheder</a>
+      <a data-nav href="roster-market.html">Roster Market</a>
+      <a data-nav href="teams.html">Teams</a>
+      <a data-nav href="leaderboard.html">Leaderboard</a>
+      <a data-nav href="regler.html">Regler</a>
+      <a data-nav href="about.html">About</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn btn-small btn-primary" href="login.html"><span>Login</span></a>
+      <button class="menu-toggle" data-menu-toggle aria-label="Åbn menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<main class="player-signup-main-v2">
+  <section class="player-signup-section-v2">
+    <div class="container player-signup-layout-v2">
+      <div class="player-signup-intro-v2 reveal">
+        <span class="player-signup-eyebrow-v2">VCL PLAYER</span>
+        <h1>Opret<br>spillerprofil.</h1>
+        <p class="player-signup-lead-v2">
+          Din VCL-konto er din adgang til spillerprofil, holdinvitationer, Roster Market og den historik, du bygger gennem ligaen.
+        </p>
+
+        <div class="player-signup-path-v2" aria-label="Sådan bruges din profil">
+          <div><span>01</span><p><strong>Opret din identitet</strong>Alias, email og Discord kobles til din VCL-konto.</p></div>
+          <div><span>02</span><p><strong>Bliv koblet til et hold</strong>Captains og admins kan senere invitere eller claime din spillerprofil.</p></div>
+          <div><span>03</span><p><strong>Byg din VCL-historik</strong>Hold, resultater og VCL Points følger din offentlige spillerprofil.</p></div>
+        </div>
+      </div>
+
+      <div class="player-signup-access-v2 reveal">
+        <div class="player-signup-access-v2__head">
+          <span>CREATE ACCOUNT</span>
+          <h2>Spillerinfo</h2>
+          <p>Start med de oplysninger, VCL faktisk skal bruge til din konto. Rolle, niveau, bio og Free Agent-status kan administreres fra din konto bagefter.</p>
+        </div>
+
+        <form class="player-signup-form-v2 signup-profile-form">
+          <label>
+            <span>Alias / Gamertag</span>
+            <input type="text" name="alias" placeholder="Fx Amodio" autocomplete="nickname" required>
+          </label>
+
+          <label>
+            <span>Email</span>
+            <input type="email" name="email" placeholder="mail@example.com" autocomplete="email" required>
+          </label>
+
+          <label>
+            <span>Adgangskode</span>
+            <input type="password" name="password" placeholder="Mindst 6 tegn" autocomplete="new-password" minlength="6" required>
+          </label>
+
+          <label>
+            <span>Discord</span>
+            <input type="text" name="discord" placeholder="Fx patrickamodio" autocomplete="off" required>
+          </label>
+
+          <label class="player-signup-check-v2">
+            <input type="checkbox" name="rules_acceptance" required>
+            <span>Jeg accepterer VCL’s <a href="regler.html">regler og retningslinjer</a>.</span>
+          </label>
+
+          <p class="notice player-signup-status-v2" data-auth-status aria-live="polite"></p>
+
+          <button class="player-signup-submit-v2" type="submit">
+            <span>Opret spillerprofil</span><span aria-hidden="true">→</span>
+          </button>
+        </form>
+
+        <div class="player-signup-login-v2">
+          <span>Har du allerede en konto?</span>
+          <a href="login.html">Log ind <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© 2026 VCL — Viking Call of Duty League</span>
+    <div class="footer-links"><a href="about.html">Kontakt</a><a href="regler.html">Regler</a></div>
+    <span>Website concept by NOVEX</span>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabaseClient.js?v=2.1-live-broadcast-01"></script>
+<script src="assets/js/vclData.js?v=2.1-live-broadcast-01"></script>
+<script src="script.js?v=2.1-live-broadcast-01"></script>
+</body>
+</html>
