@@ -68,6 +68,17 @@ No duplicate auth handler was removed because no competing runtime owner was fou
 
 This keeps the website aligned with the cleaned live Supabase contract instead of silently supporting retired schema names.
 
+### 5. Runtime Supabase contract sweep — resolved
+
+Runtime relation, RPC and Storage references have been cross-checked against `supabase/live-object-manifest.json`.
+
+- the remaining retired `leaderboard_view` fallback was removed; `public_vcl_leaderboard_view` is now the only leaderboard source
+- previously retired `player_stats` and `roster_posts` are not referenced by runtime JavaScript
+- retired team-invite identifiers are no longer used by runtime JavaScript
+- the static audit now fails if known retired backend identifiers are reintroduced
+
+This closes the known dead-schema compatibility gap between the website runtime and the cleaned live Supabase backend.
+
 ## Remaining architecture debt
 
 `script.js` still owns several large isolated page applications. They are not automatically bugs, but each page family must be audited for duplicate ownership, stale compatibility branches and dead calls before Pass C is complete.
@@ -86,12 +97,13 @@ Do not extract code merely to reduce file size if doing so adds regression risk.
 2. team-dashboard roster ownership — done
 3. auth/signup handlers — done
 4. team invite recipient compatibility — done
-5. public news + article
-6. teams / player / team profile
-7. tournament hub / detail
-8. account dashboard
-9. team dashboard supporting modules
-10. admin dashboard
-11. final `vclData.js` compatibility/caller sweep
+5. runtime Supabase contract sweep — done
+6. public news + article
+7. teams / player / team profile
+8. tournament hub / detail
+9. account dashboard
+10. team dashboard supporting modules
+11. admin dashboard
+12. final `vclData.js` compatibility/caller sweep
 
 Every cleanup must preserve the existing HTML contract and current Supabase/VCLData behavior. No new features during this pass.
