@@ -1160,10 +1160,8 @@ const playerProfilePage = $(".player-profile-page:not(.account-page):not(.team-p
         renderMissingPlayerProfile();
         return;
       }
-      const context = window.VCLData.getPlayerProfileContext
-        ? await window.VCLData.getPlayerProfileContext(playerSlug)
-        : null;
-      const player = context?.player || await window.VCLData.getPlayerBySlug(playerSlug);
+      const context = await window.VCLData.getPlayerProfileContext(playerSlug);
+      const player = context?.player || null;
       const leaderboardEntry = context?.leaderboardEntry || null;
       const team = context?.team || null;
 
@@ -3597,9 +3595,7 @@ renderCaptainSelect(members, team.captain_player_id);
 
       renderPublicRoster(members, team.captain_player_id);
 
-      const achievements = window.VCLData.getTeamAchievements
-        ? await window.VCLData.getTeamAchievements(team.slug)
-        : [];
+      const achievements = await window.VCLData.getTeamAchievements(team.slug);
 
       renderTeamAchievements(achievements);
 
