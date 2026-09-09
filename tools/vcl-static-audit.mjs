@@ -40,6 +40,14 @@ const canonicalNavHrefs = [
   'regler.html',
   'about.html'
 ];
+const retiredRuntimeBackendIdentifiers = [
+  'leaderboard_view',
+  'player_stats',
+  'roster_posts',
+  'sent_by_profile_id',
+  'recipient_player_id',
+  'target_player_id'
+];
 
 function attrValues(html, attr) {
   const values = [];
@@ -166,6 +174,14 @@ for (const file of jsFiles) {
   const code = read(file);
   const fileName = relative(file);
   let match;
+
+  for (const identifier of retiredRuntimeBackendIdentifiers) {
+    const escaped = identifier.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const identifierRegex = new RegExp(`\\b${escaped}\\b`);
+    if (identifierRegex.test(code)) {
+      errors.push(`${fileName}: retired backend identifier bruges stadig -> ${identifier}`);
+    }
+  }
 
   const bucketRegex = /\.storage\s*\.from\(["']([^"']+)["']\)/g;
   while ((match = bucketRegex.exec(code))) remember(bucketRefs, match[1], fileName);
