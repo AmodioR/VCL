@@ -224,7 +224,7 @@
     list.innerHTML = `
       <div class="roster-activity-empty roster-activity-empty--error">
         <strong>Transferhistorikken kunne ikke indlæses</strong>
-        <p>Kør den nye Roster Activity-migration i Supabase og genindlæs siden.</p>
+        <p>Prøv at genindlæse siden om et øjeblik.</p>
       </div>
     `;
   };
