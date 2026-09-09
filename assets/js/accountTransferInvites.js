@@ -114,14 +114,7 @@
     try {
       const client = await getDb();
       const { data, error } = await client.rpc('get_my_player_transfer_requests');
-      if (error) {
-        const missing = ['42883', 'PGRST202', 'PGRST204'].includes(error.code);
-        if (missing) {
-          section.hidden = true;
-          return;
-        }
-        throw error;
-      }
+      if (error) throw error;
       render(data || { requests: [] });
     } catch (error) {
       console.warn('Transferinvitationer kunne ikke indlæses:', error);
