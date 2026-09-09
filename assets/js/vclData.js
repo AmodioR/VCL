@@ -326,71 +326,45 @@ async deleteNewsPost(postId) {
 },
 
 async getAdminTeamSignups() {
-  try {
-    const { data, error } = await db
-      .from("team_signups")
-      .select(`
-        *,
-        tournaments:tournament_id (
-          id,
-          slug,
-          name,
-          status,
-          starts_at
-        ),
-        approved_team:approved_team_id (
-          id,
-          slug,
-          name
-        )
-      `)
-      .order("created_at", { ascending: false });
+  const { data, error } = await db
+    .from("team_signups")
+    .select(`
+      *,
+      tournaments:tournament_id (
+        id,
+        slug,
+        name,
+        status,
+        starts_at
+      ),
+      approved_team:approved_team_id (
+        id,
+        slug,
+        name
+      )
+    `)
+    .order("created_at", { ascending: false });
 
-    if (error) throw error;
-
-    return (data || []).map((signup) => ({
-      ...signup,
-      tournament_label:
-        signup.tournaments?.name || signup.tournament_label || signup.series_slug || "VCL Signup",
-      tournament_slug:
-        signup.tournaments?.slug || signup.tournament_slug || "",
-      approved_team_slug:
-        signup.approved_team?.slug || signup.approved_team_slug || ""
-    }));
-  } catch (error) {
-    console.warn(
-      "Primær team-registration query fejlede. Bruger kompatibilitets-view:",
-      error
-    );
-
-    const { data, error: compatError } = await db
-      .from("admin_team_signups_view")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (compatError) {
-      console.error("Kunne ikke hente team signups:", compatError);
-      return [];
-    }
-
-    return data || [];
+  if (error) {
+    console.error("Kunne ikke hente team signups:", error);
+    throw error;
   }
+
+  return (data || []).map((signup) => ({
+    ...signup,
+    tournament_label:
+      signup.tournaments?.name || signup.tournament_label || signup.series_slug || "VCL Signup",
+    tournament_slug:
+      signup.tournaments?.slug || signup.tournament_slug || "",
+    approved_team_slug:
+      signup.approved_team?.slug || signup.approved_team_slug || ""
+  }));
 },
 
 async adminApproveTeamSignup(signupId) {
-  let { data, error } = await db.rpc("admin_approve_team_signup_linked", {
+  const { data, error } = await db.rpc("admin_approve_team_signup_linked", {
     p_signup_id: signupId
   });
-
-  const linkedFunctionMissing =
-    error &&
-    ["42883", "PGRST202", "PGRST204"].includes(error.code);
-
-  if (linkedFunctionMissing) {
-    ({ data, error } = await db.rpc("admin_approve_team_signup_strict", {
-      p_signup_id: signupId
-    }));
-  }
 
   if (error) {
     console.error("Kunne ikke approve team signup:", error);
