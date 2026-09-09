@@ -17,7 +17,6 @@
   let db = null;
   let tournament = null;
   let loanContext = null;
-  let featureAvailable = null;
   let contextLoading = false;
   let actionRunning = false;
   let activeSearch = '';
@@ -67,10 +66,6 @@
     if (!statusBox) return;
     statusBox.textContent = message;
     statusBox.dataset.status = type;
-  }
-
-  function missingMigration(error) {
-    return ['42883', 'PGRST202', 'PGRST204'].includes(error?.code);
   }
 
   function isRosterBuilderVisible() {
@@ -577,14 +572,9 @@
       });
 
       if (error) {
-        if (missingMigration(error)) {
-          featureAvailable = false;
-          return null;
-        }
         throw error;
       }
 
-      featureAvailable = true;
       loanContext = data || null;
       return loanContext;
     } catch (error) {
@@ -597,7 +587,7 @@
 
   async function refreshContext(search = '', options = {}) {
     await loadContext(search, options);
-    if (featureAvailable && loanContext) renderPanel();
+    if (loanContext) renderPanel();
   }
 
   async function ensureContext() {
@@ -605,9 +595,8 @@
     if (!tournament?.id) await resolveTournament();
     if (!tournament?.id) return;
 
-    if (featureAvailable === false) return;
     if (!loanContext) await loadContext(activeSearch);
-    if (featureAvailable && loanContext) renderPanel();
+    if (loanContext) renderPanel();
   }
 
   async function submitRosterV2(button) {
@@ -669,7 +658,7 @@
 
   document.addEventListener('click', (event) => {
     const button = event.target.closest?.('[data-submit-tournament-roster]');
-    if (!button || !rosterBox.contains(button) || featureAvailable !== true || !loanContext) return;
+    if (!button || !rosterBox.contains(button) || !loanContext) return;
 
     event.preventDefault();
     event.stopImmediatePropagation();
@@ -697,13 +686,13 @@
   });
 
   window.addEventListener('focus', () => {
-    if (featureAvailable && tournament?.id && isRosterBuilderVisible()) {
+    if (tournament?.id && isRosterBuilderVisible()) {
       refreshContext(activeSearch, { quiet: true });
     }
   });
 
   refreshTimer = window.setInterval(() => {
-    if (!document.hidden && featureAvailable && tournament?.id && isRosterBuilderVisible()) {
+    if (!document.hidden && tournament?.id && isRosterBuilderVisible()) {
       refreshContext(activeSearch, { quiet: true });
     }
   }, 30_000);
