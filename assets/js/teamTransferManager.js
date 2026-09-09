@@ -242,13 +242,12 @@
       ]);
       setStatus('');
     } catch (error) {
-      const missing = ['42883', 'PGRST202', 'PGRST204'].includes(error?.code);
       console.error('Direct transfers kunne ikke indlæses:', error);
       if (candidatesRoot) {
         candidatesRoot.innerHTML = `
           <div class="direct-transfer-empty is-error">
-            <strong>${missing ? 'Direct transfer-backenden mangler' : 'Transfers kunne ikke indlæses'}</strong>
-            <p>${missing ? 'Kør 20260908_direct_team_transfers.sql i Supabase og genindlæs siden.' : 'Prøv at genindlæse siden om et øjeblik.'}</p>
+            <strong>Transfers kunne ikke indlæses</strong>
+            <p>Prøv at genindlæse siden om et øjeblik.</p>
           </div>
         `;
       }
