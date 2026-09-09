@@ -66,10 +66,6 @@
     return savedTagline;
   }
 
-  if (team.slug === "dysteria") return "VCL Champions 2026";
-  if (team.slug === "frontline") return "Academy Cup Winners";
-  if (team.slug === "frontline-ghost") return "Frontlines second team";
-
   return `${team.tier || "VCL"} roster`;
 }
 
@@ -635,14 +631,7 @@ async getNewsPosts() {
     "created_at"
   ].join(",");
 
-  const sources = [
-    // Preferred public view. It exposes published posts only.
-    "public_news_posts_view",
-    // Safe fallback when the table already has a public SELECT policy.
-    "news_posts",
-    // Compatibility fallback for installations that still expose the previous public view.
-    "news_posts_view"
-  ];
+  const sources = ["public_news_posts_view"];
 
   let lastError = null;
 
@@ -2012,33 +2001,12 @@ async getTeamAchievements(teamSlug) {
         .from("team_signups")
         .insert(signup);
 
-      if (!error) return true;
-
-      const missingTournamentColumns = ["PGRST204", "42703"].includes(error.code);
-
-      if (missingTournamentColumns) {
-        console.warn(
-          "Tournament migration er ikke kørt endnu. Sender signup uden de nye tournament-felter.",
-          error
-        );
-
-        const compatSignup = { ...signup };
-        delete compatSignup.tournament_id;
-        delete compatSignup.tournament_slug;
-        delete compatSignup.discord_confirmed;
-        delete compatSignup.checkin_confirmed;
-
-        const { error: compatError } = await db
-          .from("team_signups")
-          .insert(compatSignup);
-
-        if (!compatError) return true;
-        console.error("Kunne ikke sende schema-kompatibel team registration:", compatError);
-        throw compatError;
+      if (error) {
+        console.error("Kunne ikke sende team signup:", error);
+        throw error;
       }
 
-      console.error("Kunne ikke sende team signup:", error);
-      throw error;
+      return true;
     }
   };
 
