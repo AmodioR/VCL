@@ -24,6 +24,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import re
+          import textwrap
 
           path = Path('assets/js/vclData.js')
           text = path.read_text()
@@ -33,56 +34,57 @@ jobs:
               re.S,
           )
 
-          replacement = '''async getAdminTeamSignups() {
-  const { data, error } = await db
-    .from("team_signups")
-    .select(`
-      *,
-      tournaments:tournament_id (
-        id,
-        slug,
-        name,
-        status,
-        starts_at
-      ),
-      approved_team:approved_team_id (
-        id,
-        slug,
-        name
-      )
-    `)
-    .order("created_at", { ascending: false });
+          replacement = textwrap.dedent('''
+          async getAdminTeamSignups() {
+            const { data, error } = await db
+              .from("team_signups")
+              .select(`
+                *,
+                tournaments:tournament_id (
+                  id,
+                  slug,
+                  name,
+                  status,
+                  starts_at
+                ),
+                approved_team:approved_team_id (
+                  id,
+                  slug,
+                  name
+                )
+              `)
+              .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("Kunne ikke hente team signups:", error);
-    throw error;
-  }
+            if (error) {
+              console.error("Kunne ikke hente team signups:", error);
+              throw error;
+            }
 
-  return (data || []).map((signup) => ({
-    ...signup,
-    tournament_label:
-      signup.tournaments?.name || signup.tournament_label || signup.series_slug || "VCL Signup",
-    tournament_slug:
-      signup.tournaments?.slug || signup.tournament_slug || "",
-    approved_team_slug:
-      signup.approved_team?.slug || signup.approved_team_slug || ""
-  }));
-},
+            return (data || []).map((signup) => ({
+              ...signup,
+              tournament_label:
+                signup.tournaments?.name || signup.tournament_label || signup.series_slug || "VCL Signup",
+              tournament_slug:
+                signup.tournaments?.slug || signup.tournament_slug || "",
+              approved_team_slug:
+                signup.approved_team?.slug || signup.approved_team_slug || ""
+            }));
+          },
 
-async adminApproveTeamSignup(signupId) {
-  const { data, error } = await db.rpc("admin_approve_team_signup_linked", {
-    p_signup_id: signupId
-  });
+          async adminApproveTeamSignup(signupId) {
+            const { data, error } = await db.rpc("admin_approve_team_signup_linked", {
+              p_signup_id: signupId
+            });
 
-  if (error) {
-    console.error("Kunne ikke approve team signup:", error);
-    throw error;
-  }
+            if (error) {
+              console.error("Kunne ikke approve team signup:", error);
+              throw error;
+            }
 
-  return Array.isArray(data) ? data[0] : data;
-},
+            return Array.isArray(data) ? data[0] : data;
+          },
 
-async getAdminSignupClaimTargets'''
+          async getAdminSignupClaimTargets''').lstrip()
 
           text, count = signup_pattern.subn(replacement, text, count=1)
           if count != 1:
