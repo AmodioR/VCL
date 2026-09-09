@@ -19,7 +19,8 @@ const files = walk(root);
 const rel = (file) => path.relative(root, file).replaceAll('\\', '/');
 const read = (file) => fs.readFileSync(file, 'utf8');
 const htmlFiles = files.filter((f) => f.endsWith('.html'));
-const jsFiles = files.filter((f) => f.endsWith('.js') || f.endsWith('.mjs'));
+const runtimeJsFiles = files.filter((f) => f.endsWith('.js') && !rel(f).startsWith('tools/'));
+const auditJsFiles = files.filter((f) => f.endsWith('.js') || f.endsWith('.mjs'));
 const cssFiles = files.filter((f) => f.endsWith('.css'));
 const allRel = new Set(files.map(rel));
 
@@ -28,9 +29,7 @@ const errors = [];
 const warnings = [];
 const info = [];
 
-function add(bucket, message) {
-  bucket.push(message);
-}
+const add = (bucket, message) => bucket.push(message);
 
 function normalizeLocalRef(sourceFile, raw) {
   if (!raw) return null;
@@ -54,7 +53,7 @@ function extractAttrs(html, attr) {
 
 const pageDeps = new Map();
 const referencedCss = new Map(cssFiles.map((f) => [rel(f), 0]));
-const referencedJs = new Map(jsFiles.map((f) => [rel(f), 0]));
+const referencedJs = new Map(runtimeJsFiles.map((f) => [rel(f), 0]));
 
 for (const file of htmlFiles) {
   const html = read(file);
@@ -90,13 +89,14 @@ for (const file of htmlFiles) {
     if (!/\brel=["'][^"']*noopener/i.test(tag)) add(warnings, `${page}: target=_blank uden rel=noopener`);
   }
 
-  const scriptRefs = extractAttrs(html, 'src').filter((v) => v.endsWith('.js') || v.includes('.js?'));
-  const supabaseIndex = scriptRefs.findIndex((v) => v.includes('supabase-js@'));
-  const clientIndex = scriptRefs.findIndex((v) => v.includes('supabaseClient.js'));
-  const dataIndex = scriptRefs.findIndex((v) => v.includes('vclData.js'));
-  const mainIndex = scriptRefs.findIndex((v) => /(?:^|\/)script\.js(?:\?|$)/.test(v));
+  const allScriptRefs = extractAttrs(html, 'src');
+  const localScriptRefs = allScriptRefs.filter((v) => v.endsWith('.js') || v.includes('.js?'));
+  const hasSupabaseSdk = allScriptRefs.some((v) => v.includes('@supabase/supabase-js'));
+  const clientIndex = localScriptRefs.findIndex((v) => v.includes('supabaseClient.js'));
+  const dataIndex = localScriptRefs.findIndex((v) => v.includes('vclData.js'));
+  const mainIndex = localScriptRefs.findIndex((v) => /(?:^|\/)script\.js(?:\?|$)/.test(v));
   if (!isRedirect && dataIndex >= 0 && clientIndex < 0) add(errors, `${page}: vclData.js loader uden supabaseClient.js`);
-  if (!isRedirect && clientIndex >= 0 && supabaseIndex < 0) add(errors, `${page}: supabaseClient.js loader uden Supabase JS CDN`);
+  if (!isRedirect && clientIndex >= 0 && !hasSupabaseSdk) add(errors, `${page}: supabaseClient.js loader uden Supabase JS SDK`);
   if (clientIndex >= 0 && dataIndex >= 0 && clientIndex > dataIndex) add(errors, `${page}: vclData.js loader før supabaseClient.js`);
   if (dataIndex >= 0 && mainIndex >= 0 && dataIndex > mainIndex) add(warnings, `${page}: script.js loader før vclData.js`);
 
@@ -105,27 +105,36 @@ for (const file of htmlFiles) {
   if (!isRedirect && !/<html\b[^>]*lang=["']da["']/i.test(html)) add(warnings, `${page}: html lang er ikke da`);
 }
 
+// Dynamic CSS/JS loaders also count as active references.
+for (const file of runtimeJsFiles) {
+  const code = read(file);
+  const assetRe = /["']((?:assets\/)?(?:css|js)\/[^"']+\.(?:css|js))(?:\?[^"']*)?["']/g;
+  let m;
+  while ((m = assetRe.exec(code))) {
+    let target = m[1];
+    if (!target.startsWith('assets/')) target = `assets/${target}`;
+    if (referencedCss.has(target)) referencedCss.set(target, referencedCss.get(target) + 1);
+    if (referencedJs.has(target)) referencedJs.set(target, referencedJs.get(target) + 1);
+  }
+}
+
 for (const [file, count] of referencedCss) {
-  if (count === 0) add(warnings, `CSS-kandidat uden HTML-reference: ${file}`);
+  if (count === 0) add(warnings, `CSS-kandidat uden HTML/JS-reference: ${file}`);
 }
 for (const [file, count] of referencedJs) {
-  if (count === 0 && !file.startsWith('tools/')) add(warnings, `JS-kandidat uden HTML-reference: ${file}`);
+  if (count === 0) add(warnings, `JS-kandidat uden HTML/JS-reference: ${file}`);
 }
 
 const vclDataPath = path.join(root, 'assets/js/vclData.js');
 if (fs.existsSync(vclDataPath)) {
   const source = read(vclDataPath);
   const defs = new Set();
-  for (const re of [
-    /^\s*async\s+([A-Za-z_$][\w$]*)\s*\(/gm,
-    /^\s*([A-Za-z_$][\w$]*)\s*\([^\n]*\)\s*\{/gm
-  ]) {
-    let m;
-    while ((m = re.exec(source))) defs.add(m[1]);
-  }
+  const defRe = /^\s{4}async\s+([A-Za-z_$][\w$]*)\s*\(/gm;
+  let defMatch;
+  while ((defMatch = defRe.exec(source))) defs.add(defMatch[1]);
 
   const calls = new Map();
-  for (const file of jsFiles.filter((f) => rel(f) !== 'assets/js/vclData.js' && !rel(f).startsWith('tools/'))) {
+  for (const file of runtimeJsFiles.filter((f) => rel(f) !== 'assets/js/vclData.js')) {
     const code = read(file);
     const patterns = [
       /\bVCLData\.([A-Za-z_$][\w$]*)\s*\(/g,
@@ -146,29 +155,59 @@ if (fs.existsSync(vclDataPath)) {
   }
 
   const maybeUnused = [...defs].filter((name) => !calls.has(name));
-  info.push(`VCLData-metoder defineret: ${defs.size}`);
-  info.push(`VCLData-metoder med statisk fundet caller: ${defs.size - maybeUnused.length}`);
+  info.push(`VCLData async-metoder defineret: ${defs.size}`);
+  info.push(`VCLData async-metoder med statisk fundet caller: ${defs.size - maybeUnused.length}`);
   if (maybeUnused.length) info.push(`VCLData cleanup-kandidater (kræver manuel kontrol): ${maybeUnused.sort().join(', ')}`);
 }
 
 const backendTables = new Map();
 const backendRpcs = new Map();
 const storageBuckets = new Map();
-for (const file of jsFiles.filter((f) => !rel(f).startsWith('tools/'))) {
+for (const file of runtimeJsFiles) {
   const code = read(file);
   const fileName = rel(file);
-  const patterns = [
-    { re: /\.from\(["']([^"']+)["']\)/g, target: backendTables },
-    { re: /\.rpc\(["']([^"']+)["']/g, target: backendRpcs },
-    { re: /\.storage\s*\.from\(["']([^"']+)["']\)/g, target: storageBuckets }
-  ];
-  for (const { re, target } of patterns) {
-    let m;
-    while ((m = re.exec(code))) {
-      if (!target.has(m[1])) target.set(m[1], new Set());
-      target.get(m[1]).add(fileName);
-    }
+
+  const storageRe = /\.storage\s*\.from\(["']([^"']+)["']\)/g;
+  let m;
+  while ((m = storageRe.exec(code))) {
+    if (!storageBuckets.has(m[1])) storageBuckets.set(m[1], new Set());
+    storageBuckets.get(m[1]).add(fileName);
   }
+
+  const fromRe = /\.from\(["']([^"']+)["']\)/g;
+  while ((m = fromRe.exec(code))) {
+    const before = code.slice(Math.max(0, m.index - 24), m.index);
+    if (/\.storage\s*$/.test(before)) continue;
+    if (!backendTables.has(m[1])) backendTables.set(m[1], new Set());
+    backendTables.get(m[1]).add(fileName);
+  }
+
+  const rpcRe = /\.rpc\(["']([^"']+)["']/g;
+  while ((m = rpcRe.exec(code))) {
+    if (!backendRpcs.has(m[1])) backendRpcs.set(m[1], new Set());
+    backendRpcs.get(m[1]).add(fileName);
+  }
+}
+
+const manifestPath = path.join(root, 'supabase/live-object-manifest.json');
+if (fs.existsSync(manifestPath)) {
+  const manifest = JSON.parse(read(manifestPath));
+  const liveRelations = new Set([...(manifest.tables || []), ...(manifest.views || [])]);
+  const liveFunctions = new Set(manifest.functions || []);
+  const liveBuckets = new Set(manifest.storage_buckets || []);
+
+  for (const [name, callers] of backendTables) {
+    if (!liveRelations.has(name)) add(errors, `Frontend relation findes ikke i live manifest: ${name} <- ${[...callers].join(', ')}`);
+  }
+  for (const [name, callers] of backendRpcs) {
+    if (!liveFunctions.has(name)) add(errors, `Frontend RPC findes ikke i live manifest: ${name} <- ${[...callers].join(', ')}`);
+  }
+  for (const [name, callers] of storageBuckets) {
+    if (!liveBuckets.has(name)) add(errors, `Frontend Storage bucket findes ikke i live manifest: ${name} <- ${[...callers].join(', ')}`);
+  }
+
+  info.push(`Live Supabase manifest: ${manifest.snapshot_date || 'ukendt dato'}`);
+  info.push(`Frontend bruger ${backendTables.size} tabeller/views, ${backendRpcs.size} RPC-navne og ${storageBuckets.size} buckets.`);
 }
 
 const bigFiles = files
@@ -186,7 +225,7 @@ function mapToLines(map) {
 
 report.push('# VCL static audit');
 report.push('');
-report.push(`HTML: ${htmlFiles.length} · JS/MJS: ${jsFiles.length} · CSS: ${cssFiles.length}`);
+report.push(`HTML: ${htmlFiles.length} · runtime JS: ${runtimeJsFiles.length} · CSS: ${cssFiles.length}`);
 report.push('');
 report.push(`## Errors (${errors.length})`);
 report.push(errors.length ? errors.map((x) => `- ${x}`).join('\n') : '- Ingen statiske errors fundet.');
