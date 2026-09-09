@@ -1,0 +1,45 @@
+name: Cleanup roster activity migration copy
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+    paths:
+      - .github/workflows/cleanup-roster-activity-migration-copy.yml
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+          fetch-depth: 0
+
+      - name: Remove obsolete migration instruction
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('assets/js/rosterActivity.js')
+          text = path.read_text()
+          old = '        <p>Kør den nye Roster Activity-migration i Supabase og genindlæs siden.</p>'
+          new = '        <p>Prøv at genindlæse siden om et øjeblik.</p>'
+          if old not in text:
+              raise SystemExit('Obsolete roster activity migration instruction not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+
+      - name: Run static frontend audit
+        run: node tools/vcl-static-audit.mjs
+
+      - name: Commit cleanup
+        run: |
+          git rm .github/workflows/cleanup-roster-activity-migration-copy.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/rosterActivity.js
+          git commit -m "Remove obsolete roster activity migration instruction"
+          git push origin HEAD:stabilization/vcl-2.1-cleanup
