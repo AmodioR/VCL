@@ -50,11 +50,9 @@ Why:
 
 Target: remove the standalone `CLAIM INVITE PAGE HANDLER` from `script.js` and keep `loadClaimInvite()` as the only account claim-invite runtime owner.
 
-### 2. Team dashboard roster has two render owners
+### 2. Team dashboard roster ownership — resolved
 
-The main `TEAM DASHBOARD` block renders `[data-team-roster-list]`, and the later `CAPTAIN ROSTER CONTROLS` block renders the same container again with action controls.
-
-Target: one roster renderer for the captain dashboard, with swap/remove/claim controls composed by that owner rather than competing renders.
+The duplicate `CAPTAIN ROSTER CONTROLS` renderer has been folded into the canonical `TEAM DASHBOARD` roster renderer. The dashboard now has one owner for `[data-team-roster-list]`, including remove-player and claim-link actions, and lineup swaps refresh that same owner.
 
 ### 3. `script.js` still owns large isolated page applications
 

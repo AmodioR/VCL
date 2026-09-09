@@ -2649,10 +2649,6 @@ if (status) {
 }
 
 await loadTeamDashboard();
-
-if (window.refreshCaptainRosterControls) {
-  await window.refreshCaptainRosterControls();
-}
     } catch (error) {
       console.error(error);
 
@@ -2723,46 +2719,185 @@ function renderRosterSwapForm(members = []) {
   `;
 }
 
-    const renderRoster = (members = []) => {
+    const buildTeamDashboardClaimLink = (token) => {
+      const baseUrl = `${window.location.origin}${window.location.pathname.replace(
+        "team-dashboard.html",
+        "signup.html"
+      )}`;
+
+      return `${baseUrl}?claim=${encodeURIComponent(token)}`;
+    };
+
+    const copyTeamDashboardText = async (value) => {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+        return;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = value;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      textarea.remove();
+    };
+
+    const renderRoster = (members = [], captainPlayerId = "") => {
       if (!rosterList) return;
 
       if (!members.length) {
         rosterList.innerHTML = `
           <div class="team-dashboard-empty-v2">
             <strong>Ingen spillere på rosteren</strong>
-            <p>Der er endnu ikke registreret aktive roster members på holdet.</p>
+            <p>Der er endnu ikke registreret spillere på holdet.</p>
           </div>
         `;
         return;
       }
 
-      rosterList.innerHTML = members
+      const sortedMembers = [...members].sort((a, b) => {
+        const order = { active: 1, bench: 2 };
+        return (order[a.roster_status] || 9) - (order[b.roster_status] || 9);
+      });
+
+      rosterList.innerHTML = sortedMembers
         .map((member) => {
           const player = member.players || {};
-          const name = player.alias || "Ukendt spiller";
-          const slug = player.slug || "";
-          const role = player.primary_role || "Player";
-          const isCaptain = member.member_role === "captain";
-          const rosterStatus = member.roster_status === "bench" ? "Substitute" : "Starter";
-          const claimed = Boolean(player.claimed_by_profile_id) || player.claim_status === "claimed" || isCaptain;
+          const isCaptain =
+            member.player_id === captainPlayerId || member.member_role === "captain";
+          const isClaimed =
+            isCaptain ||
+            Boolean(player.claimed_by_profile_id) ||
+            player.claim_status === "claimed";
+          const rosterStatus = member.roster_status === "active" ? "Starter" : "Substitute";
+          const playerId = player.id || member.player_id || "";
+          const playerAlias = player.alias || "Ukendt spiller";
+          const playerSlug = player.slug || "";
+
+          const claimButton = !isClaimed && playerId
+            ? `
+                <button
+                  type="button"
+                  data-create-claim-invite
+                  data-player-id="${escapeHTML(playerId)}"
+                  data-player-alias="${escapeHTML(playerAlias)}"
+                >
+                  Lav claim link
+                </button>
+              `
+            : "";
 
           return `
             <article class="team-dashboard-roster-row-v2">
               <div class="team-dashboard-roster-row-v2__status">
                 <strong>${escapeHTML(rosterStatus)}</strong>
                 ${isCaptain ? "<span>Captain</span>" : ""}
-                <span class="${claimed ? "is-claimed" : "is-unclaimed"}">${claimed ? "Claimed" : "Unclaimed"}</span>
+                <span class="${isClaimed ? "is-claimed" : "is-unclaimed"}">${isClaimed ? "Claimed" : "Unclaimed"}</span>
               </div>
+
               <div class="team-dashboard-roster-row-v2__player">
                 <strong>
-                  ${slug ? `<a href="player-profile.html?player=${encodeURIComponent(slug)}">${escapeHTML(name)}</a>` : escapeHTML(name)}
+                  ${
+                    playerSlug
+                      ? `<a href="player-profile.html?player=${encodeURIComponent(playerSlug)}">${escapeHTML(playerAlias)}</a>`
+                      : escapeHTML(playerAlias)
+                  }
                 </strong>
-                <span>${escapeHTML(role)}</span>
+                <span>${escapeHTML(player.primary_role || "Player")}</span>
+              </div>
+
+              <div class="team-dashboard-roster-row-v2__actions">
+                <button
+                  type="button"
+                  data-remove-roster-member
+                  data-team-member-id="${escapeHTML(member.id)}"
+                  data-player-alias="${escapeHTML(playerAlias)}"
+                  ${isCaptain ? "disabled" : ""}
+                >
+                  ${isCaptain ? "Captain" : "Fjern spiller"}
+                </button>
+
+                ${claimButton}
+              </div>
+
+              <div class="team-dashboard-roster-row-v2__feedback">
+                <p class="notice" data-roster-action-status="${escapeHTML(member.id)}"></p>
+                <p class="notice" data-claim-action-status="${escapeHTML(playerId)}"></p>
               </div>
             </article>
           `;
         })
         .join("");
+
+      $$("[data-remove-roster-member]", rosterList).forEach((button) => {
+        button.addEventListener("click", async () => {
+          const teamMemberId = button.dataset.teamMemberId;
+          const playerAlias = button.dataset.playerAlias || "spilleren";
+          const status = rosterList.querySelector(`[data-roster-action-status="${teamMemberId}"]`);
+
+          if (!confirm(`Er du sikker på, at du vil fjerne ${playerAlias} fra rosteret? Spilleren bliver Free Agent igen.`)) {
+            return;
+          }
+
+          try {
+            button.disabled = true;
+            button.textContent = "Fjerner...";
+            if (status) {
+              status.textContent = "Fjerner spiller fra roster...";
+              status.dataset.status = "info";
+            }
+
+            await window.VCLData.captainRemoveRosterMember(teamMemberId);
+            await loadTeamDashboard();
+          } catch (error) {
+            console.error(error);
+            button.disabled = false;
+            button.textContent = "Fjern spiller";
+            if (status) {
+              status.textContent = error.message || "Kunne ikke fjerne spiller.";
+              status.dataset.status = "error";
+            }
+          }
+        });
+      });
+
+      $$("[data-create-claim-invite]", rosterList).forEach((button) => {
+        button.addEventListener("click", async () => {
+          const playerId = button.dataset.playerId;
+          const playerAlias = button.dataset.playerAlias || "spilleren";
+          const status = rosterList.querySelector(`[data-claim-action-status="${playerId}"]`);
+
+          try {
+            button.disabled = true;
+            button.textContent = "Laver link...";
+            if (status) {
+              status.textContent = `Laver claim link til ${playerAlias}...`;
+              status.dataset.status = "info";
+            }
+
+            const invite = await window.VCLData.captainCreateClaimInvite(playerId);
+            const claimLink = buildTeamDashboardClaimLink(invite.token);
+            await copyTeamDashboardText(claimLink);
+
+            button.textContent = "Link kopieret";
+            if (status) {
+              status.innerHTML = `Claim link kopieret:<br><a href="${escapeHTML(claimLink)}">${escapeHTML(claimLink)}</a>`;
+              status.dataset.status = "success";
+            }
+          } catch (error) {
+            console.error(error);
+            button.disabled = false;
+            button.textContent = "Lav claim link";
+            if (status) {
+              status.textContent = error.message || "Kunne ikke lave claim link.";
+              status.dataset.status = "error";
+            }
+          }
+        });
+      });
     };
 
     const renderCaptainSelect = (members = [], currentCaptainId = "") => {
@@ -3611,260 +3746,6 @@ renderCaptainSelect(members, team.captain_player_id);
     loadLiveFreeAgents();
   }
    /* =========================
-     CAPTAIN ROSTER CONTROLS
-  ========================= */
-
-  const captainRosterControlsPage = $("[data-team-dashboard-page]");
-  const captainRosterControlsList = $("[data-team-roster-list]");
-
-  if (
-    captainRosterControlsPage &&
-    captainRosterControlsList &&
-    window.VCLData?.getMyCaptainTeam
-  ) {
-    function buildClaimLink(token) {
-  const baseUrl = `${window.location.origin}${window.location.pathname.replace(
-    "team-dashboard.html",
-    "signup.html"
-  )}`;
-
-  return `${baseUrl}?claim=${encodeURIComponent(token)}`;
-}
-
-    async function copyText(text) {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(text);
-        return;
-      }
-
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.setAttribute("readonly", "");
-      textarea.style.position = "fixed";
-      textarea.style.left = "-9999px";
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      textarea.remove();
-    }
-
-    async function renderCaptainRosterControls() {
-      if (
-        !window.VCLData?.captainSetRosterStatus ||
-        !window.VCLData?.captainRemoveRosterMember ||
-        !window.VCLData?.captainCreateClaimInvite
-      ) {
-        console.warn("Captain roster/claim functions mangler i VCLData.");
-        return;
-      }
-
-      const access = await window.VCLData.getMyCaptainTeam();
-
-      if (!access?.team) {
-        return;
-      }
-
-      const team = access.team;
-      const captainPlayerId =
-        access.captain_player?.id || team.captain_player_id || "";
-
-      const members = access.members || [];
-
-      if (!members.length) {
-        captainRosterControlsList.innerHTML = `
-          <div class="team-dashboard-empty-v2">
-            <strong>Ingen spillere på rosteren</strong>
-            <p>Der er endnu ikke registreret spillere på holdet.</p>
-          </div>
-        `;
-        return;
-      }
-
-      const sortedMembers = [...members].sort((a, b) => {
-        const order = {
-          active: 1,
-          bench: 2
-        };
-
-        return (order[a.roster_status] || 9) - (order[b.roster_status] || 9);
-      });
-
-      captainRosterControlsList.innerHTML = sortedMembers
-        .map((member) => {
-          const player = member.players || {};
-          const isCaptain =
-            member.player_id === captainPlayerId ||
-            member.member_role === "captain";
-
-          const isClaimed =
-  member.player_id === captainPlayerId ||
-  Boolean(player.claimed_by_profile_id) ||
-  player.claim_status === "claimed";
-
-          const canCreateClaimInvite = !isClaimed;
-
-          const currentStatus = member.roster_status || "bench";
-          const statusLabel = currentStatus === "active" ? "Starter" : "Substitute";
-
-          const claimButton = canCreateClaimInvite
-  ? `
-    <button
-      type="button"
-      data-create-claim-invite
-      data-player-id="${escapeHTML(player.id || member.player_id)}"
-      data-player-alias="${escapeHTML(player.alias || "spilleren")}"
-    >
-      Lav claim link
-    </button>
-  `
-  : "";
-
-          return `
-            <article class="team-dashboard-roster-row-v2">
-              <div class="team-dashboard-roster-row-v2__status">
-                <strong>${escapeHTML(statusLabel)}</strong>
-                ${isCaptain ? "<span>Captain</span>" : ""}
-                <span class="${isClaimed ? "is-claimed" : "is-unclaimed"}">${isClaimed ? "Claimed" : "Unclaimed"}</span>
-              </div>
-
-              <div class="team-dashboard-roster-row-v2__player">
-                <strong>
-                  <a href="player-profile.html?player=${encodeURIComponent(player.slug || "")}">
-                    ${escapeHTML(player.alias || "Ukendt spiller")}
-                  </a>
-                </strong>
-                <span>${escapeHTML(player.primary_role || "Player")}</span>
-              </div>
-
-              <div class="team-dashboard-roster-row-v2__actions">
-                <button
-                  type="button"
-                  data-remove-roster-member
-                  data-team-member-id="${escapeHTML(member.id)}"
-                  data-player-alias="${escapeHTML(player.alias || "spilleren")}" 
-                  ${isCaptain ? "disabled" : ""}
-                >
-                  ${isCaptain ? "Captain" : "Fjern spiller"}
-                </button>
-
-                ${claimButton}
-              </div>
-
-              <div class="team-dashboard-roster-row-v2__feedback">
-                <p class="notice" data-roster-action-status="${escapeHTML(member.id)}"></p>
-                <p class="notice" data-claim-action-status="${escapeHTML(player.id || member.player_id)}"></p>
-              </div>
-            </article>
-          `;
-        })
-        .join("");
-
-      $$("[data-remove-roster-member]").forEach((button) => {
-        button.addEventListener("click", async () => {
-          const teamMemberId = button.dataset.teamMemberId;
-          const playerAlias = button.dataset.playerAlias || "spilleren";
-          const status = $(`[data-roster-action-status="${teamMemberId}"]`);
-
-          const confirmed = confirm(
-            `Er du sikker på, at du vil fjerne ${playerAlias} fra rosteret? Spilleren bliver Free Agent igen.`
-          );
-
-          if (!confirmed) {
-            return;
-          }
-
-          try {
-            button.disabled = true;
-            button.textContent = "Fjerner...";
-
-            if (status) {
-              status.textContent = "Fjerner spiller fra roster...";
-              status.dataset.status = "info";
-            }
-
-            await window.VCLData.captainRemoveRosterMember(teamMemberId);
-
-            await renderCaptainRosterControls();
-          } catch (error) {
-            console.error(error);
-
-            if (status) {
-              status.textContent =
-                error.message || "Kunne ikke fjerne spiller.";
-              status.dataset.status = "error";
-            }
-
-            button.disabled = false;
-          }
-        });
-      });
-
-      $$("[data-create-claim-invite]").forEach((button) => {
-        button.addEventListener("click", async () => {
-          const playerId = button.dataset.playerId;
-          const playerAlias = button.dataset.playerAlias || "spilleren";
-          const status = $(`[data-claim-action-status="${playerId}"]`);
-
-          try {
-            button.disabled = true;
-            button.textContent = "Laver link...";
-
-            if (status) {
-              status.textContent = `Laver claim link til ${playerAlias}...`;
-              status.dataset.status = "info";
-            }
-
-            const invite = await window.VCLData.captainCreateClaimInvite(playerId);
-            const claimLink = buildClaimLink(invite.token);
-
-            await copyText(claimLink);
-
-            button.textContent = "Link kopieret";
-
-            if (status) {
-              status.innerHTML = `
-                Claim link kopieret:
-                <br>
-                <a href="${escapeHTML(claimLink)}">${escapeHTML(claimLink)}</a>
-              `;
-              status.dataset.status = "success";
-            }
-          } catch (error) {
-            console.error(error);
-
-            button.disabled = false;
-            button.textContent = "Lav claim link";
-
-            if (status) {
-              status.textContent =
-                error.message || "Kunne ikke lave claim link.";
-              status.dataset.status = "error";
-            }
-          }
-        });
-      });
-    }
-
-    async function forceCaptainRosterRender() {
-  try {
-    await renderCaptainRosterControls();
-  } catch (error) {
-    console.error("Kunne ikke rendere captain roster controls:", error);
-  }
-}
-
-window.refreshCaptainRosterControls = forceCaptainRosterRender;
-
-forceCaptainRosterRender();
-
-    window.addEventListener("load", () => {
-      setTimeout(forceCaptainRosterRender, 250);
-      setTimeout(forceCaptainRosterRender, 900);
-      setTimeout(forceCaptainRosterRender, 1600);
-    });
-  }
-
-      /* =========================
      SIGNUP CLAIM-AWARE HANDLER
   ========================= */
 
