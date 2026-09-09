@@ -1746,48 +1746,19 @@ async getMyTeamInvites() {
     return [];
   }
 
-  const recipientColumns = [
-    "player_id",
-    "invited_player_id",
-    "recipient_player_id",
-    "target_player_id"
-  ];
+  const { data, error } = await db
+    .from("team_invites_view")
+    .select("*")
+    .eq("status", "pending")
+    .eq("invited_player_id", claimedPlayer.id)
+    .order("created_at", { ascending: false });
 
-  let lastSchemaError = null;
-
-  for (const column of recipientColumns) {
-    const { data, error } = await db
-      .from("team_invites_view")
-      .select("*")
-      .eq("status", "pending")
-      .eq(column, claimedPlayer.id)
-      .order("created_at", { ascending: false });
-
-    if (!error) {
-      return data || [];
-    }
-
-    // Older/newer versions of the view may use a different recipient column name.
-    // Only continue to the next candidate for schema/column errors; real permission or
-    // connection errors should not be hidden by trying a broader query.
-    const isMissingColumn =
-      error.code === "42703" ||
-      error.code === "PGRST204" ||
-      /column .* does not exist|could not find .* column/i.test(error.message || "");
-
-    if (!isMissingColumn) {
-      console.error("Kunne ikke hente mine team invites:", error);
-      return [];
-    }
-
-    lastSchemaError = error;
+  if (error) {
+    console.error("Kunne ikke hente mine team invites:", error);
+    return [];
   }
 
-  console.error(
-    "team_invites_view mangler et kendt recipient-felt. Invitationer skjules for at undgå at vise andre spilleres invites.",
-    lastSchemaError
-  );
-  return [];
+  return data || [];
 },
 
 async acceptTeamInvite(inviteId) {
