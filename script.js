@@ -576,7 +576,7 @@
         const [entries, matches, results] = await Promise.all([
           VCLData.getTournamentEntries(tournament.id),
           VCLData.getTournamentMatches(tournament.id),
-          VCLData.getTournamentResults ? VCLData.getTournamentResults(tournament.id) : Promise.resolve([])
+          VCLData.getTournamentResults(tournament.id)
         ]);
 
         setText("[data-tournament-series]", tournamentSeriesLabel(tournament.series_slug));

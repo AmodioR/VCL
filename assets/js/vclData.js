@@ -1117,7 +1117,7 @@ async captainRemoveRosterMember(teamMemberId) {
 
     async getTournamentBySlug(slug) {
       const { data, error } = await db
-        .from("tournaments")
+        .from("public_tournaments_view")
         .select("*")
         .eq("slug", slug)
         .maybeSingle();
