@@ -110,6 +110,17 @@ The three public identity surfaces now have clear runtime ownership and use the 
 
 Static audit passed after the profile fallback cleanup.
 
+### 9. Tournament hub / detail — audited
+
+The public tournament hub already had one `getPublicTournaments()` owner. The tournament detail flow is now aligned with the same public contract.
+
+- `VCLData.getTournamentBySlug()` now reads `public_tournaments_view` instead of the base `tournaments` table.
+- Tournament detail now calls canonical `getTournamentResults()` directly instead of treating it as an optional migration-dependent method.
+- The `?id=` URL alias is intentionally retained as harmless external-link compatibility; all current internal links use `?tournament=`.
+- Entries, matches, results and live rendering each have one runtime owner on the detail page.
+
+Static audit passed after the tournament contract cleanup.
+
 ## Remaining architecture debt
 
 `script.js` still owns several large isolated page applications. They are not automatically bugs, but each page family must be audited for duplicate ownership, stale compatibility branches and dead calls before Pass C is complete.
@@ -131,7 +142,7 @@ Do not extract code merely to reduce file size if doing so adds regression risk.
 5. runtime Supabase contract sweep — done
 6. public news + article — done
 7. teams / player / team profile — done
-8. tournament hub / detail
+8. tournament hub / detail — done
 9. account dashboard
 10. team dashboard supporting modules
 11. admin dashboard
