@@ -26,13 +26,17 @@ jobs:
 
           path = Path('assets/js/vclData.js')
           text = path.read_text(encoding='utf-8')
-          old = '''      const liveSources = [
-        "public_vcl_leaderboard_view",
-        "leaderboard_view"
-      ];'''
-          new = '''      const liveSources = [
-        "public_vcl_leaderboard_view"
-      ];'''
+          old = '\n'.join([
+              '      const liveSources = [',
+              '        "public_vcl_leaderboard_view",',
+              '        "leaderboard_view"',
+              '      ];',
+          ])
+          new = '\n'.join([
+              '      const liveSources = [',
+              '        "public_vcl_leaderboard_view"',
+              '      ];',
+          ])
           if old not in text:
               raise SystemExit('Expected retired leaderboard fallback block was not found')
           updated = text.replace(old, new, 1)
