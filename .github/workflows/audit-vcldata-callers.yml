@@ -1,0 +1,64 @@
+name: Audit VCLData callers
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+    paths:
+      - .github/workflows/audit-vcldata-callers.yml
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+
+      - name: Map VCLData methods and callers
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          source_path = Path('assets/js/vclData.js')
+          source = source_path.read_text()
+
+          match = re.search(r'window\.VCLData\s*=\s*\{(.*)\n\s*\};\s*\n?\}\)\(\);', source, re.S)
+          if not match:
+              raise SystemExit('Could not locate window.VCLData object')
+
+          body = match.group(1)
+          methods = []
+          for m in re.finditer(r'^\s{4}(?:async\s+)?([A-Za-z_$][\w$]*)\s*\(', body, re.M):
+              name = m.group(1)
+              if name not in methods:
+                  methods.append(name)
+
+          runtime_files = [Path('script.js')]
+          runtime_files += sorted(Path('assets/js').glob('*.js'))
+          runtime_files += sorted(Path('.').glob('*.html'))
+          runtime_files = [p for p in runtime_files if p != source_path]
+
+          print(f'VCLDATA_METHOD_COUNT={len(methods)}')
+          print('--- CALLER COUNTS ---')
+          unused = []
+          for name in methods:
+              pattern = re.compile(rf'\b{re.escape(name)}\b')
+              hits = []
+              count = 0
+              for path in runtime_files:
+                  text = path.read_text(errors='ignore')
+                  n = len(pattern.findall(text))
+                  if n:
+                      count += n
+                      hits.append(f'{path}:{n}')
+              if count == 0:
+                  unused.append(name)
+              print(f'{name}\t{count}\t{", ".join(hits)}')
+
+          print('--- ZERO EXTERNAL RUNTIME REFERENCES ---')
+          for name in unused:
+              print(name)
+          print(f'ZERO_EXTERNAL_COUNT={len(unused)}')
+          PY
