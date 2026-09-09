@@ -1,0 +1,33 @@
+name: Cleanup account claim loading
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+    paths:
+      - .github/workflows/cleanup-account-claim-loading.yml
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+          fetch-depth: 0
+
+      - name: Load claim invites for existing accounts without players
+        run: python3 tools/cleanup_account_claim_loading.py
+
+      - name: Commit cleanup
+        run: |
+          git rm .github/workflows/cleanup-account-claim-loading.yml
+          git rm tools/cleanup_account_claim_loading.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add script.js
+          git commit -m "Load account claim invites independently of player state"
+          git push origin HEAD:stabilization/vcl-2.1-cleanup
