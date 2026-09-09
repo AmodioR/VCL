@@ -19,6 +19,7 @@ jobs:
           ref: stabilization/vcl-2.1-cleanup
           fetch-depth: 0
 
+      # Existing accounts may arrive here with ?claim= before they have any player profile.
       - name: Load claim invites for existing accounts without players
         run: python3 tools/cleanup_account_claim_loading.py
 
