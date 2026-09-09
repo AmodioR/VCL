@@ -3037,9 +3037,7 @@ function renderRosterSwapForm(members = []) {
   teamSettingsForm.name.value = team.name || "";
   teamSettingsForm.tagline.value = team.tagline || "";
   teamSettingsForm.description.value = team.description || "";
-  const tierField = teamSettingsForm.elements.namedItem("tier");
   const statusField = teamSettingsForm.elements.namedItem("status");
-  if (tierField) tierField.value = team.tier || "Academy";
   if (statusField) statusField.value = team.status || "active";
 }
 
@@ -3147,7 +3145,7 @@ renderCaptainSelect(members, team.captain_player_id);
       name: String(formData.get("name") || "").trim(),
       tagline: String(formData.get("tagline") || "").trim(),
       description: String(formData.get("description") || "").trim(),
-      tier: String(formData.get("tier") || "Academy").trim(),
+      tier: String(currentDashboardTeam?.tier || "Academy").trim(),
       status: String(formData.get("status") || "active").trim()
     };
 
