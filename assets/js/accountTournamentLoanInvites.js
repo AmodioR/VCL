@@ -130,13 +130,7 @@
     try {
       const client = await getDb();
       const { data, error } = await client.rpc('get_my_tournament_loan_requests');
-      if (error) {
-        if (['42883', 'PGRST202', 'PGRST204'].includes(error.code)) {
-          section.hidden = true;
-          return;
-        }
-        throw error;
-      }
+      if (error) throw error;
       render(data || { requests: [] });
     } catch (error) {
       console.warn('Stand-in requests kunne ikke indlæses:', error);
