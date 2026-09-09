@@ -1,0 +1,33 @@
+name: Cleanup captain tier form
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+    paths:
+      - .github/workflows/cleanup-captain-tier-form.yml
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+          fetch-depth: 0
+
+      - name: Remove captain-editable tier form state
+        run: python3 tools/cleanup_captain_tier_form.py
+
+      - name: Commit cleanup
+        run: |
+          git rm .github/workflows/cleanup-captain-tier-form.yml
+          git rm tools/cleanup_captain_tier_form.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add script.js team-dashboard.html
+          git commit -m "Stop sourcing team tier from captain form"
+          git push origin HEAD:stabilization/vcl-2.1-cleanup
