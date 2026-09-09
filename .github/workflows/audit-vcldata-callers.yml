@@ -24,13 +24,14 @@ jobs:
           source_path = Path('assets/js/vclData.js')
           source = source_path.read_text()
 
-          match = re.search(r'window\.VCLData\s*=\s*\{(.*)\n\s*\};\s*\n?\}\)\(\);', source, re.S)
-          if not match:
+          start = source.find('window.VCLData = {')
+          end = source.rfind('\n  };')
+          if start < 0 or end <= start:
               raise SystemExit('Could not locate window.VCLData object')
 
-          body = match.group(1)
+          body = source[start:end]
           methods = []
-          for m in re.finditer(r'^\s{4}(?:async\s+)?([A-Za-z_$][\w$]*)\s*\(', body, re.M):
+          for m in re.finditer(r'^\s*async\s+([A-Za-z_$][\w$]*)\s*\(', body, re.M):
               name = m.group(1)
               if name not in methods:
                   methods.append(name)
