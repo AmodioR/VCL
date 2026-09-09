@@ -1,0 +1,272 @@
+name: Consolidate team roster renderer
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+    paths:
+      - .github/workflows/consolidate-team-roster-renderer.yml
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+          fetch-depth: 0
+
+      - name: Consolidate roster ownership
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path("script.js")
+          text = path.read_text(encoding="utf-8")
+
+          old_refresh = '''await loadTeamDashboard();
+
+if (window.refreshCaptainRosterControls) {
+  await window.refreshCaptainRosterControls();
+}'''
+          if text.count(old_refresh) != 1:
+              raise SystemExit(f"Expected one roster refresh bridge, found {text.count(old_refresh)}")
+          text = text.replace(old_refresh, "await loadTeamDashboard();", 1)
+
+          roster_start = text.find('    const renderRoster = (members = []) => {')
+          captain_select_start = text.find('    const renderCaptainSelect = (members = [], currentCaptainId = "") => {', roster_start)
+          if roster_start < 0 or captain_select_start < 0:
+              raise SystemExit("Could not locate main team-dashboard roster renderer")
+
+          consolidated = r'''    const buildTeamDashboardClaimLink = (token) => {
+      const baseUrl = `${window.location.origin}${window.location.pathname.replace(
+        "team-dashboard.html",
+        "signup.html"
+      )}`;
+
+      return `${baseUrl}?claim=${encodeURIComponent(token)}`;
+    };
+
+    const copyTeamDashboardText = async (value) => {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+        return;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = value;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      textarea.remove();
+    };
+
+    const renderRoster = (members = [], captainPlayerId = "") => {
+      if (!rosterList) return;
+
+      if (!members.length) {
+        rosterList.innerHTML = `
+          <div class="team-dashboard-empty-v2">
+            <strong>Ingen spillere på rosteren</strong>
+            <p>Der er endnu ikke registreret spillere på holdet.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const sortedMembers = [...members].sort((a, b) => {
+        const order = { active: 1, bench: 2 };
+        return (order[a.roster_status] || 9) - (order[b.roster_status] || 9);
+      });
+
+      rosterList.innerHTML = sortedMembers
+        .map((member) => {
+          const player = member.players || {};
+          const isCaptain =
+            member.player_id === captainPlayerId || member.member_role === "captain";
+          const isClaimed =
+            isCaptain ||
+            Boolean(player.claimed_by_profile_id) ||
+            player.claim_status === "claimed";
+          const rosterStatus = member.roster_status === "active" ? "Starter" : "Substitute";
+          const playerId = player.id || member.player_id || "";
+          const playerAlias = player.alias || "Ukendt spiller";
+          const playerSlug = player.slug || "";
+
+          const claimButton = !isClaimed && playerId
+            ? `
+                <button
+                  type="button"
+                  data-create-claim-invite
+                  data-player-id="${escapeHTML(playerId)}"
+                  data-player-alias="${escapeHTML(playerAlias)}"
+                >
+                  Lav claim link
+                </button>
+              `
+            : "";
+
+          return `
+            <article class="team-dashboard-roster-row-v2">
+              <div class="team-dashboard-roster-row-v2__status">
+                <strong>${escapeHTML(rosterStatus)}</strong>
+                ${isCaptain ? "<span>Captain</span>" : ""}
+                <span class="${isClaimed ? "is-claimed" : "is-unclaimed"}">${isClaimed ? "Claimed" : "Unclaimed"}</span>
+              </div>
+
+              <div class="team-dashboard-roster-row-v2__player">
+                <strong>
+                  ${
+                    playerSlug
+                      ? `<a href="player-profile.html?player=${encodeURIComponent(playerSlug)}">${escapeHTML(playerAlias)}</a>`
+                      : escapeHTML(playerAlias)
+                  }
+                </strong>
+                <span>${escapeHTML(player.primary_role || "Player")}</span>
+              </div>
+
+              <div class="team-dashboard-roster-row-v2__actions">
+                <button
+                  type="button"
+                  data-remove-roster-member
+                  data-team-member-id="${escapeHTML(member.id)}"
+                  data-player-alias="${escapeHTML(playerAlias)}"
+                  ${isCaptain ? "disabled" : ""}
+                >
+                  ${isCaptain ? "Captain" : "Fjern spiller"}
+                </button>
+
+                ${claimButton}
+              </div>
+
+              <div class="team-dashboard-roster-row-v2__feedback">
+                <p class="notice" data-roster-action-status="${escapeHTML(member.id)}"></p>
+                <p class="notice" data-claim-action-status="${escapeHTML(playerId)}"></p>
+              </div>
+            </article>
+          `;
+        })
+        .join("");
+
+      $$("[data-remove-roster-member]", rosterList).forEach((button) => {
+        button.addEventListener("click", async () => {
+          const teamMemberId = button.dataset.teamMemberId;
+          const playerAlias = button.dataset.playerAlias || "spilleren";
+          const status = rosterList.querySelector(`[data-roster-action-status="${teamMemberId}"]`);
+
+          if (!confirm(`Er du sikker på, at du vil fjerne ${playerAlias} fra rosteret? Spilleren bliver Free Agent igen.`)) {
+            return;
+          }
+
+          try {
+            button.disabled = true;
+            button.textContent = "Fjerner...";
+            if (status) {
+              status.textContent = "Fjerner spiller fra roster...";
+              status.dataset.status = "info";
+            }
+
+            await window.VCLData.captainRemoveRosterMember(teamMemberId);
+            await loadTeamDashboard();
+          } catch (error) {
+            console.error(error);
+            button.disabled = false;
+            button.textContent = "Fjern spiller";
+            if (status) {
+              status.textContent = error.message || "Kunne ikke fjerne spiller.";
+              status.dataset.status = "error";
+            }
+          }
+        });
+      });
+
+      $$("[data-create-claim-invite]", rosterList).forEach((button) => {
+        button.addEventListener("click", async () => {
+          const playerId = button.dataset.playerId;
+          const playerAlias = button.dataset.playerAlias || "spilleren";
+          const status = rosterList.querySelector(`[data-claim-action-status="${playerId}"]`);
+
+          try {
+            button.disabled = true;
+            button.textContent = "Laver link...";
+            if (status) {
+              status.textContent = `Laver claim link til ${playerAlias}...`;
+              status.dataset.status = "info";
+            }
+
+            const invite = await window.VCLData.captainCreateClaimInvite(playerId);
+            const claimLink = buildTeamDashboardClaimLink(invite.token);
+            await copyTeamDashboardText(claimLink);
+
+            button.textContent = "Link kopieret";
+            if (status) {
+              status.innerHTML = `Claim link kopieret:<br><a href="${escapeHTML(claimLink)}">${escapeHTML(claimLink)}</a>`;
+              status.dataset.status = "success";
+            }
+          } catch (error) {
+            console.error(error);
+            button.disabled = false;
+            button.textContent = "Lav claim link";
+            if (status) {
+              status.textContent = error.message || "Kunne ikke lave claim link.";
+              status.dataset.status = "error";
+            }
+          }
+        });
+      });
+    };
+
+'''
+          text = text[:roster_start] + consolidated + text[captain_select_start:]
+
+          controls_heading = 'CAPTAIN ROSTER CONTROLS'
+          heading_index = text.find(controls_heading)
+          if heading_index < 0:
+              raise SystemExit("Could not locate duplicate captain roster controls block")
+          controls_start = text.rfind('/* =========================', 0, heading_index)
+          signup_heading = 'SIGNUP CLAIM-AWARE HANDLER'
+          signup_index = text.find(signup_heading, heading_index)
+          if controls_start < 0 or signup_index < 0:
+              raise SystemExit("Could not locate duplicate block boundaries")
+          signup_start = text.rfind('/* =========================', heading_index, signup_index)
+          if signup_start < 0:
+              raise SystemExit("Could not locate signup block start")
+          text = text[:controls_start] + text[signup_start:]
+
+          if 'CAPTAIN ROSTER CONTROLS' in text:
+              raise SystemExit("Duplicate captain roster block still present")
+          if 'refreshCaptainRosterControls' in text:
+              raise SystemExit("Legacy roster refresh bridge still present")
+          if text.count('const renderRoster = (members = [], captainPlayerId = "") => {') != 1:
+              raise SystemExit("Canonical roster renderer count is not exactly one")
+
+          path.write_text(text, encoding="utf-8")
+
+          audit_path = Path("docs/JS_ARCHITECTURE_AUDIT.md")
+          audit = audit_path.read_text(encoding="utf-8")
+          old = '''### 2. Team dashboard roster has two render owners
+
+The main `TEAM DASHBOARD` block renders `[data-team-roster-list]`, and the later `CAPTAIN ROSTER CONTROLS` block renders the same container again with action controls.
+
+Target: one roster renderer for the captain dashboard, with swap/remove/claim controls composed by that owner rather than competing renders.'''
+          new = '''### 2. Team dashboard roster ownership — resolved
+
+The duplicate `CAPTAIN ROSTER CONTROLS` renderer has been folded into the canonical `TEAM DASHBOARD` roster renderer. The dashboard now has one owner for `[data-team-roster-list]`, including remove-player and claim-link actions, and lineup swaps refresh that same owner.'''
+          if old not in audit:
+              raise SystemExit("Could not locate roster audit section")
+          audit_path.write_text(audit.replace(old, new, 1), encoding="utf-8")
+
+      - name: Remove one-off workflow and commit
+        run: |
+          git rm .github/workflows/consolidate-team-roster-renderer.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add script.js docs/JS_ARCHITECTURE_AUDIT.md
+          git commit -m "Consolidate team dashboard roster renderer"
+          git push origin HEAD:stabilization/vcl-2.1-cleanup
