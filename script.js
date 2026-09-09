@@ -1108,9 +1108,58 @@ const playerProfilePage = $(".player-profile-page:not(.account-page):not(.team-p
 
   if (playerProfilePage && window.VCLData) {
     const params = new URLSearchParams(window.location.search);
-    const playerSlug = params.get("player") || "amodio";
+    const playerSlug = params.get("player") || "";
+
+    function renderMissingPlayerProfile() {
+      setText("[data-player-roster-status]", "Ikke fundet");
+      setText("[data-player-name]", "Spillerprofil ikke fundet");
+      setText("[data-player-bio]", "Kontrollér linket, eller gå tilbage til leaderboardet.");
+      setText("[data-player-rank]", "—");
+      setText("[data-player-rank-tier]", "UNRANKED");
+      setText("[data-player-points]", "—");
+      setText("[data-player-championship-wins]", "—");
+      setText("[data-player-contender-wins]", "—");
+      setText("[data-player-academy-wins]", "—");
+      setText("[data-player-info-primary]", "—");
+      setText("[data-player-info-level]", "—");
+      setText("[data-player-info-status]", "Ikke fundet");
+      setText("[data-player-info-discord]", "—");
+
+      const tags = $("[data-player-tags]");
+      if (tags) tags.innerHTML = "";
+
+      const teamPill = $("[data-player-team-pill]");
+      if (teamPill) teamPill.hidden = true;
+
+      const teamFallback = $("[data-player-team-fallback]");
+      if (teamFallback) teamFallback.hidden = false;
+      setText("[data-player-team-fallback-title]", "Ingen spiller valgt");
+      setText("[data-player-team-fallback-copy]", "Åbn en spiller fra leaderboardet eller holdoversigten.");
+
+      const rosterAction = $("[data-player-roster-action]");
+      if (rosterAction) rosterAction.hidden = true;
+
+      const historyList = $("[data-player-history-list]");
+      if (historyList) {
+        historyList.innerHTML = `
+          <article class="player-history-v3__item player-history-v3__item--empty">
+            <span class="player-history-v3__placement">—</span>
+            <div>
+              <strong>Ingen spillerprofil valgt</strong>
+              <p>Gå tilbage til leaderboardet og vælg en spiller.</p>
+            </div>
+          </article>
+        `;
+      }
+
+      document.title = "Spillerprofil ikke fundet — VCL";
+    }
 
     async function loadPlayerProfile() {
+      if (!playerSlug) {
+        renderMissingPlayerProfile();
+        return;
+      }
       const context = window.VCLData.getPlayerProfileContext
         ? await window.VCLData.getPlayerProfileContext(playerSlug)
         : null;
@@ -1120,6 +1169,7 @@ const playerProfilePage = $(".player-profile-page:not(.account-page):not(.team-p
 
       if (!player) {
         console.warn("Ingen spiller fundet:", playerSlug);
+        renderMissingPlayerProfile();
         return;
       }
 
@@ -3199,7 +3249,7 @@ renderCaptainSelect(members, team.captain_player_id);
 
   if (teamProfilePage && window.VCLData?.getTeamProfile) {
     const params = new URLSearchParams(window.location.search);
-    const teamSlug = params.get("team") || "frontline";
+    const teamSlug = params.get("team") || "";
 
     const setTeamProfileText = (selector, value) => {
       const element = $(selector);
@@ -3494,7 +3544,9 @@ renderCaptainSelect(members, team.captain_player_id);
     };
 
     async function loadPublicTeamProfile() {
-      const teamData = await window.VCLData.getTeamProfile(teamSlug);
+      const teamData = teamSlug
+        ? await window.VCLData.getTeamProfile(teamSlug)
+        : null;
 
       if (!teamData) {
         setTeamProfileText("[data-team-profile-tier]", "Ikke fundet");
