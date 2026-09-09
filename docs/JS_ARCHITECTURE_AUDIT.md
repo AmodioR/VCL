@@ -99,6 +99,17 @@ The live backend already contains the current linked approval RPC and the canoni
 
 Historical signup RPC variants can remain in Supabase until a dedicated backend retirement audit proves they have no remaining dependencies; the browser runtime no longer needs to pretend the canonical path may be absent.
 
+### 8. Teams directory / player profile / team profile — audited
+
+The three public identity surfaces now have clear runtime ownership and use the current VCLData contract.
+
+- Teams directory has one renderer and one `getTeams()` + `getPlayers()` load path.
+- Player profile now calls canonical `getPlayerProfileContext()` directly instead of probing for it and issuing a second `getPlayerBySlug()` fallback query.
+- Team profile now calls canonical `getTeamAchievements()` directly instead of treating the method as optional.
+- The synthetic `getTeams()` / `getPlayers()` page-view models are still intentionally retained because the directory currently consumes slugs as its local identifiers; changing that shape is a normalization refactor, not dead-code cleanup.
+
+Static audit passed after the profile fallback cleanup.
+
 ## Remaining architecture debt
 
 `script.js` still owns several large isolated page applications. They are not automatically bugs, but each page family must be audited for duplicate ownership, stale compatibility branches and dead calls before Pass C is complete.
@@ -107,7 +118,7 @@ Do not extract code merely to reduce file size if doing so adds regression risk.
 
 ## Do not remove yet
 
-- compatibility property fallbacks in leaderboard/player data until `vclData.js` canonical outputs are checked
+- leaderboard/property normalization aliases until the final `vclData.js` output-shape sweep
 - any VCLData method without a caller search
 - shared live/auth/navigation helpers
 
@@ -119,7 +130,7 @@ Do not extract code merely to reduce file size if doing so adds regression risk.
 4. team invite recipient compatibility — done
 5. runtime Supabase contract sweep — done
 6. public news + article — done
-7. teams / player / team profile
+7. teams / player / team profile — done
 8. tournament hub / detail
 9. account dashboard
 10. team dashboard supporting modules
