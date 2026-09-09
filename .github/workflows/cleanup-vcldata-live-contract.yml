@@ -1,0 +1,33 @@
+name: Cleanup VCLData live contract
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+    paths:
+      - .github/workflows/cleanup-vcldata-live-contract.yml
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+          fetch-depth: 0
+
+      - name: Remove retired runtime compatibility paths
+        run: python3 tools/cleanup_vcldata_live_contract.py
+
+      - name: Commit cleanup
+        run: |
+          git rm .github/workflows/cleanup-vcldata-live-contract.yml
+          git rm tools/cleanup_vcldata_live_contract.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/vclData.js
+          git commit -m "Align VCLData with canonical live schema"
+          git push origin HEAD:stabilization/vcl-2.1-cleanup
