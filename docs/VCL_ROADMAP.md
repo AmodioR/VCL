@@ -143,14 +143,54 @@ Current behaviour:
 
 PR #7 (`Add tournament loans and stand-ins`) was merged to `main` on 2026-09-08. Treat remaining issues as QA / stabilization rather than unfinished feature work.
 
+---
+
+## Supabase backend map / audit
+
+Status: live schema inventory completed 2026-09-09.
+
+Reference docs:
+
+- [`SUPABASE_SCHEMA_MAP.md`](./SUPABASE_SCHEMA_MAP.md)
+- [`SUPABASE_AUDIT_2026-09-09.md`](./SUPABASE_AUDIT_2026-09-09.md)
+
+Reusable read-only audit scripts:
+
+- `supabase/tools/schema_inventory.sql`
+- `supabase/tools/schema_security_inventory.sql`
+
+The first live audit found a **P0 tournament-roster split-brain issue**: the live `tournament_roster_players` table contains both an older automatic snapshot schema and the newer explicit entry-based roster schema. New roster-submit RPCs and old settlement/snapshot functions currently target opposite halves of the table.
+
+Before the next tournament relies on bracket generation / final settlement, QA must reconcile this so:
+
+- the captain-confirmed `entry_id` roster is canonical,
+- stand-ins are included in settlement,
+- unselected permanent players are not auto-added later,
+- the old round-one match snapshot path no longer rebuilds the roster from `team_members`,
+- tournament points/wins are awarded from the actual submitted tournament roster.
+
+The audit also found:
+
+- an obsolete `tournaments_public_read` RLS policy currently makes draft tournaments readable despite the newer published-only policy,
+- the old `leaderboard_view` reads `player_stats`, while the current points ledger only maintains `players.points`,
+- several duplicate policies/indexes/helper RPC generations should be cleaned after functional stabilization,
+- admin/news compatibility views need a dedicated `security_invoker` / RPC-grant verification pass.
+
+---
+
 ### Remaining VCL 2.1 work
 
 1. **VCL 2.1 QA / stabilization**
+   - reconcile the tournament roster + settlement backend before a real tournament depends on it,
+   - remove the obsolete public-all tournament RLS policy,
+   - verify admin/news view security and SECURITY DEFINER RPC execute grants,
+   - make the modern leaderboard source canonical,
    - run the complete user journey on desktop and mobile,
    - validate a real captain tournament registration from start to finish,
    - validate stand-in request -> player accept / decline -> roster submission,
    - verify one player cannot represent two teams in the same tournament,
    - verify Roster Moves creates the expected Loan / Stand-in event,
+   - validate bracket generation -> results -> settlement -> VCL Points using the actual submitted roster,
    - fix real bugs and edge cases only,
    - defer non-essential new ideas to a later roadmap version.
 
