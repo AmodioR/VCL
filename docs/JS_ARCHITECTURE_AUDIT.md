@@ -121,6 +121,21 @@ The public tournament hub already had one `getPublicTournaments()` owner. The to
 
 Static audit passed after the tournament contract cleanup.
 
+### 10. Account Dashboard — audited
+
+The Account Dashboard now consistently assumes the current VCLData contract instead of probing for methods that are part of the shipped application.
+
+- captain quick-access calls canonical `getMyCaptainTeam()` directly
+- avatar manager calls canonical `getMyPlayerAvatarStatus()` and `createMyPendingAvatarPreview()` directly
+- claimed-player summary calls canonical `getPlayerProfileContext()` directly instead of issuing a fallback `getPlayerBySlug()` query
+- username updates always use canonical `isProfileUsernameAvailable()` validation
+- claim invites remain owned by the Account Dashboard
+- permanent transfer requests remain owned by `accountTransferInvites.js`
+- tournament stand-in requests remain owned by `accountTournamentLoanInvites.js`
+- permanent leave-team control remains owned by `accountTeamMembership.js`
+
+These supporting modules write to separate Account Dashboard regions, so no competing renderer was found. Static audit passed after removing the obsolete Account Dashboard compatibility guards.
+
 ## Remaining architecture debt
 
 `script.js` still owns several large isolated page applications. They are not automatically bugs, but each page family must be audited for duplicate ownership, stale compatibility branches and dead calls before Pass C is complete.
@@ -143,7 +158,7 @@ Do not extract code merely to reduce file size if doing so adds regression risk.
 6. public news + article — done
 7. teams / player / team profile — done
 8. tournament hub / detail — done
-9. account dashboard
+9. account dashboard — done
 10. team dashboard supporting modules
 11. admin dashboard
 12. final `vclData.js` compatibility/caller sweep
