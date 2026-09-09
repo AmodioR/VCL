@@ -1452,8 +1452,7 @@ async captainRemoveRosterMember(teamMemberId) {
 
     async getLeaderboard() {
       const liveSources = [
-        "public_vcl_leaderboard_view",
-        "leaderboard_view"
+        "public_vcl_leaderboard_view"
       ];
 
       for (const source of liveSources) {
