@@ -711,7 +711,7 @@
         setText("[data-tournament-name]", "Turneringen kunne ikke indlæses");
         setText(
           "[data-tournament-description]",
-          error.message || "Tjek at tournament-migrationen er kørt i Supabase."
+          error.message || "Turneringen kunne ikke indlæses. Prøv igen om et øjeblik."
         );
       }
     })();
@@ -1684,7 +1684,7 @@ async function loadPlayerAvatarManager(player) {
     currentPlayerAvatarStatus = await window.VCLData.getMyPlayerAvatarStatus();
   } catch (error) {
     console.error(error);
-    setPlayerAvatarMessage("Avatarstatus kunne ikke hentes. Har du kørt avatar-migrationen i Supabase?", "error");
+    setPlayerAvatarMessage("Avatarstatus kunne ikke hentes. Prøv igen om et øjeblik.", "error");
     return;
   }
 
@@ -4396,9 +4396,9 @@ let cachedAdminTeamSignups = [];
         console.error(error);
         adminTournamentList.innerHTML = `
           <article class="admin-setup-required">
-            <span>Setup required</span>
-            <strong>Turneringsmodulet mangler i Supabase</strong>
-            <p>Kør <code>20260715_tournament_core.sql</code> i Supabase SQL Editor.</p>
+            <span>Fejl</span>
+            <strong>Turneringerne kunne ikke hentes</strong>
+            <p>Prøv igen om et øjeblik. Hvis fejlen fortsætter, kontrollér forbindelsen til VCL-databasen.</p>
           </article>
         `;
       }
@@ -4764,7 +4764,7 @@ let cachedAdminTeamSignups = [];
         adminSettlementPreview.innerHTML = `
           <div class="tournament-empty-state">
             <strong>Preview kunne ikke beregnes</strong>
-            <p>Kontrollér Supabase-migrationen og prøv igen.</p>
+            <p>Kontrollér turneringsdataene og prøv igen.</p>
           </div>
         `;
         adminFinalizeTournament.disabled = true;
@@ -6245,7 +6245,7 @@ adminSignupFilters.forEach((button) => {
         });
       } catch (error) {
         console.error(error);
-        adminAvatarList.innerHTML = `<article><span>Fejl</span><strong>Kunne ikke hente profilbilleder</strong><p>Kør avatar-migrationen i Supabase og prøv igen.</p></article>`;
+        adminAvatarList.innerHTML = `<article><span>Fejl</span><strong>Kunne ikke hente profilbilleder</strong><p>Prøv igen om et øjeblik.</p></article>`;
       }
     }
 
