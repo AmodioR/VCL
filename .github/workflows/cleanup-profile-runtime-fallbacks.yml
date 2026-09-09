@@ -1,0 +1,75 @@
+name: Cleanup profile runtime fallbacks
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+    paths:
+      - .github/workflows/cleanup-profile-runtime-fallbacks.yml
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+          fetch-depth: 0
+
+      - name: Remove obsolete player and team profile fallbacks
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('script.js')
+          text = path.read_text()
+
+          old_player = '''      const context = window.VCLData.getPlayerProfileContext
+        ? await window.VCLData.getPlayerProfileContext(playerSlug)
+        : null;
+      const player = context?.player || await window.VCLData.getPlayerBySlug(playerSlug);
+'''
+          new_player = '''      const context = await window.VCLData.getPlayerProfileContext(playerSlug);
+      const player = context?.player || null;
+'''
+
+          if text.count(old_player) != 1:
+              raise SystemExit(f'Expected one player profile compatibility block, found {text.count(old_player)}')
+          text = text.replace(old_player, new_player, 1)
+
+          old_team = '''      const achievements = window.VCLData.getTeamAchievements
+        ? await window.VCLData.getTeamAchievements(team.slug)
+        : [];
+'''
+          new_team = '''      const achievements = await window.VCLData.getTeamAchievements(team.slug);
+'''
+
+          if text.count(old_team) != 1:
+              raise SystemExit(f'Expected one team achievements compatibility block, found {text.count(old_team)}')
+          text = text.replace(old_team, new_team, 1)
+
+          forbidden = [
+              'window.VCLData.getPlayerProfileContext\n        ?',
+              'window.VCLData.getTeamAchievements\n        ?'
+          ]
+          for token in forbidden:
+              if token in text:
+                  raise SystemExit(f'Obsolete profile fallback still present: {token}')
+
+          path.write_text(text)
+          PY
+
+      - name: Run static frontend audit
+        run: node tools/vcl-static-audit.mjs
+
+      - name: Commit cleanup
+        run: |
+          git rm .github/workflows/cleanup-profile-runtime-fallbacks.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add script.js
+          git commit -m "Remove obsolete profile runtime fallbacks"
+          git push origin HEAD:stabilization/vcl-2.1-cleanup
