@@ -38,11 +38,17 @@ These sections should eventually move into page-owned modules, preserving curren
 
 ## First concrete cleanup candidates
 
-### 1. Duplicate account claim-invite ownership
+### 1. Duplicate account claim-invite ownership — canonical owner confirmed
 
-The account flow already contains `loadClaimInvite()`, but a later standalone `CLAIM INVITE PAGE HANDLER` also reads the same `?claim=` token, renders the same invite concept and calls `acceptClaimInvite()`.
+The account dashboard's `loadClaimInvite()` is the canonical owner.
 
-Target: one account claim-invite owner only. Remove the duplicate path only after confirming which markup/current flow is canonical.
+Why:
+
+- `account.html` already contains the intended claim-invite section via `data-claim-invite-section` and `data-claim-invite-box` inside the account attention area.
+- the account flow already loads the claim invite together with the rest of the account state.
+- the later standalone `CLAIM INVITE PAGE HANDLER` duplicates the same `?claim=` lookup/render/accept flow and contains fallback DOM injection that is no longer needed by the current account markup.
+
+Target: remove the standalone `CLAIM INVITE PAGE HANDLER` from `script.js` and keep `loadClaimInvite()` as the only account claim-invite runtime owner.
 
 ### 2. Team dashboard roster has two render owners
 
@@ -59,13 +65,13 @@ Target: extract one page family at a time with no behavioural changes, then run 
 ## Do not remove yet
 
 - compatibility property fallbacks in leaderboard/player data until `vclData.js` canonical outputs are checked
-- claim flow branches until current signup/account UX is verified
+- claim flow branches outside the now-confirmed duplicate account handler until current signup/account UX is verified
 - any VCLData method without a caller search
 - shared live/auth/navigation helpers
 
 ## Planned extraction order
 
-1. resolve duplicate account claim-invite ownership
+1. remove duplicate standalone account claim-invite handler
 2. resolve duplicate team-dashboard roster ownership
 3. auth/signup handlers
 4. public news + article
