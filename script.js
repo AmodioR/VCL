@@ -115,7 +115,7 @@
     const siteHeader = document.querySelector(".site-header");
 
     // Admin workspace already has its own dense fixed navigation.
-    if (!siteHeader || document.querySelector(".admin-workspace-page")) {
+    if (!siteHeader || document.querySelector(".admin-v2")) {
       return;
     }
 
