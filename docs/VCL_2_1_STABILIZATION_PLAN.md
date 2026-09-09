@@ -56,6 +56,8 @@ No missing Supabase table/view/RPC/bucket name was found by the manifest cross-c
 
 ## Pass A — Supabase correctness first
 
+**Status: complete for the VCL 2.1 cleanup pass.** Any later backend work should be driven by a concrete QA bug, not more speculative cleanup.
+
 ### A1. Tournament roster / settlement split-brain — P0
 
 Make the explicit `entry_id`-based tournament roster canonical.
@@ -106,6 +108,8 @@ Never delete a compatibility object until frontend + RPC + trigger + view depend
 
 ## Pass B — HTML and dependency integrity
 
+**Status: complete 2026-09-09.** All 24 HTML files were reviewed, including the three compatibility redirects. The obsolete Netlify form metadata on `registrer-hold.html` was removed, primary navigation is consistent, and the latest static audit completed successfully after the cleanup.
+
 Automated audit tool: `tools/vcl-static-audit.mjs`.
 
 Checks include:
@@ -115,6 +119,7 @@ Checks include:
 - image alt attributes,
 - unsafe `_blank` links,
 - Supabase SDK/client/data-layer load order,
+- primary navigation consistency,
 - CSS/JS files with no static or dynamic reference,
 - frontend Supabase references against `supabase/live-object-manifest.json`.
 
@@ -126,15 +131,17 @@ Intentional compatibility redirects that remain:
 
 They are not dead UI pages; they exist only to keep old links alive and must stay business-logic free.
 
-Manual HTML pass still required for:
+Completed manual review covered:
 
 - navigation consistency,
 - title/meta consistency,
-- forms/labels/errors,
-- empty/loading/error states,
-- keyboard/focus behaviour,
-- mobile navigation,
-- obsolete buttons/links/copy.
+- form structure and labels,
+- empty/loading/error placeholders,
+- local links and asset references,
+- script dependency order,
+- obsolete form metadata and compatibility pages.
+
+Keyboard/focus behaviour and mobile interaction remain part of the later UI/UX QA pass rather than HTML cleanup.
 
 ---
 
