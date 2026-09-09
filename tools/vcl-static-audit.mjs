@@ -29,6 +29,17 @@ const info = [];
 const pageDependencies = new Map();
 const referencedCss = new Map(cssFiles.map((file) => [relative(file), 0]));
 const referencedJs = new Map(jsFiles.map((file) => [relative(file), 0]));
+const canonicalNavHrefs = [
+  'index.html',
+  'turneringer.html',
+  'registrer-hold.html',
+  'nyheder.html',
+  'roster-market.html',
+  'teams.html',
+  'leaderboard.html',
+  'regler.html',
+  'about.html'
+];
 
 function attrValues(html, attr) {
   const values = [];
@@ -48,6 +59,17 @@ function resolveLocal(sourceFile, raw) {
   if (!clean) return null;
   const base = clean.startsWith('/') ? root : path.dirname(sourceFile);
   return path.resolve(base, clean.replace(/^\/+/, ''));
+}
+
+function primaryNavHrefs(html) {
+  const navMatch = html.match(/<nav\b[^>]*class=["'][^"']*\bnav-links\b[^"']*["'][^>]*>([\s\S]*?)<\/nav>/i);
+  if (!navMatch) return null;
+
+  const hrefs = [];
+  const linkRegex = /<a\b[^>]*\bdata-nav\b[^>]*\bhref=["']([^"']+)["'][^>]*>/gi;
+  let match;
+  while ((match = linkRegex.exec(navMatch[1]))) hrefs.push(match[1]);
+  return hrefs;
 }
 
 for (const file of htmlFiles) {
@@ -94,6 +116,17 @@ for (const file of htmlFiles) {
   if (!isRedirect && clientIndex >= 0 && !hasSdk) errors.push(`${page}: supabaseClient.js loader uden Supabase JS SDK`);
   if (clientIndex >= 0 && dataIndex >= 0 && clientIndex > dataIndex) errors.push(`${page}: vclData.js loader før supabaseClient.js`);
   if (dataIndex >= 0 && mainIndex >= 0 && dataIndex > mainIndex) warnings.push(`${page}: script.js loader før vclData.js`);
+
+  if (!isRedirect) {
+    const navHrefs = primaryNavHrefs(html);
+    if (navHrefs) {
+      const actual = JSON.stringify(navHrefs);
+      const expected = JSON.stringify(canonicalNavHrefs);
+      if (actual !== expected) {
+        errors.push(`${page}: primær navigation afviger fra canonical rækkefølge/links (${navHrefs.join(', ')})`);
+      }
+    }
+  }
 
   if (!isRedirect && !/<!doctype html>/i.test(html)) warnings.push(`${page}: mangler <!doctype html>`);
   if (!isRedirect && !/<meta\s+name=["']viewport["']/i.test(html)) warnings.push(`${page}: mangler viewport meta`);
