@@ -333,6 +333,6 @@
 
   loadOptions().catch((error) => {
     console.error(error);
-    setStatus('Kunne ikke indlæse forside-resultat. Kør de nye Supabase-migrationer først.', 'error');
+    setStatus('Kunne ikke indlæse forside-resultatet. Prøv at genindlæse siden om et øjeblik.', 'error');
   });
 })();
