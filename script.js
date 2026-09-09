@@ -2130,8 +2130,6 @@ async function loadClaimInvite() {
           }
           if (freeAgentForm) {
   freeAgentForm.hidden = true;
-  await loadTeamInvites();
-  await loadClaimInvite();
 }
 
           playerProfileForm.hidden = false;
@@ -2250,6 +2248,12 @@ if (claimedPlayerSummary && publicStats) {
   }
 }
       }
+
+      // Invitations belong to the signed-in account flow, not only to users who
+      // already have a claimed player. This is especially important after login
+      // with ?claim=, where an existing account may not have a player yet.
+      await loadTeamInvites();
+      await loadClaimInvite();
     }
 
     if (playerAvatarInput) {
