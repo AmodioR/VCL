@@ -1,0 +1,156 @@
+name: Cleanup unused VCLData methods
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+    paths:
+      - .github/workflows/cleanup-unused-vcldata-methods.yml
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+          fetch-depth: 0
+
+      - name: Remove caller-audited dead wrappers
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('assets/js/vclData.js')
+          text = path.read_text()
+
+          blocks = [
+'''    async adminAdjustPlayerPoints({
+      playerId,
+      pointsDelta,
+      reason,
+      sourceType = "manual",
+      sourceRef = null
+    }) {
+      const { data, error } = await db.rpc("admin_adjust_player_points", {
+        p_player_id: playerId,
+        p_points_delta: Number(pointsDelta),
+        p_reason: reason || "Admin point adjustment",
+        p_source_type: sourceType || "manual",
+        p_source_ref: sourceRef || null
+      });
+
+      if (error) {
+        console.error("Kunne ikke opdatere player points:", error);
+        throw error;
+      }
+
+      return Array.isArray(data) ? data[0] : data;
+    },
+
+''',
+'''    async adminAwardTournamentPoints({ tournamentRef, awards }) {
+      const { data, error } = await db.rpc("admin_award_tournament_points", {
+        p_tournament_ref: tournamentRef,
+        p_awards: Array.isArray(awards) ? awards : []
+      });
+
+      if (error) {
+        console.error("Kunne ikke tildele tournament points:", error);
+        throw error;
+      }
+
+      return data;
+    },
+
+''',
+'''async captainSetRosterStatus(teamMemberId, rosterStatus) {
+  const { data, error } = await db.rpc("captain_set_roster_status", {
+    p_team_member_id: teamMemberId,
+    p_roster_status: rosterStatus
+  });
+
+  if (error) {
+    console.error("Kunne ikke ændre roster status:", error);
+    throw error;
+  }
+
+  return Array.isArray(data) ? data[0] : data;
+},
+
+''',
+'''    async getOpenTournamentsForSignup() {
+      const { data, error } = await db
+        .from("public_tournaments_view")
+        .select("*")
+        .eq("status", "open")
+        .order("starts_at", { ascending: true, nullsFirst: false });
+
+      if (error) {
+        console.warn("Kunne ikke hente åbne turneringer:", error);
+        return [];
+      }
+
+      return data || [];
+    },
+
+
+''',
+'''    async requestMyTeamTournamentEntry(tournamentId) {
+      if (!tournamentId) throw new Error("Vælg en konkret turnering først.");
+
+      const { data, error } = await db.rpc("request_my_team_tournament_entry", {
+        p_tournament_id: tournamentId
+      });
+
+      if (error) {
+        console.error("Kunne ikke sende turneringstilmeldingen:", error);
+        throw error;
+      }
+
+      return Array.isArray(data) ? data[0] || null : data || null;
+    },
+
+'''
+          ]
+
+          for block in blocks:
+              count = text.count(block)
+              if count != 1:
+                  raise SystemExit(f'Expected one dead VCLData block, found {count}: {block.splitlines()[0]}')
+              text = text.replace(block, '', 1)
+
+          removed = [
+              'adminAdjustPlayerPoints',
+              'adminAwardTournamentPoints',
+              'captainSetRosterStatus',
+              'getOpenTournamentsForSignup',
+              'requestMyTeamTournamentEntry'
+          ]
+          for name in removed:
+              if name in text:
+                  raise SystemExit(f'Dead VCLData method still present: {name}')
+
+          if 'async getPlayerBySlug(' not in text:
+              raise SystemExit('Internal getPlayerBySlug dependency must remain')
+          if 'this.getPlayerBySlug(slug)' not in text:
+              raise SystemExit('getPlayerProfileContext must still use getPlayerBySlug')
+
+          path.write_text(text)
+          PY
+
+      - name: Run static frontend audit
+        run: node tools/vcl-static-audit.mjs
+
+      - name: Commit cleanup
+        run: |
+          git rm .github/workflows/cleanup-unused-vcldata-methods.yml
+          git rm .github/workflows/audit-vcldata-callers.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/vclData.js
+          git commit -m "Remove unused VCLData wrappers"
+          git push origin HEAD:stabilization/vcl-2.1-cleanup
