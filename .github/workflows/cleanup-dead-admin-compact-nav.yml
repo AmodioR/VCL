@@ -1,0 +1,49 @@
+name: Cleanup dead admin compact nav
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+    paths:
+      - .github/workflows/cleanup-dead-admin-compact-nav.yml
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+          fetch-depth: 0
+
+      - name: Remove obsolete compact admin navigation handler
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('script.js')
+          text = path.read_text(encoding='utf-8')
+          pattern = re.compile(
+              r'\n\s*/\* ={25}\n\s*ADMIN COMPACT NAV TABS\n={25} \*/\n\nconst adminCompactNav = document\.querySelector\("\.admin-compact-nav"\);\n\nif \(adminCompactNav\) \{.*?\n\}\n\n(?=\s*if \(adminNewsForm\) \{)',
+              re.S,
+          )
+          updated, count = pattern.subn('\n', text, count=1)
+          if count != 1:
+              raise SystemExit(f'Expected one dead admin compact nav block, removed {count}')
+          if 'admin-compact-nav' in updated or 'adminCompactNav' in updated:
+              raise SystemExit('Dead admin compact nav runtime reference still remains')
+          path.write_text(updated, encoding='utf-8')
+          PY
+
+      - name: Commit cleanup
+        run: |
+          git rm .github/workflows/cleanup-dead-admin-compact-nav.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add script.js
+          git commit -m "Remove obsolete admin compact nav handler"
+          git push origin HEAD:stabilization/vcl-2.1-cleanup
