@@ -4379,7 +4379,7 @@ let cachedAdminTeamSignups = [];
     }
 
     async function loadAdminTournaments() {
-      if (!adminTournamentList || !window.VCLData.getAdminTournaments) return;
+      if (!adminTournamentList) return;
 
       try {
         cachedAdminTournaments = await window.VCLData.getAdminTournaments();
@@ -4807,7 +4807,7 @@ let cachedAdminTeamSignups = [];
     }
 
     async function loadAdminTournamentSettlement(tournamentId) {
-      if (!adminTournamentSettlement || !window.VCLData.getTournamentSettlementPreview) return;
+      if (!adminTournamentSettlement) return;
 
       try {
         if (adminSettlementStatus) {
@@ -5382,7 +5382,7 @@ function closeAdminNewsEditForm() {
 }
 
     async function loadAdminNews() {
-  if (!adminNewsList || !window.VCLData.getAdminNewsPosts) return;
+  if (!adminNewsList) return;
 
   const posts = await window.VCLData.getAdminNewsPosts();
   cachedAdminNewsPosts = posts;
@@ -5683,7 +5683,7 @@ if (adminUnclaimedSearch) {
 }
 
 async function loadAdminTeamSignups() {
-  if (!adminTeamSignupsList || !window.VCLData.getAdminTeamSignups) {
+  if (!adminTeamSignupsList) {
     return;
   }
 
@@ -5898,48 +5898,46 @@ function bindAdminSignupActions() {
           status.dataset.status = "info";
         }
 
-        if (window.VCLData.adminValidateTeamSignup) {
-          const validation = await window.VCLData.adminValidateTeamSignup(signupId);
+        const validation = await window.VCLData.adminValidateTeamSignup(signupId);
 
-          const errors = Array.isArray(validation.errors)
-            ? validation.errors
-            : [];
+        const errors = Array.isArray(validation.errors)
+          ? validation.errors
+          : [];
 
-          const warnings = Array.isArray(validation.warnings)
-            ? validation.warnings
-            : [];
+        const warnings = Array.isArray(validation.warnings)
+          ? validation.warnings
+          : [];
 
-          if (!validation.valid || errors.length) {
+        if (!validation.valid || errors.length) {
+          if (status) {
+            status.dataset.status = "error";
+            status.innerHTML = `
+              <strong>Kan ikke godkendes:</strong>
+              <ul>
+                ${errors
+                  .map((error) => `<li>${escapeHTML(error)}</li>`)
+                  .join("")}
+              </ul>
+            `;
+          }
+
+          return;
+        }
+
+        if (warnings.length) {
+          const continueWithWarnings = confirm(
+            `Advarsler for ${teamName}:\n\n${warnings
+              .map((warning) => `- ${warning}`)
+              .join("\n")}\n\nVil du stadig godkende holdet?`
+          );
+
+          if (!continueWithWarnings) {
             if (status) {
-              status.dataset.status = "error";
-              status.innerHTML = `
-                <strong>Kan ikke godkendes:</strong>
-                <ul>
-                  ${errors
-                    .map((error) => `<li>${escapeHTML(error)}</li>`)
-                    .join("")}
-                </ul>
-              `;
+              status.textContent = "Approval afbrudt.";
+              status.dataset.status = "info";
             }
 
             return;
-          }
-
-          if (warnings.length) {
-            const continueWithWarnings = confirm(
-              `Advarsler for ${teamName}:\n\n${warnings
-                .map((warning) => `- ${warning}`)
-                .join("\n")}\n\nVil du stadig godkende holdet?`
-            );
-
-            if (!continueWithWarnings) {
-              if (status) {
-                status.textContent = "Approval afbrudt.";
-                status.dataset.status = "info";
-              }
-
-              return;
-            }
           }
         }
 
@@ -6041,14 +6039,6 @@ function bindAdminSignupActions() {
         if (status) {
           status.textContent = `Finder unclaimed spillere på ${teamName}...`;
           status.dataset.status = "info";
-        }
-
-        if (!window.VCLData.getAdminSignupClaimTargets) {
-          throw new Error("getAdminSignupClaimTargets mangler i vclData.js");
-        }
-
-        if (!window.VCLData.adminCreateClaimInvite) {
-          throw new Error("adminCreateClaimInvite mangler i vclData.js");
         }
 
         const targets = await window.VCLData.getAdminSignupClaimTargets(signupId);
@@ -6175,7 +6165,7 @@ adminSignupFilters.forEach((button) => {
 });
 
     async function loadAdminPendingAvatars() {
-      if (!adminAvatarList || !window.VCLData.getAdminPendingPlayerAvatars) return;
+      if (!adminAvatarList) return;
       try {
         const submissions = await window.VCLData.getAdminPendingPlayerAvatars();
         if (!submissions.length) {
@@ -6242,7 +6232,7 @@ adminSignupFilters.forEach((button) => {
     }
 
     async function loadAdminUnclaimedProfiles() {
-      if (!adminUnclaimedList || !window.VCLData.getAdminUnclaimedProfiles) {
+      if (!adminUnclaimedList) {
         return;
       }
 
