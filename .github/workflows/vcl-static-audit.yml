@@ -1,0 +1,17 @@
+name: VCL static audit
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run static frontend audit
+        run: node tools/vcl-static-audit.mjs
