@@ -23,18 +23,31 @@ where schemaname = 'public'
   and lower(definition) like '%team_invites%player_id%'
 order by viewname;
 
+with public_routines as (
+  select
+    p.oid,
+    p.proname,
+    p.prosecdef,
+    pg_get_function_identity_arguments(p.oid) as identity_args,
+    case
+      when p.prokind in ('f', 'p') then pg_get_functiondef(p.oid)
+      else null
+    end as definition
+  from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public'
+)
 select
   '03_FUNCTION_REFERENCE' as section,
-  n.nspname || '.' || p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')' as object_name,
+  'public.' || proname || '(' || identity_args || ')' as object_name,
   jsonb_build_object(
-    'definition', pg_get_functiondef(p.oid),
-    'security_definer', p.prosecdef
+    'definition', definition,
+    'security_definer', prosecdef
   ) as details
-from pg_proc p
-join pg_namespace n on n.oid = p.pronamespace
-where n.nspname = 'public'
-  and lower(pg_get_functiondef(p.oid)) like '%team_invites%player_id%'
-order by p.proname;
+from public_routines
+where definition is not null
+  and lower(definition) like '%team_invites%player_id%'
+order by proname;
 
 select
   '04_POLICY_REFERENCE' as section,
