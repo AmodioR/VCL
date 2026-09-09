@@ -148,11 +148,22 @@ The captain workspace has one main owner in `script.js` plus one isolated perman
 
 No runtime code was removed in this step because the Team Dashboard module boundary is already clean. Moving direct-transfer RPC calls behind VCLData would be an architectural refactor rather than dead-code cleanup, so it is intentionally deferred.
 
+### 12. Admin Dashboard — audited
+
+The admin workspace now has explicit, deterministic dependencies and consistently uses the shipped VCLData contract.
+
+- `admin.html` explicitly loads `admin-tournament-roster.css`, `adminHomeLatestResult.js` and `adminTournamentRosterPreview.js`; `adminWorkspace.js` no longer injects scripts or styles at runtime.
+- `adminWorkspace.js` owns workspace navigation and summary counters only; it does not compete with the main admin business-logic renderer.
+- `adminHomeLatestResult.js` exclusively owns the homepage latest-result editor and uses current `home_featured_results` / `public_home_latest_result_view` backend contracts.
+- `adminTournamentRosterPreview.js` exclusively enhances tournament-entry cards with canonical `tournament_roster_players` snapshots.
+- main admin loaders now call canonical VCLData methods directly for tournaments, settlement, news, team signups, validation, claim targets, avatar moderation and unclaimed profiles instead of treating shipped methods as optional.
+- the explicit “method mangler i vclData.js” compatibility errors for signup claim links were removed.
+
+Static audit passed after both the deterministic dependency cleanup and the method-guard cleanup.
+
 ## Remaining architecture debt
 
-`script.js` still owns several large isolated page applications. They are not automatically bugs, but each page family must be audited for duplicate ownership, stale compatibility branches and dead calls before Pass C is complete.
-
-Do not extract code merely to reduce file size if doing so adds regression risk. Prefer verified ownership cleanup first; extraction is optional when it clearly improves maintainability without changing behaviour.
+The final Pass C task is a caller/output-shape sweep of `vclData.js`. `script.js` can remain a large shared file for VCL 2.1 if ownership is verified; splitting it solely for file size would add regression risk and is not required for stabilization.
 
 ## Do not remove yet
 
@@ -172,7 +183,7 @@ Do not extract code merely to reduce file size if doing so adds regression risk.
 8. tournament hub / detail — done
 9. account dashboard — done
 10. team dashboard supporting modules — done
-11. admin dashboard
+11. admin dashboard — done
 12. final `vclData.js` compatibility/caller sweep
 
 Every cleanup must preserve the existing HTML contract and current Supabase/VCLData behavior. No new features during this pass.
