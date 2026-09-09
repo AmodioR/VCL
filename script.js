@@ -6311,68 +6311,6 @@ adminSignupFilters.forEach((button) => {
         });
       });
     }
-
-    /* =========================
-   ADMIN COMPACT NAV TABS
-========================= */
-
-const adminCompactNav = document.querySelector(".admin-compact-nav");
-
-if (adminCompactNav) {
-  const adminTabLinks = Array.from(
-    adminCompactNav.querySelectorAll('a[href^="#"]')
-  );
-
-  const adminTabSections = adminTabLinks
-    .map((link) => {
-      const targetId = link.getAttribute("href");
-      return document.querySelector(targetId);
-    })
-    .filter(Boolean);
-
-  function setAdminTab(targetHash, updateUrl = true) {
-    const targetSection = document.querySelector(targetHash);
-
-    if (!targetSection) return;
-
-    adminTabSections.forEach((section) => {
-      section.hidden = section !== targetSection;
-    });
-
-    adminTabLinks.forEach((link) => {
-      link.classList.toggle(
-        "is-active",
-        link.getAttribute("href") === targetHash
-      );
-    });
-
-    if (updateUrl) {
-      window.history.replaceState({}, "", targetHash);
-    }
-  }
-
-  adminTabLinks.forEach((link) => {
-    link.addEventListener("click", (event) => {
-      event.preventDefault();
-
-      const targetHash = link.getAttribute("href");
-      setAdminTab(targetHash);
-    });
-  });
-
-  const validStartHash = adminTabLinks.some((link) => {
-    return link.getAttribute("href") === window.location.hash;
-  });
-
-  const startHash = validStartHash
-    ? window.location.hash
-    : adminTabLinks[0]?.getAttribute("href");
-
-  if (startHash) {
-    setAdminTab(startHash, false);
-  }
-}
-
     if (adminNewsForm) {
       adminNewsForm.addEventListener("submit", async (event) => {
         event.preventDefault();
