@@ -20,8 +20,8 @@ jobs:
           fetch-depth: 0
 
       - name: Consolidate roster ownership
-        shell: python
         run: |
+          python3 - <<'PY'
           from pathlib import Path
 
           path = Path("script.js")
@@ -225,18 +225,12 @@ if (window.refreshCaptainRosterControls) {
 '''
           text = text[:roster_start] + consolidated + text[captain_select_start:]
 
-          controls_heading = 'CAPTAIN ROSTER CONTROLS'
-          heading_index = text.find(controls_heading)
-          if heading_index < 0:
-              raise SystemExit("Could not locate duplicate captain roster controls block")
+          heading_index = text.find('CAPTAIN ROSTER CONTROLS')
           controls_start = text.rfind('/* =========================', 0, heading_index)
-          signup_heading = 'SIGNUP CLAIM-AWARE HANDLER'
-          signup_index = text.find(signup_heading, heading_index)
-          if controls_start < 0 or signup_index < 0:
-              raise SystemExit("Could not locate duplicate block boundaries")
+          signup_index = text.find('SIGNUP CLAIM-AWARE HANDLER', heading_index)
           signup_start = text.rfind('/* =========================', heading_index, signup_index)
-          if signup_start < 0:
-              raise SystemExit("Could not locate signup block start")
+          if min(heading_index, controls_start, signup_index, signup_start) < 0:
+              raise SystemExit("Could not locate duplicate captain roster block boundaries")
           text = text[:controls_start] + text[signup_start:]
 
           if 'CAPTAIN ROSTER CONTROLS' in text:
@@ -261,6 +255,7 @@ The duplicate `CAPTAIN ROSTER CONTROLS` renderer has been folded into the canoni
           if old not in audit:
               raise SystemExit("Could not locate roster audit section")
           audit_path.write_text(audit.replace(old, new, 1), encoding="utf-8")
+          PY
 
       - name: Remove one-off workflow and commit
         run: |
