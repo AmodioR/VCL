@@ -38,7 +38,7 @@ These sections should eventually move into page-owned modules, preserving curren
 
 ## First concrete cleanup candidates
 
-### 1. Duplicate account claim-invite ownership — canonical owner confirmed
+### 1. Duplicate account claim-invite ownership — resolved
 
 The account dashboard's `loadClaimInvite()` is the canonical owner.
 
@@ -46,9 +46,9 @@ Why:
 
 - `account.html` already contains the intended claim-invite section via `data-claim-invite-section` and `data-claim-invite-box` inside the account attention area.
 - the account flow already loads the claim invite together with the rest of the account state.
-- the later standalone `CLAIM INVITE PAGE HANDLER` duplicates the same `?claim=` lookup/render/accept flow and contains fallback DOM injection that is no longer needed by the current account markup.
+- the later standalone `CLAIM INVITE PAGE HANDLER` duplicated the same `?claim=` lookup/render/accept flow and contained fallback DOM injection that is no longer needed by the current account markup.
 
-Target: remove the standalone `CLAIM INVITE PAGE HANDLER` from `script.js` and keep `loadClaimInvite()` as the only account claim-invite runtime owner.
+Resolved: the standalone `CLAIM INVITE PAGE HANDLER` was removed from `script.js`; `loadClaimInvite()` is now the only account claim-invite runtime owner.
 
 ### 2. Team dashboard roster ownership — resolved
 
