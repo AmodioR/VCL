@@ -147,6 +147,8 @@ Keyboard/focus behaviour and mobile interaction remain part of the later UI/UX Q
 
 ## Pass C — JavaScript architecture
 
+**Status: complete 2026-09-09.** Runtime ownership, page-specific handlers, Supabase/VCLData contracts and all VCLData callers were audited. Five confirmed unused browser wrappers were removed after a repo-wide caller check; one zero-external-reference method (`getPlayerBySlug`) was retained because it is an internal dependency. The current leaderboard normalization aliases remain intentionally because active rendering code consumes them and rewriting that shape would be a separate normalization refactor rather than stabilization cleanup.
+
 ### Current problem
 
 `script.js` is ~241 KB and owns behaviour for many unrelated pages. This makes regressions and dead code difficult to identify.
@@ -192,6 +194,8 @@ Already-separated feature modules should remain isolated where appropriate:
 - no direct Supabase writes from random page modules when an atomic RPC/data-layer method exists,
 - remove fallback branches only after the canonical path is verified live,
 - every deleted VCLData method must have a repo-wide caller search first.
+
+Detailed audit: `docs/JS_ARCHITECTURE_AUDIT.md`.
 
 ---
 
