@@ -1,0 +1,80 @@
+name: Cleanup loan feature fallback
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+    paths:
+      - .github/workflows/cleanup-loan-feature-fallback.yml
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+          fetch-depth: 0
+
+      - name: Remove obsolete loan migration fallback
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('assets/js/tournamentLoanManager.js')
+          text = path.read_text()
+
+          replacements = [
+              ("  let featureAvailable = null;\n", ""),
+              ("  function missingMigration(error) {\n    return ['42883', 'PGRST202', 'PGRST204'].includes(error?.code);\n  }\n\n", ""),
+              ("""      if (error) {
+        if (missingMigration(error)) {
+          featureAvailable = false;
+          return null;
+        }
+        throw error;
+      }
+
+      featureAvailable = true;
+      loanContext = data || null;
+""", """      if (error) {
+        throw error;
+      }
+
+      loanContext = data || null;
+"""),
+              ("    if (featureAvailable && loanContext) renderPanel();\n", "    if (loanContext) renderPanel();\n"),
+              ("    if (featureAvailable === false) return;\n", ""),
+              ("    if (featureAvailable && loanContext) renderPanel();\n", "    if (loanContext) renderPanel();\n"),
+              ("    if (!button || !rosterBox.contains(button) || featureAvailable !== true || !loanContext) return;\n", "    if (!button || !rosterBox.contains(button) || !loanContext) return;\n"),
+              ("    if (featureAvailable && tournament?.id && isRosterBuilderVisible()) {\n", "    if (tournament?.id && isRosterBuilderVisible()) {\n"),
+              ("    if (!document.hidden && featureAvailable && tournament?.id && isRosterBuilderVisible()) {\n", "    if (!document.hidden && tournament?.id && isRosterBuilderVisible()) {\n"),
+          ]
+
+          for old, new in replacements:
+              if old not in text:
+                  raise SystemExit(f'Expected loan compatibility snippet not found: {old[:80]!r}')
+              text = text.replace(old, new, 1)
+
+          if 'featureAvailable' in text:
+              raise SystemExit('featureAvailable still present after cleanup')
+          if 'missingMigration' in text:
+              raise SystemExit('missingMigration still present after cleanup')
+
+          path.write_text(text)
+          PY
+
+      - name: Run static frontend audit
+        run: node tools/vcl-static-audit.mjs
+
+      - name: Commit cleanup
+        run: |
+          git rm .github/workflows/cleanup-loan-feature-fallback.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/tournamentLoanManager.js
+          git commit -m "Remove obsolete loan migration fallback"
+          git push origin HEAD:stabilization/vcl-2.1-cleanup
