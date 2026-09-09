@@ -1,0 +1,46 @@
+name: Cleanup admin live bar selector
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+    paths:
+      - .github/workflows/cleanup-admin-livebar-selector.yml
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+          fetch-depth: 0
+
+      - name: Align admin selector with current markup
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('script.js')
+          text = path.read_text(encoding='utf-8')
+          old = 'document.querySelector(".admin-workspace-page")'
+          new = 'document.querySelector(".admin-v2")'
+          if text.count(old) != 1:
+              raise SystemExit(f'Expected one stale admin workspace selector, found {text.count(old)}')
+          updated = text.replace(old, new, 1)
+          if '.admin-workspace-page' in updated:
+              raise SystemExit('Stale admin workspace selector still remains')
+          path.write_text(updated, encoding='utf-8')
+          PY
+
+      - name: Commit cleanup
+        run: |
+          git rm .github/workflows/cleanup-admin-livebar-selector.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add script.js
+          git commit -m "Align live bar admin guard with current markup"
+          git push origin HEAD:stabilization/vcl-2.1-cleanup
