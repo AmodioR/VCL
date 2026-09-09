@@ -161,15 +161,37 @@ The admin workspace now has explicit, deterministic dependencies and consistentl
 
 Static audit passed after both the deterministic dependency cleanup and the method-guard cleanup.
 
+### 13. Final `vclData.js` caller / output-shape sweep — complete
+
+A branch-local caller audit mapped all 82 VCLData methods against runtime JavaScript and HTML before any deletion.
+
+Six methods had no external runtime reference. One of them, `getPlayerBySlug()`, is still an internal dependency of `getPlayerProfileContext()` and was therefore retained. The five confirmed dead browser wrappers were removed:
+
+- `adminAdjustPlayerPoints()`
+- `adminAwardTournamentPoints()`
+- `captainSetRosterStatus()`
+- `getOpenTournamentsForSignup()`
+- `requestMyTeamTournamentEntry()`
+
+Their underlying Supabase RPCs were not removed by this JavaScript pass; only unused browser wrappers were deleted.
+
+Leaderboard normalization was also reviewed. Its current aliases are still actively consumed by the existing leaderboard/profile rendering path, so a coordinated canonical-shape rewrite would be a normalization refactor rather than dead-code cleanup. They are intentionally retained for VCL 2.1 to avoid creating regression risk solely to reduce adapter code.
+
+`getPlayerBySlug()` is the important exception to the external-caller rule: it has no direct page caller but is deliberately kept because `getPlayerProfileContext()` calls it internally.
+
+The temporary caller-audit workflow was removed after the cleanup, and the static frontend audit passed before the dead wrappers were committed.
+
+## Pass C result
+
+**Pass C is complete for VCL 2.1 stabilization.** Ownership, active compatibility paths, backend contracts and VCLData callers have been reviewed. No further JavaScript restructuring is required before CSS/UI QA; future module extraction should be driven by maintainability work rather than this stabilization gate.
+
 ## Remaining architecture debt
 
-The final Pass C task is a caller/output-shape sweep of `vclData.js`. `script.js` can remain a large shared file for VCL 2.1 if ownership is verified; splitting it solely for file size would add regression risk and is not required for stabilization.
+- `script.js` is still large, but verified page ownership is more important than splitting it during stabilization.
+- leaderboard aliases can be normalized in a future coordinated refactor after VCL 2.1 is stable.
+- direct-transfer/loan modules can be moved behind a stricter common data-adapter boundary later if desired.
 
-## Do not remove yet
-
-- leaderboard/property normalization aliases until the final `vclData.js` output-shape sweep
-- any VCLData method without a caller search
-- shared live/auth/navigation helpers
+These are maintainability items, not blockers for the current cleanup pass.
 
 ## Audit order
 
@@ -184,6 +206,6 @@ The final Pass C task is a caller/output-shape sweep of `vclData.js`. `script.js
 9. account dashboard — done
 10. team dashboard supporting modules — done
 11. admin dashboard — done
-12. final `vclData.js` compatibility/caller sweep
+12. final `vclData.js` compatibility/caller sweep — done
 
 Every cleanup must preserve the existing HTML contract and current Supabase/VCLData behavior. No new features during this pass.
