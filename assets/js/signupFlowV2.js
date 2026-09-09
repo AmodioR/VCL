@@ -21,25 +21,6 @@
 
   const clearError = (stepNumber) => setError(stepNumber, '');
 
-  function patchOptionalTeamDescription() {
-    if (
-      !window.VCLData?.submitTeamSignup ||
-      window.VCLData.__optionalTeamDescriptionPatched
-    ) {
-      return;
-    }
-
-    const submitTeamSignup = window.VCLData.submitTeamSignup.bind(window.VCLData);
-
-    window.VCLData.submitTeamSignup = (signup = {}) =>
-      submitTeamSignup({
-        team_description: '',
-        ...signup
-      });
-
-    window.VCLData.__optionalTeamDescriptionPatched = true;
-  }
-
   function validateTeamLogo({ clearInvalid = false } = {}) {
     const file = teamLogoInput?.files?.[0] || null;
     if (!file) return true;
@@ -178,9 +159,6 @@
       clearError(1);
     });
   }
-
-  patchOptionalTeamDescription();
-  window.addEventListener('vcldata:ready', patchOptionalTeamDescription, { once: true });
 
   form.querySelectorAll('[data-step-next]').forEach((button) => {
     button.addEventListener('click', () => {
