@@ -1,0 +1,78 @@
+name: Cleanup tournament migration fallbacks
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+    paths:
+      - .github/workflows/cleanup-tournament-migration-fallbacks.yml
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+          fetch-depth: 0
+
+      - name: Remove obsolete migration-missing compatibility branches
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('assets/js/tournamentEntryFlow.js')
+          text = path.read_text()
+
+          old_load = """      if (error) {
+                const migrationMissing = ['42883', 'PGRST202', 'PGRST204'].includes(error.code);
+                if (migrationMissing) {
+                  console.warn('Tournament roster migration er ikke installeret endnu.', error);
+                  return null;
+                }
+                throw error;
+              }
+          """
+          new_load = """      if (error) {
+                throw error;
+              }
+          """
+
+          old_submit = """      const migrationMissing = ['42883', 'PGRST202', 'PGRST204'].includes(error?.code);
+              setStatus(
+                migrationMissing
+                  ? 'Tournament roster-systemet mangler Supabase-migrationen.'
+                  : error?.message || 'Holdets tournament roster kunne ikke gemmes.',
+                'error'
+              );
+          """
+          new_submit = """      setStatus(
+                error?.message || 'Holdets tournament roster kunne ikke gemmes.',
+                'error'
+              );
+          """
+
+          if old_load not in text:
+              raise SystemExit('loadSavedRoster compatibility block not found')
+          if old_submit not in text:
+              raise SystemExit('submitRoster compatibility block not found')
+
+          text = text.replace(old_load, new_load, 1)
+          text = text.replace(old_submit, new_submit, 1)
+          path.write_text(text)
+          PY
+
+      - name: Run static frontend audit
+        run: node tools/vcl-static-audit.mjs
+
+      - name: Commit cleanup
+        run: |
+          git rm .github/workflows/cleanup-tournament-migration-fallbacks.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/tournamentEntryFlow.js
+          git commit -m "Remove obsolete tournament migration fallbacks"
+          git push origin HEAD:stabilization/vcl-2.1-cleanup
