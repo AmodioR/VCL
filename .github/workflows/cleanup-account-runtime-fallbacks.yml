@@ -1,0 +1,83 @@
+name: Cleanup account runtime fallbacks
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+    paths:
+      - .github/workflows/cleanup-account-runtime-fallbacks.yml
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+          fetch-depth: 0
+
+      - name: Remove obsolete Account Dashboard compatibility guards
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('script.js')
+          text = path.read_text()
+
+          replacements = [
+              (
+                  '''  myCaptainData = null;\n  try {\n    if (window.VCLData?.getMyCaptainTeam) {\n      myCaptainData = await window.VCLData.getMyCaptainTeam();\n    }\n  } catch (error) {''',
+                  '''  myCaptainData = null;\n  try {\n    myCaptainData = await window.VCLData.getMyCaptainTeam();\n  } catch (error) {'''
+              ),
+              (
+                  '''  if (!playerAvatarManager || !player || !window.VCLData.getMyPlayerAvatarStatus) {\n    if (playerAvatarManager) playerAvatarManager.hidden = true;\n    return;\n  }''',
+                  '''  if (!playerAvatarManager || !player) {\n    if (playerAvatarManager) playerAvatarManager.hidden = true;\n    return;\n  }'''
+              ),
+              (
+                  '''  if (status === "pending" && currentPlayerAvatarStatus?.pending_storage_path && window.VCLData.createMyPendingAvatarPreview) {''',
+                  '''  if (status === "pending" && currentPlayerAvatarStatus?.pending_storage_path) {'''
+              ),
+              (
+                  '''          const claimedContext = window.VCLData.getPlayerProfileContext\n            ? await window.VCLData.getPlayerProfileContext(myClaimedPlayer.slug)\n            : null;\n          const publicStats = claimedContext?.player || await window.VCLData.getPlayerBySlug(myClaimedPlayer.slug);''',
+                  '''          const claimedContext = await window.VCLData.getPlayerProfileContext(myClaimedPlayer.slug);\n          const publicStats = claimedContext?.player || null;'''
+              ),
+              (
+                  '''        if (window.VCLData?.isProfileUsernameAvailable) {\n  const currentProfile = await window.VCLData.getCurrentProfile();\n\n  const usernameAvailable = await window.VCLData.isProfileUsernameAvailable(\n    updates.display_name,\n    currentProfile?.id || null\n  );\n\n  if (!usernameAvailable) {\n    setAccountMessage(\n      "Det brugernavn er allerede taget. Vælg et andet.",\n      "error"\n    );\n    return;\n  }\n}''',
+                  '''        const currentProfile = await window.VCLData.getCurrentProfile();\n\n        const usernameAvailable = await window.VCLData.isProfileUsernameAvailable(\n          updates.display_name,\n          currentProfile?.id || null\n        );\n\n        if (!usernameAvailable) {\n          setAccountMessage(\n            "Det brugernavn er allerede taget. Vælg et andet.",\n            "error"\n          );\n          return;\n        }'''
+              )
+          ]
+
+          for old, new in replacements:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'Expected one Account Dashboard block, found {count}: {old[:80]!r}')
+              text = text.replace(old, new, 1)
+
+          forbidden = [
+              'window.VCLData?.getMyCaptainTeam',
+              '!window.VCLData.getMyPlayerAvatarStatus',
+              '&& window.VCLData.createMyPendingAvatarPreview',
+              'window.VCLData.getPlayerProfileContext\n            ?',
+              'window.VCLData?.isProfileUsernameAvailable'
+          ]
+          for token in forbidden:
+              if token in text:
+                  raise SystemExit(f'Obsolete Account Dashboard fallback still present: {token}')
+
+          path.write_text(text)
+          PY
+
+      - name: Run static frontend audit
+        run: node tools/vcl-static-audit.mjs
+
+      - name: Commit cleanup
+        run: |
+          git rm .github/workflows/cleanup-account-runtime-fallbacks.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add script.js
+          git commit -m "Remove obsolete account runtime fallbacks"
+          git push origin HEAD:stabilization/vcl-2.1-cleanup
