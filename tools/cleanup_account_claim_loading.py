@@ -37,9 +37,14 @@ if text.count(anchor) != 1:
     raise SystemExit(f'Expected one account loader end anchor, found {text.count(anchor)}')
 text = text.replace(anchor, replacement, 1)
 
-if text.count('await loadClaimInvite();') != 1:
-    raise SystemExit(f'Expected exactly one loadClaimInvite call after cleanup, found {text.count("await loadClaimInvite();")}')
-if text.count('await loadTeamInvites();') != 1:
-    raise SystemExit(f'Expected exactly one loadTeamInvites call after cleanup, found {text.count("await loadTeamInvites();")}')
+expected = '''      await loadTeamInvites();
+      await loadClaimInvite();
+    }
+
+    if (playerAvatarInput) {'''
+if expected not in text:
+    raise SystemExit('Claim/team invitation loading was not moved to the account-level flow')
+if old in text:
+    raise SystemExit('Claim loading still depends on the claimed-player free-agent branch')
 
 path.write_text(text, encoding='utf-8')
