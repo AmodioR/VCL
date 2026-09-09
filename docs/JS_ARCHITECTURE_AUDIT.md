@@ -27,7 +27,6 @@ These sections should eventually move into page-owned modules, preserving curren
 - team dashboard
 - public team profile
 - Roster Market Free Agent rendering/invites
-- captain roster controls / claim links
 - account claim-invite handling
 - signup claim-aware submit flow
 - signup claim preview
@@ -36,17 +35,15 @@ These sections should eventually move into page-owned modules, preserving curren
 - news listing
 - news article
 
-## First concrete cleanup candidates
+## Confirmed cleanup / ownership decisions
 
 ### 1. Duplicate account claim-invite ownership — resolved
 
 The account dashboard's `loadClaimInvite()` is the canonical owner.
 
-Why:
-
-- `account.html` already contains the intended claim-invite section via `data-claim-invite-section` and `data-claim-invite-box` inside the account attention area.
-- the account flow already loads the claim invite together with the rest of the account state.
-- the later standalone `CLAIM INVITE PAGE HANDLER` duplicated the same `?claim=` lookup/render/accept flow and contained fallback DOM injection that is no longer needed by the current account markup.
+- `account.html` already contains the intended claim-invite section.
+- the account flow already loads the invite together with the rest of the account state.
+- the later standalone handler duplicated the same `?claim=` lookup/render/accept flow.
 
 Resolved: the standalone `CLAIM INVITE PAGE HANDLER` was removed from `script.js`; `loadClaimInvite()` is now the only account claim-invite runtime owner.
 
@@ -54,30 +51,47 @@ Resolved: the standalone `CLAIM INVITE PAGE HANDLER` was removed from `script.js
 
 The duplicate `CAPTAIN ROSTER CONTROLS` renderer has been folded into the canonical `TEAM DASHBOARD` roster renderer. The dashboard now has one owner for `[data-team-roster-list]`, including remove-player and claim-link actions, and lineup swaps refresh that same owner.
 
-### 3. `script.js` still owns large isolated page applications
+### 3. Login / signup / claim auth flow — audited
 
-Admin, account, tournament, news and profile behaviour are large self-contained applications inside the shared bootstrap. They are not necessarily broken, but they are the main reason `script.js` is difficult to audit safely.
+`signup.html` and `login.html` each have one active form owner in `script.js`, and both load Supabase SDK -> `supabaseClient.js` -> `vclData.js` -> `script.js` in the expected order.
 
-Target: extract one page family at a time with no behavioural changes, then run the static audit after each extraction.
+- signup has one `signUpAccount()` submit path
+- login has one `loginAccount()` submit path
+- signup claim preview is presentation-only and does not duplicate account claim acceptance ownership
+- the signup claim branch and login claim forwarding intentionally preserve the `?claim=` token
+
+No duplicate auth handler was removed because no competing runtime owner was found.
+
+### 4. Team invite recipient compatibility — resolved
+
+`VCLData.getMyTeamInvites()` previously probed legacy recipient fields (`player_id`, `recipient_player_id`, `target_player_id`) before falling back to the canonical field. The live schema is now normalized, so the method queries `team_invites_view.invited_player_id` directly.
+
+This keeps the website aligned with the cleaned live Supabase contract instead of silently supporting retired schema names.
+
+## Remaining architecture debt
+
+`script.js` still owns several large isolated page applications. They are not automatically bugs, but each page family must be audited for duplicate ownership, stale compatibility branches and dead calls before Pass C is complete.
+
+Do not extract code merely to reduce file size if doing so adds regression risk. Prefer verified ownership cleanup first; extraction is optional when it clearly improves maintainability without changing behaviour.
 
 ## Do not remove yet
 
 - compatibility property fallbacks in leaderboard/player data until `vclData.js` canonical outputs are checked
-- claim flow branches outside the now-confirmed duplicate account handler until current signup/account UX is verified
 - any VCLData method without a caller search
 - shared live/auth/navigation helpers
 
-## Planned extraction order
+## Audit order
 
-1. remove duplicate standalone account claim-invite handler
-2. resolve duplicate team-dashboard roster ownership
-3. auth/signup handlers
-4. public news + article
-5. teams/player/team profile pages
-6. tournament hub/detail
-7. account dashboard
-8. team dashboard
-9. admin dashboard
-10. leave `script.js` as shared bootstrap only
+1. account claim invite — done
+2. team-dashboard roster ownership — done
+3. auth/signup handlers — done
+4. team invite recipient compatibility — done
+5. public news + article
+6. teams / player / team profile
+7. tournament hub / detail
+8. account dashboard
+9. team dashboard supporting modules
+10. admin dashboard
+11. final `vclData.js` compatibility/caller sweep
 
-Every extraction must preserve the existing HTML contract and current Supabase/VCLData calls. No new features during this pass.
+Every cleanup must preserve the existing HTML contract and current Supabase/VCLData behavior. No new features during this pass.
