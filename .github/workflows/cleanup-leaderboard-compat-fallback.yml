@@ -1,0 +1,51 @@
+name: Cleanup leaderboard compatibility fallback
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+    paths:
+      - .github/workflows/cleanup-leaderboard-compat-fallback.yml
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+          fetch-depth: 0
+
+      - name: Remove retired leaderboard fallback
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('assets/js/vclData.js')
+          text = path.read_text(encoding='utf-8')
+          old = '''      const liveSources = [
+        "public_vcl_leaderboard_view",
+        "leaderboard_view"
+      ];'''
+          new = '''      const liveSources = [
+        "public_vcl_leaderboard_view"
+      ];'''
+          if old not in text:
+              raise SystemExit('Expected retired leaderboard fallback block was not found')
+          updated = text.replace(old, new, 1)
+          if '"leaderboard_view"' in updated:
+              raise SystemExit('Retired leaderboard_view reference still remains')
+          path.write_text(updated, encoding='utf-8')
+          PY
+
+      - name: Commit cleanup
+        run: |
+          git rm .github/workflows/cleanup-leaderboard-compat-fallback.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/vclData.js
+          git commit -m "Remove retired leaderboard compatibility fallback"
+          git push origin HEAD:stabilization/vcl-2.1-cleanup
