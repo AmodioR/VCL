@@ -136,6 +136,18 @@ The Account Dashboard now consistently assumes the current VCLData contract inst
 
 These supporting modules write to separate Account Dashboard regions, so no competing renderer was found. Static audit passed after removing the obsolete Account Dashboard compatibility guards.
 
+### 11. Team Dashboard supporting modules — audited
+
+The captain workspace has one main owner in `script.js` plus one isolated permanent-transfer module.
+
+- `script.js` owns captain access, roster rendering, claim links, lineup swaps, team settings/logo updates and captain transfer.
+- `teamTransferManager.js` is loaded only by `team-dashboard.html` and owns only `[data-direct-transfer-section]`.
+- its four runtime RPCs (`get_my_team_transfer_candidates`, `get_my_captain_transfer_requests`, `create_player_transfer_request`, `cancel_my_player_transfer_request`) are all present in the reconciled live-object manifest.
+- the candidate payload uses `alias` / `avatar_url`, while transfer history intentionally uses `player_alias` / `player_avatar_url`; the dual display helper is therefore payload normalization, not retired-schema compatibility.
+- no migration-presence fallback, duplicate click owner or competing renderer was found in the transfer module.
+
+No runtime code was removed in this step because the Team Dashboard module boundary is already clean. Moving direct-transfer RPC calls behind VCLData would be an architectural refactor rather than dead-code cleanup, so it is intentionally deferred.
+
 ## Remaining architecture debt
 
 `script.js` still owns several large isolated page applications. They are not automatically bugs, but each page family must be audited for duplicate ownership, stale compatibility branches and dead calls before Pass C is complete.
@@ -159,7 +171,7 @@ Do not extract code merely to reduce file size if doing so adds regression risk.
 7. teams / player / team profile — done
 8. tournament hub / detail — done
 9. account dashboard — done
-10. team dashboard supporting modules
+10. team dashboard supporting modules — done
 11. admin dashboard
 12. final `vclData.js` compatibility/caller sweep
 
