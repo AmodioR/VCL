@@ -5,33 +5,40 @@ const root = process.cwd();
 const ignoredDirs = new Set(['.git', 'node_modules']);
 
 function walk(dir) {
-  const out = [];
+  const result = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (ignoredDirs.has(entry.name)) continue;
     const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...walk(full));
-    else out.push(full);
+    if (entry.isDirectory()) result.push(...walk(full));
+    else result.push(full);
   }
-  return out;
+  return result;
 }
 
 const files = walk(root);
-const rel = (file) => path.relative(root, file).replaceAll('\\', '/');
+const relative = (file) => path.relative(root, file).replaceAll('\\', '/');
 const read = (file) => fs.readFileSync(file, 'utf8');
-const htmlFiles = files.filter((f) => f.endsWith('.html'));
-const runtimeJsFiles = files.filter((f) => f.endsWith('.js') && !rel(f).startsWith('tools/'));
-const auditJsFiles = files.filter((f) => f.endsWith('.js') || f.endsWith('.mjs'));
-const cssFiles = files.filter((f) => f.endsWith('.css'));
-const allRel = new Set(files.map(rel));
+const allPaths = new Set(files.map(relative));
+const htmlFiles = files.filter((file) => file.endsWith('.html'));
+const jsFiles = files.filter((file) => file.endsWith('.js') && !relative(file).startsWith('tools/'));
+const cssFiles = files.filter((file) => file.endsWith('.css'));
 
-const report = [];
 const errors = [];
 const warnings = [];
 const info = [];
+const pageDependencies = new Map();
+const referencedCss = new Map(cssFiles.map((file) => [relative(file), 0]));
+const referencedJs = new Map(jsFiles.map((file) => [relative(file), 0]));
 
-const add = (bucket, message) => bucket.push(message);
+function attrValues(html, attr) {
+  const values = [];
+  const regex = new RegExp(`\\b${attr}\\s*=\\s*["']([^"']+)["']`, 'gi');
+  let match;
+  while ((match = regex.exec(html))) values.push(match[1]);
+  return values;
+}
 
-function normalizeLocalRef(sourceFile, raw) {
+function resolveLocal(sourceFile, raw) {
   if (!raw) return null;
   const value = raw.trim();
   if (!value || value.startsWith('#')) return null;
@@ -43,75 +50,63 @@ function normalizeLocalRef(sourceFile, raw) {
   return path.resolve(base, clean.replace(/^\/+/, ''));
 }
 
-function extractAttrs(html, attr) {
-  const values = [];
-  const re = new RegExp(`\\b${attr}\\s*=\\s*["']([^"']+)["']`, 'gi');
-  let match;
-  while ((match = re.exec(html))) values.push(match[1]);
-  return values;
-}
-
-const pageDeps = new Map();
-const referencedCss = new Map(cssFiles.map((f) => [rel(f), 0]));
-const referencedJs = new Map(runtimeJsFiles.map((f) => [rel(f), 0]));
-
 for (const file of htmlFiles) {
   const html = read(file);
-  const page = rel(file);
+  const page = relative(file);
   const isRedirect = /http-equiv=["']refresh["']/i.test(html);
-  const refs = [];
+  const dependencies = [];
 
   for (const attr of ['href', 'src']) {
-    for (const raw of extractAttrs(html, attr)) {
-      const resolved = normalizeLocalRef(file, raw);
+    for (const raw of attrValues(html, attr)) {
+      const resolved = resolveLocal(file, raw);
       if (!resolved) continue;
-      const target = rel(resolved);
-      refs.push(target);
-      if (!allRel.has(target)) add(errors, `${page}: manglende lokal ${attr} -> ${raw}`);
+      const target = relative(resolved);
+      dependencies.push(target);
+      if (!allPaths.has(target)) errors.push(`${page}: manglende lokal ${attr} -> ${raw}`);
       if (referencedCss.has(target)) referencedCss.set(target, referencedCss.get(target) + 1);
       if (referencedJs.has(target)) referencedJs.set(target, referencedJs.get(target) + 1);
     }
   }
 
-  pageDeps.set(page, refs);
+  pageDependencies.set(page, dependencies);
 
-  const ids = extractAttrs(html, 'id');
-  const duplicates = [...new Set(ids.filter((id, i) => ids.indexOf(id) !== i))];
-  for (const id of duplicates) add(errors, `${page}: duplicate id="${id}"`);
-
-  const imgTags = html.match(/<img\b[^>]*>/gi) || [];
-  for (const tag of imgTags) {
-    if (!/\balt\s*=/.test(tag)) add(warnings, `${page}: <img> uden alt-attribut: ${tag.slice(0, 120)}`);
+  const ids = attrValues(html, 'id');
+  for (const id of new Set(ids.filter((value, index) => ids.indexOf(value) !== index))) {
+    errors.push(`${page}: duplicate id="${id}"`);
   }
 
-  const blankTags = html.match(/<(?:a|form)\b[^>]*target=["']_blank["'][^>]*>/gi) || [];
-  for (const tag of blankTags) {
-    if (!/\brel=["'][^"']*noopener/i.test(tag)) add(warnings, `${page}: target=_blank uden rel=noopener`);
+  for (const tag of html.match(/<img\b[^>]*>/gi) || []) {
+    if (!/\balt\s*=/.test(tag)) warnings.push(`${page}: <img> uden alt-attribut`);
   }
 
-  const allScriptRefs = extractAttrs(html, 'src');
-  const localScriptRefs = allScriptRefs.filter((v) => v.endsWith('.js') || v.includes('.js?'));
-  const hasSupabaseSdk = allScriptRefs.some((v) => v.includes('@supabase/supabase-js'));
-  const clientIndex = localScriptRefs.findIndex((v) => v.includes('supabaseClient.js'));
-  const dataIndex = localScriptRefs.findIndex((v) => v.includes('vclData.js'));
-  const mainIndex = localScriptRefs.findIndex((v) => /(?:^|\/)script\.js(?:\?|$)/.test(v));
-  if (!isRedirect && dataIndex >= 0 && clientIndex < 0) add(errors, `${page}: vclData.js loader uden supabaseClient.js`);
-  if (!isRedirect && clientIndex >= 0 && !hasSupabaseSdk) add(errors, `${page}: supabaseClient.js loader uden Supabase JS SDK`);
-  if (clientIndex >= 0 && dataIndex >= 0 && clientIndex > dataIndex) add(errors, `${page}: vclData.js loader før supabaseClient.js`);
-  if (dataIndex >= 0 && mainIndex >= 0 && dataIndex > mainIndex) add(warnings, `${page}: script.js loader før vclData.js`);
+  for (const tag of html.match(/<(?:a|form)\b[^>]*target=["']_blank["'][^>]*>/gi) || []) {
+    if (!/\brel=["'][^"']*noopener/i.test(tag)) warnings.push(`${page}: target=_blank uden rel=noopener`);
+  }
 
-  if (!isRedirect && !/<!doctype html>/i.test(html)) add(warnings, `${page}: mangler <!doctype html>`);
-  if (!isRedirect && !/<meta\s+name=["']viewport["']/i.test(html)) add(warnings, `${page}: mangler viewport meta`);
-  if (!isRedirect && !/<html\b[^>]*lang=["']da["']/i.test(html)) add(warnings, `${page}: html lang er ikke da`);
+  const scripts = attrValues(html, 'src');
+  const localScripts = scripts.filter((value) => value.endsWith('.js') || value.includes('.js?'));
+  const hasSdk = scripts.some((value) => value.includes('@supabase/supabase-js'));
+  const clientIndex = localScripts.findIndex((value) => value.includes('supabaseClient.js'));
+  const dataIndex = localScripts.findIndex((value) => value.includes('vclData.js'));
+  const mainIndex = localScripts.findIndex((value) => /(?:^|\/)script\.js(?:\?|$)/.test(value));
+
+  if (!isRedirect && dataIndex >= 0 && clientIndex < 0) errors.push(`${page}: vclData.js loader uden supabaseClient.js`);
+  if (!isRedirect && clientIndex >= 0 && !hasSdk) errors.push(`${page}: supabaseClient.js loader uden Supabase JS SDK`);
+  if (clientIndex >= 0 && dataIndex >= 0 && clientIndex > dataIndex) errors.push(`${page}: vclData.js loader før supabaseClient.js`);
+  if (dataIndex >= 0 && mainIndex >= 0 && dataIndex > mainIndex) warnings.push(`${page}: script.js loader før vclData.js`);
+
+  if (!isRedirect && !/<!doctype html>/i.test(html)) warnings.push(`${page}: mangler <!doctype html>`);
+  if (!isRedirect && !/<meta\s+name=["']viewport["']/i.test(html)) warnings.push(`${page}: mangler viewport meta`);
+  if (!isRedirect && !/<html\b[^>]*lang=["']da["']/i.test(html)) warnings.push(`${page}: html lang er ikke da`);
 }
 
-// Dynamic CSS/JS loaders also count as active references.
-for (const file of runtimeJsFiles) {
+// Count component files loaded dynamically by JavaScript.
+for (const file of jsFiles) {
   const code = read(file);
-  const assetRe = /["']((?:assets\/)?(?:css|js)\/[^"']+\.(?:css|js))(?:\?[^"']*)?["']/g;
-  let m;
-  while ((m = assetRe.exec(code))) {
-    let target = m[1];
+  const regex = /["']((?:assets\/)?(?:css|js)\/[^"']+\.(?:css|js))(?:\?[^"']*)?["']/g;
+  let match;
+  while ((match = regex.exec(code))) {
+    let target = match[1];
     if (!target.startsWith('assets/')) target = `assets/${target}`;
     if (referencedCss.has(target)) referencedCss.set(target, referencedCss.get(target) + 1);
     if (referencedJs.has(target)) referencedJs.set(target, referencedJs.get(target) + 1);
@@ -119,74 +114,38 @@ for (const file of runtimeJsFiles) {
 }
 
 for (const [file, count] of referencedCss) {
-  if (count === 0) add(warnings, `CSS-kandidat uden HTML/JS-reference: ${file}`);
+  if (count === 0) warnings.push(`CSS-kandidat uden HTML/JS-reference: ${file}`);
 }
 for (const [file, count] of referencedJs) {
-  if (count === 0) add(warnings, `JS-kandidat uden HTML/JS-reference: ${file}`);
+  if (count === 0) warnings.push(`JS-kandidat uden HTML/JS-reference: ${file}`);
 }
 
-const vclDataPath = path.join(root, 'assets/js/vclData.js');
-if (fs.existsSync(vclDataPath)) {
-  const source = read(vclDataPath);
-  const defs = new Set();
-  const defRe = /^\s{4}async\s+([A-Za-z_$][\w$]*)\s*\(/gm;
-  let defMatch;
-  while ((defMatch = defRe.exec(source))) defs.add(defMatch[1]);
+const relationRefs = new Map();
+const rpcRefs = new Map();
+const bucketRefs = new Map();
 
-  const calls = new Map();
-  for (const file of runtimeJsFiles.filter((f) => rel(f) !== 'assets/js/vclData.js')) {
-    const code = read(file);
-    const patterns = [
-      /\bVCLData\.([A-Za-z_$][\w$]*)\s*\(/g,
-      /\bwindow\.VCLData\.([A-Za-z_$][\w$]*)\s*\(/g,
-      /waitForVCLData\(["']([A-Za-z_$][\w$]*)["']/g
-    ];
-    for (const re of patterns) {
-      let m;
-      while ((m = re.exec(code))) {
-        if (!calls.has(m[1])) calls.set(m[1], new Set());
-        calls.get(m[1]).add(rel(file));
-      }
-    }
-  }
-
-  for (const [name, callers] of calls) {
-    if (!defs.has(name)) add(errors, `Frontend kalder manglende VCLData.${name}() fra ${[...callers].join(', ')}`);
-  }
-
-  const maybeUnused = [...defs].filter((name) => !calls.has(name));
-  info.push(`VCLData async-metoder defineret: ${defs.size}`);
-  info.push(`VCLData async-metoder med statisk fundet caller: ${defs.size - maybeUnused.length}`);
-  if (maybeUnused.length) info.push(`VCLData cleanup-kandidater (kræver manuel kontrol): ${maybeUnused.sort().join(', ')}`);
+function remember(map, name, file) {
+  if (!map.has(name)) map.set(name, new Set());
+  map.get(name).add(file);
 }
 
-const backendTables = new Map();
-const backendRpcs = new Map();
-const storageBuckets = new Map();
-for (const file of runtimeJsFiles) {
+for (const file of jsFiles) {
   const code = read(file);
-  const fileName = rel(file);
+  const fileName = relative(file);
+  let match;
 
-  const storageRe = /\.storage\s*\.from\(["']([^"']+)["']\)/g;
-  let m;
-  while ((m = storageRe.exec(code))) {
-    if (!storageBuckets.has(m[1])) storageBuckets.set(m[1], new Set());
-    storageBuckets.get(m[1]).add(fileName);
-  }
+  const bucketRegex = /\.storage\s*\.from\(["']([^"']+)["']\)/g;
+  while ((match = bucketRegex.exec(code))) remember(bucketRefs, match[1], fileName);
 
-  const fromRe = /\.from\(["']([^"']+)["']\)/g;
-  while ((m = fromRe.exec(code))) {
-    const before = code.slice(Math.max(0, m.index - 24), m.index);
+  const relationRegex = /\.from\(["']([^"']+)["']\)/g;
+  while ((match = relationRegex.exec(code))) {
+    const before = code.slice(Math.max(0, match.index - 30), match.index);
     if (/\.storage\s*$/.test(before)) continue;
-    if (!backendTables.has(m[1])) backendTables.set(m[1], new Set());
-    backendTables.get(m[1]).add(fileName);
+    remember(relationRefs, match[1], fileName);
   }
 
-  const rpcRe = /\.rpc\(["']([^"']+)["']/g;
-  while ((m = rpcRe.exec(code))) {
-    if (!backendRpcs.has(m[1])) backendRpcs.set(m[1], new Set());
-    backendRpcs.get(m[1]).add(fileName);
-  }
+  const rpcRegex = /\.rpc\(["']([^"']+)["']/g;
+  while ((match = rpcRegex.exec(code))) remember(rpcRefs, match[1], fileName);
 }
 
 const manifestPath = path.join(root, 'supabase/live-object-manifest.json');
@@ -196,61 +155,63 @@ if (fs.existsSync(manifestPath)) {
   const liveFunctions = new Set(manifest.functions || []);
   const liveBuckets = new Set(manifest.storage_buckets || []);
 
-  for (const [name, callers] of backendTables) {
-    if (!liveRelations.has(name)) add(errors, `Frontend relation findes ikke i live manifest: ${name} <- ${[...callers].join(', ')}`);
+  for (const [name, callers] of relationRefs) {
+    if (!liveRelations.has(name)) errors.push(`Frontend relation findes ikke live: ${name} <- ${[...callers].join(', ')}`);
   }
-  for (const [name, callers] of backendRpcs) {
-    if (!liveFunctions.has(name)) add(errors, `Frontend RPC findes ikke i live manifest: ${name} <- ${[...callers].join(', ')}`);
+  for (const [name, callers] of rpcRefs) {
+    if (!liveFunctions.has(name)) errors.push(`Frontend RPC findes ikke live: ${name} <- ${[...callers].join(', ')}`);
   }
-  for (const [name, callers] of storageBuckets) {
-    if (!liveBuckets.has(name)) add(errors, `Frontend Storage bucket findes ikke i live manifest: ${name} <- ${[...callers].join(', ')}`);
+  for (const [name, callers] of bucketRefs) {
+    if (!liveBuckets.has(name)) errors.push(`Frontend Storage bucket findes ikke live: ${name} <- ${[...callers].join(', ')}`);
   }
 
   info.push(`Live Supabase manifest: ${manifest.snapshot_date || 'ukendt dato'}`);
-  info.push(`Frontend bruger ${backendTables.size} tabeller/views, ${backendRpcs.size} RPC-navne og ${storageBuckets.size} buckets.`);
+  info.push(`Frontend bruger ${relationRefs.size} tabeller/views, ${rpcRefs.size} RPC-navne og ${bucketRefs.size} buckets.`);
 }
 
-const bigFiles = files
-  .filter((f) => ['.js', '.css', '.html'].includes(path.extname(f)))
-  .map((f) => ({ file: rel(f), size: fs.statSync(f).size }))
-  .filter((item) => item.size >= 100_000)
-  .sort((a, b) => b.size - a.size);
-for (const item of bigFiles) add(warnings, `Stor frontend-fil: ${item.file} (${Math.round(item.size / 1024)} KB)`);
+for (const file of files) {
+  if (!['.js', '.css', '.html'].includes(path.extname(file))) continue;
+  const size = fs.statSync(file).size;
+  if (size >= 100_000) warnings.push(`Stor frontend-fil: ${relative(file)} (${Math.round(size / 1024)} KB)`);
+}
 
-function mapToLines(map) {
+function referenceLines(map) {
   return [...map.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([name, refs]) => `- \`${name}\` <- ${[...refs].sort().join(', ')}`);
 }
 
-report.push('# VCL static audit');
-report.push('');
-report.push(`HTML: ${htmlFiles.length} · runtime JS: ${runtimeJsFiles.length} · CSS: ${cssFiles.length}`);
-report.push('');
-report.push(`## Errors (${errors.length})`);
-report.push(errors.length ? errors.map((x) => `- ${x}`).join('\n') : '- Ingen statiske errors fundet.');
-report.push('');
-report.push(`## Warnings (${warnings.length})`);
-report.push(warnings.length ? warnings.map((x) => `- ${x}`).join('\n') : '- Ingen warnings.');
-report.push('');
-report.push('## Data-layer info');
-report.push(info.length ? info.map((x) => `- ${x}`).join('\n') : '- Ingen.');
-report.push('');
-report.push('## Frontend table/view references');
-report.push(...mapToLines(backendTables));
-report.push('');
-report.push('## Frontend RPC references');
-report.push(...mapToLines(backendRpcs));
-report.push('');
-report.push('## Frontend Storage bucket references');
-report.push(...mapToLines(storageBuckets));
-report.push('');
-report.push('## HTML dependency map');
-for (const [page, refs] of [...pageDeps.entries()].sort(([a], [b]) => a.localeCompare(b))) {
-  const localCode = refs.filter((x) => x.endsWith('.js') || x.endsWith('.css'));
-  report.push(`- \`${page}\`: ${localCode.length ? localCode.map((x) => `\`${x}\``).join(', ') : 'redirect/no local code'}`);
-}
+const output = [
+  '# VCL static audit',
+  '',
+  `HTML: ${htmlFiles.length} · runtime JS: ${jsFiles.length} · CSS: ${cssFiles.length}`,
+  '',
+  `## Errors (${errors.length})`,
+  ...(errors.length ? errors.map((item) => `- ${item}`) : ['- Ingen statiske errors fundet.']),
+  '',
+  `## Warnings (${warnings.length})`,
+  ...(warnings.length ? warnings.map((item) => `- ${item}`) : ['- Ingen warnings.']),
+  '',
+  '## Backend cross-check',
+  ...info.map((item) => `- ${item}`),
+  '',
+  '### Relations',
+  ...referenceLines(relationRefs),
+  '',
+  '### RPCs',
+  ...referenceLines(rpcRefs),
+  '',
+  '### Storage buckets',
+  ...referenceLines(bucketRefs),
+  '',
+  '## HTML dependency map',
+  ...[...pageDependencies.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([page, refs]) => {
+      const code = refs.filter((value) => value.endsWith('.js') || value.endsWith('.css'));
+      return `- \`${page}\`: ${code.length ? code.map((value) => `\`${value}\``).join(', ') : 'redirect/no local code'}`;
+    })
+];
 
-console.log(report.join('\n'));
-
+console.log(output.join('\n'));
 if (errors.length) process.exitCode = 1;
