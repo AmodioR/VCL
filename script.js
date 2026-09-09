@@ -1672,7 +1672,7 @@ async function preparePlayerAvatar(file) {
 }
 
 async function loadPlayerAvatarManager(player) {
-  if (!playerAvatarManager || !player || !window.VCLData.getMyPlayerAvatarStatus) {
+  if (!playerAvatarManager || !player) {
     if (playerAvatarManager) playerAvatarManager.hidden = true;
     return;
   }
@@ -1690,7 +1690,7 @@ async function loadPlayerAvatarManager(player) {
   let previewUrl = currentPlayerAvatarStatus?.avatar_url || null;
   const status = currentPlayerAvatarStatus?.submission_status || "";
 
-  if (status === "pending" && currentPlayerAvatarStatus?.pending_storage_path && window.VCLData.createMyPendingAvatarPreview) {
+  if (status === "pending" && currentPlayerAvatarStatus?.pending_storage_path) {
     const pendingUrl = await window.VCLData.createMyPendingAvatarPreview(currentPlayerAvatarStatus.pending_storage_path);
     if (pendingUrl) previewUrl = pendingUrl;
   }
@@ -1757,9 +1757,7 @@ async function renderAccountQuickAccess(profile) {
 
   myCaptainData = null;
   try {
-    if (window.VCLData?.getMyCaptainTeam) {
-      myCaptainData = await window.VCLData.getMyCaptainTeam();
-    }
+    myCaptainData = await window.VCLData.getMyCaptainTeam();
   } catch (error) {
     console.warn("Kunne ikke tjekke captain adgang:", error);
   }
@@ -2144,10 +2142,8 @@ async function loadClaimInvite() {
             publicProfileLink.href = `player-profile.html?player=${encodeURIComponent(myClaimedPlayer.slug)}`;
             publicProfileLink.hidden = false;
           }
-          const claimedContext = window.VCLData.getPlayerProfileContext
-            ? await window.VCLData.getPlayerProfileContext(myClaimedPlayer.slug)
-            : null;
-          const publicStats = claimedContext?.player || await window.VCLData.getPlayerBySlug(myClaimedPlayer.slug);
+          const claimedContext = await window.VCLData.getPlayerProfileContext(myClaimedPlayer.slug);
+          const publicStats = claimedContext?.player || null;
           const claimedLeaderboard = claimedContext?.leaderboardEntry || null;
           const claimedTeam = claimedContext?.team || null;
 
@@ -2336,22 +2332,20 @@ if (claimedPlayerSummary && publicStats) {
           return;
         }
 
-        if (window.VCLData?.isProfileUsernameAvailable) {
-  const currentProfile = await window.VCLData.getCurrentProfile();
+        const currentProfile = await window.VCLData.getCurrentProfile();
 
-  const usernameAvailable = await window.VCLData.isProfileUsernameAvailable(
-    updates.display_name,
-    currentProfile?.id || null
-  );
+        const usernameAvailable = await window.VCLData.isProfileUsernameAvailable(
+          updates.display_name,
+          currentProfile?.id || null
+        );
 
-  if (!usernameAvailable) {
-    setAccountMessage(
-      "Det brugernavn er allerede taget. Vælg et andet.",
-      "error"
-    );
-    return;
-  }
-}
+        if (!usernameAvailable) {
+          setAccountMessage(
+            "Det brugernavn er allerede taget. Vælg et andet.",
+            "error"
+          );
+          return;
+        }
 
         try {
           setAccountMessage("Gemmer ændringer...", "info");
