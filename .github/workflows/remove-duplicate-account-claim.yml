@@ -1,0 +1,54 @@
+name: Remove duplicate account claim handler
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+
+      - name: Remove duplicate claim handler
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('script.js')
+          text = path.read_text(encoding='utf-8')
+
+          start_marker = '''  /* =========================\n     CLAIM INVITE PAGE HANDLER\n  ========================= */'''
+          end_marker = '''    /* =========================\n     SIGNUP CLAIM-AWARE HANDLER\n  ========================= */'''
+
+          start = text.find(start_marker)
+          end = text.find(end_marker)
+
+          if start == -1:
+              print('Duplicate claim handler already absent; nothing to do.')
+              raise SystemExit(0)
+          if end == -1 or end <= start:
+              raise SystemExit('Could not find the end marker safely.')
+
+          text = text[:start] + end_marker + text[end + len(end_marker):]
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit cleanup
+        run: |
+          if git diff --quiet -- script.js; then
+            echo "No script.js change needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add script.js
+          git commit -m "Remove duplicate account claim handler"
+          git push origin HEAD:stabilization/vcl-2.1-cleanup
