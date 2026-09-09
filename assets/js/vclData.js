@@ -191,43 +191,6 @@
       return data;
     },
 
-    async adminAdjustPlayerPoints({
-      playerId,
-      pointsDelta,
-      reason,
-      sourceType = "manual",
-      sourceRef = null
-    }) {
-      const { data, error } = await db.rpc("admin_adjust_player_points", {
-        p_player_id: playerId,
-        p_points_delta: Number(pointsDelta),
-        p_reason: reason || "Admin point adjustment",
-        p_source_type: sourceType || "manual",
-        p_source_ref: sourceRef || null
-      });
-
-      if (error) {
-        console.error("Kunne ikke opdatere player points:", error);
-        throw error;
-      }
-
-      return Array.isArray(data) ? data[0] : data;
-    },
-
-    async adminAwardTournamentPoints({ tournamentRef, awards }) {
-      const { data, error } = await db.rpc("admin_award_tournament_points", {
-        p_tournament_ref: tournamentRef,
-        p_awards: Array.isArray(awards) ? awards : []
-      });
-
-      if (error) {
-        console.error("Kunne ikke tildele tournament points:", error);
-        throw error;
-      }
-
-      return data;
-    },
-
     async getAdminNewsPosts() {
   const { data, error } = await db
     .from("news_posts_view")
@@ -912,20 +875,6 @@ async transferMyTeamCaptain(newCaptainPlayerId) {
   return Array.isArray(data) ? data[0] : data;
 },
 
-async captainSetRosterStatus(teamMemberId, rosterStatus) {
-  const { data, error } = await db.rpc("captain_set_roster_status", {
-    p_team_member_id: teamMemberId,
-    p_roster_status: rosterStatus
-  });
-
-  if (error) {
-    console.error("Kunne ikke ændre roster status:", error);
-    throw error;
-  }
-
-  return Array.isArray(data) ? data[0] : data;
-},
-
 async captainRemoveRosterMember(teamMemberId) {
   const { data, error } = await db.rpc("captain_remove_roster_member", {
     p_team_member_id: teamMemberId
@@ -958,21 +907,6 @@ async captainRemoveRosterMember(teamMemberId) {
       return data || [];
     },
 
-    async getOpenTournamentsForSignup() {
-      const { data, error } = await db
-        .from("public_tournaments_view")
-        .select("*")
-        .eq("status", "open")
-        .order("starts_at", { ascending: true, nullsFirst: false });
-
-      if (error) {
-        console.warn("Kunne ikke hente åbne turneringer:", error);
-        return [];
-      }
-
-      return data || [];
-    },
-
 
     async getMyActiveTeamContext() {
       const user = await this.getCurrentUser();
@@ -1000,21 +934,6 @@ async captainRemoveRosterMember(teamMemberId) {
       }
 
       return data || [];
-    },
-
-    async requestMyTeamTournamentEntry(tournamentId) {
-      if (!tournamentId) throw new Error("Vælg en konkret turnering først.");
-
-      const { data, error } = await db.rpc("request_my_team_tournament_entry", {
-        p_tournament_id: tournamentId
-      });
-
-      if (error) {
-        console.error("Kunne ikke sende turneringstilmeldingen:", error);
-        throw error;
-      }
-
-      return Array.isArray(data) ? data[0] || null : data || null;
     },
 
     async getLiveTournamentMatches() {
