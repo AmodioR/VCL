@@ -27,37 +27,31 @@ jobs:
           path = Path('script.js')
           text = path.read_text()
 
-          old_player = '''      const context = window.VCLData.getPlayerProfileContext
-        ? await window.VCLData.getPlayerProfileContext(playerSlug)
-        : null;
-      const player = context?.player || await window.VCLData.getPlayerBySlug(playerSlug);
-'''
-          new_player = '''      const context = await window.VCLData.getPlayerProfileContext(playerSlug);
-      const player = context?.player || null;
-'''
+          old_player = (
+              '      const context = window.VCLData.getPlayerProfileContext\n'
+              '        ? await window.VCLData.getPlayerProfileContext(playerSlug)\n'
+              '        : null;\n'
+              '      const player = context?.player || await window.VCLData.getPlayerBySlug(playerSlug);\n'
+          )
+          new_player = (
+              '      const context = await window.VCLData.getPlayerProfileContext(playerSlug);\n'
+              '      const player = context?.player || null;\n'
+          )
 
           if text.count(old_player) != 1:
               raise SystemExit(f'Expected one player profile compatibility block, found {text.count(old_player)}')
           text = text.replace(old_player, new_player, 1)
 
-          old_team = '''      const achievements = window.VCLData.getTeamAchievements
-        ? await window.VCLData.getTeamAchievements(team.slug)
-        : [];
-'''
-          new_team = '''      const achievements = await window.VCLData.getTeamAchievements(team.slug);
-'''
+          old_team = (
+              '      const achievements = window.VCLData.getTeamAchievements\n'
+              '        ? await window.VCLData.getTeamAchievements(team.slug)\n'
+              '        : [];\n'
+          )
+          new_team = '      const achievements = await window.VCLData.getTeamAchievements(team.slug);\n'
 
           if text.count(old_team) != 1:
               raise SystemExit(f'Expected one team achievements compatibility block, found {text.count(old_team)}')
           text = text.replace(old_team, new_team, 1)
-
-          forbidden = [
-              'window.VCLData.getPlayerProfileContext\n        ?',
-              'window.VCLData.getTeamAchievements\n        ?'
-          ]
-          for token in forbidden:
-              if token in text:
-                  raise SystemExit(f'Obsolete profile fallback still present: {token}')
 
           path.write_text(text)
           PY
