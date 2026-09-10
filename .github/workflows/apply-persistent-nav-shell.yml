@@ -1,0 +1,377 @@
+name: Apply persistent nav shell
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+    paths:
+      - .github/workflows/apply-persistent-nav-shell.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+
+      - name: Stabilize and prehydrate shared navigation
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          bootstrap = r'''(() => {
+            const KEY = "vcl-nav-state-v1";
+            const MAX_AGE = 12 * 60 * 60 * 1000;
+
+            const escapeHTML = (value = "") =>
+              String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/\"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+
+            function read() {
+              try {
+                const raw = localStorage.getItem(KEY);
+                if (!raw) return null;
+                const state = JSON.parse(raw);
+                if (!state?.updatedAt || Date.now() - state.updatedAt > MAX_AGE) {
+                  localStorage.removeItem(KEY);
+                  return null;
+                }
+                return state;
+              } catch (_) {
+                return null;
+              }
+            }
+
+            function write(next = {}) {
+              try {
+                const state = { ...next, updatedAt: Date.now() };
+                localStorage.setItem(KEY, JSON.stringify(state));
+                return state;
+              } catch (_) {
+                return null;
+              }
+            }
+
+            function clear() {
+              try { localStorage.removeItem(KEY); } catch (_) {}
+            }
+
+            function buildMenu(state) {
+              const links = [
+                '<a class="nav-account-menu__link" role="menuitem" href="account.html"><span>Min konto</span><span>→</span></a>'
+              ];
+
+              if (state.playerSlug) {
+                links.push(`<a class="nav-account-menu__link" role="menuitem" href="player-profile.html?player=${encodeURIComponent(state.playerSlug)}"><span>Offentlig profil</span><span>→</span></a>`);
+              }
+              if (state.isCaptain) {
+                links.push('<a class="nav-account-menu__link nav-account-menu__link--role" role="menuitem" href="team-dashboard.html"><span><span class="nav-account-menu__role">Captain</span>Team dashboard</span><span>→</span></a>');
+              }
+              if (state.isAdmin) {
+                links.push('<a class="nav-account-menu__link nav-account-menu__link--role" role="menuitem" href="admin.html"><span><span class="nav-account-menu__role">Admin</span>Admin panel</span><span>→</span></a>');
+              }
+
+              return `
+                <div class="nav-account-menu__identity">
+                  <small>Logget ind som</small>
+                  <strong>${escapeHTML(state.displayName || "Account")}</strong>
+                </div>
+                <div class="nav-account-menu__links" role="menu">${links.join("")}</div>
+                <button type="button" class="nav-account-menu__logout" data-nav-account-logout>Log ud</button>
+              `;
+            }
+
+            function render(state = read()) {
+              const button = document.querySelector(".site-header .nav-actions a.btn");
+              if (!button || !state) return;
+
+              document.documentElement.classList.toggle("vcl-cached-admin", Boolean(state.loggedIn && state.isAdmin));
+
+              if (!state.loggedIn) {
+                button.href = "login.html";
+                button.classList.remove("nav-account-trigger");
+                button.classList.add("auth-nav-ready");
+                button.removeAttribute("aria-haspopup");
+                button.removeAttribute("aria-expanded");
+                button.removeAttribute("aria-controls");
+                button.innerHTML = "<span>Login</span>";
+                return;
+              }
+
+              const displayName = state.displayName || "Account";
+              const avatarUrl = state.avatarUrl || "";
+              const initial = String(displayName).trim().charAt(0).toUpperCase() || "V";
+              let shell = document.querySelector(".site-header .nav-account-shell");
+              let menu = shell?.querySelector("#nav-account-menu") || null;
+
+              if (!shell) {
+                shell = document.createElement("div");
+                shell.className = "nav-account-shell auth-nav-ready";
+                button.parentNode.insertBefore(shell, button);
+                shell.appendChild(button);
+              }
+
+              if (!menu) {
+                menu = document.createElement("div");
+                menu.className = "nav-account-menu";
+                menu.id = "nav-account-menu";
+                menu.hidden = true;
+                shell.appendChild(menu);
+              }
+
+              button.href = "account.html";
+              button.classList.remove("auth-nav-ready");
+              button.classList.add("nav-account-trigger");
+              button.setAttribute("aria-haspopup", "menu");
+              button.setAttribute("aria-expanded", "false");
+              button.setAttribute("aria-controls", "nav-account-menu");
+              button.innerHTML = `
+                <span class="nav-account-trigger__avatar">${avatarUrl ? `<img src="${escapeHTML(avatarUrl)}" alt="">` : escapeHTML(initial)}</span>
+                <span class="nav-account-trigger__label">${escapeHTML(displayName)}</span>
+                <span class="nav-account-trigger__chevron" aria-hidden="true"></span>
+              `;
+              menu.innerHTML = buildMenu(state);
+
+              if (!button.dataset.accountMenuBound) {
+                button.dataset.accountMenuBound = "true";
+                button.addEventListener("click", (event) => {
+                  if (!button.classList.contains("nav-account-trigger")) return;
+                  event.preventDefault();
+                  const currentMenu = shell.querySelector("#nav-account-menu");
+                  if (!currentMenu) return;
+                  const shouldOpen = currentMenu.hidden;
+                  currentMenu.hidden = !shouldOpen;
+                  button.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+                });
+              }
+
+              if (!document.documentElement.dataset.vclNavShellBound) {
+                document.documentElement.dataset.vclNavShellBound = "true";
+                document.addEventListener("click", (event) => {
+                  const currentShell = document.querySelector(".site-header .nav-account-shell");
+                  const currentMenu = currentShell?.querySelector("#nav-account-menu");
+                  const currentButton = currentShell?.querySelector("a.nav-account-trigger");
+                  if (currentShell && currentMenu && !currentShell.contains(event.target)) {
+                    currentMenu.hidden = true;
+                    currentButton?.setAttribute("aria-expanded", "false");
+                  }
+                });
+                document.addEventListener("keydown", (event) => {
+                  if (event.key !== "Escape") return;
+                  const currentMenu = document.querySelector("#nav-account-menu");
+                  const currentButton = document.querySelector("a.nav-account-trigger");
+                  if (currentMenu) currentMenu.hidden = true;
+                  currentButton?.setAttribute("aria-expanded", "false");
+                });
+              }
+            }
+
+            window.VCLNavState = { read, write, clear, render };
+            render();
+          })();
+          '''
+          Path('assets/js/navStateBootstrap.js').write_text(bootstrap, encoding='utf-8')
+
+          for path in Path('.').glob('*.html'):
+              html = path.read_text(encoding='utf-8')
+              if '<header class="site-header">' not in html:
+                  continue
+              css_link = '  <link rel="stylesheet" href="assets/css/account-interface-v4.css?v=2.1-account-v4-01">\n'
+              if 'assets/css/account-interface-v4.css' not in html:
+                  html = html.replace('</head>', css_link + '</head>', 1)
+              script_tag = '<script src="assets/js/navStateBootstrap.js?v=2.1-nav-state-01"></script>'
+              if 'assets/js/navStateBootstrap.js' not in html:
+                  html = html.replace('</header>', '</header>\n' + script_tag, 1)
+              path.write_text(html, encoding='utf-8')
+
+          css_path = Path('assets/css/account-interface-v4.css')
+          css = css_path.read_text(encoding='utf-8')
+          old_gate = '''/* Keep the static Login/Account placeholder from flashing before Supabase resolves auth. */
+          .site-header .nav-actions > a.btn:not(.nav-account-trigger) {
+            visibility: hidden;
+          }
+
+          .site-header .nav-actions > a.btn.auth-nav-ready:not(.nav-account-trigger) {
+            visibility: visible;
+          }
+
+          .nav-account-shell {
+            visibility: hidden;
+          }
+
+          .nav-account-shell.auth-nav-ready {
+            visibility: visible;
+          }
+
+          '''
+          css = css.replace(old_gate, '')
+          marker = '/* ---------- Shared authenticated account menu ---------- */\n'
+          stable = '''/* Keep the multi-page header geometrically stable and hydrate cached auth UI before page content. */
+          html { scrollbar-gutter: stable; }
+
+          @media (min-width: 1081px) {
+            .site-header .nav {
+              grid-template-columns: 126px minmax(0, 1fr) 190px;
+            }
+
+            .site-header .nav-actions {
+              width: 190px;
+              justify-content: flex-end;
+            }
+
+            .site-header .nav-account-shell {
+              width: 190px;
+              display: flex;
+              justify-content: flex-end;
+            }
+          }
+
+          html.vcl-cached-admin body.admin-page [data-admin-loading] {
+            display: none !important;
+          }
+
+          html.vcl-cached-admin body.admin-page [data-admin-dashboard][hidden] {
+            display: block !important;
+          }
+
+          '''
+          if stable not in css:
+              assert css.count(marker) == 1
+              css = css.replace(marker, marker + stable, 1)
+          css_path.write_text(css, encoding='utf-8')
+
+          script_path = Path('script.js')
+          script = script_path.read_text(encoding='utf-8')
+
+          old_start = '''    const authNavButton = document.querySelector(".site-header .nav-actions a.btn");
+              let accountMenuShell = null;
+              let accountMenu = null;
+          '''
+          new_start = '''    const authNavButton = document.querySelector(".site-header .nav-actions a.btn");
+              const navState = window.VCLNavState || null;
+              let accountMenuShell = document.querySelector(".site-header .nav-account-shell");
+              let accountMenu = accountMenuShell?.querySelector("#nav-account-menu") || null;
+          '''
+          assert script.count(old_start) == 1
+          script = script.replace(old_start, new_start, 1)
+
+          old_no_session = '''        authNavButton.href = "login.html";
+                  authNavButton.innerHTML = "<span>Login</span>";
+                  authNavButton.classList.add("auth-nav-ready");
+                  return;
+          '''
+          new_no_session = '''        authNavButton.href = "login.html";
+                  authNavButton.innerHTML = "<span>Login</span>";
+                  authNavButton.classList.add("auth-nav-ready");
+                  navState?.write({ loggedIn: false });
+                  document.documentElement.classList.remove("vcl-cached-admin");
+                  return;
+          '''
+          assert script.count(old_no_session) == 1
+          script = script.replace(old_no_session, new_no_session, 1)
+
+          old_data = '''      const avatarUrl = player?.avatar_url || "";
+                const initial = String(displayName || "V").trim().charAt(0).toUpperCase() || "V";
+
+                const menu = ensureAccountMenu();
+          '''
+          new_data = '''      const avatarUrl = player?.avatar_url || "";
+                const initial = String(displayName || "V").trim().charAt(0).toUpperCase() || "V";
+
+                navState?.write({
+                  loggedIn: true,
+                  displayName,
+                  avatarUrl,
+                  playerSlug: player?.slug || "",
+                  isAdmin,
+                  isCaptain
+                });
+
+                const menu = ensureAccountMenu();
+          '''
+          assert script.count(old_data) == 1
+          script = script.replace(old_data, new_data, 1)
+
+          old_nav_logout = '''      menu.querySelector("[data-nav-account-logout]")?.addEventListener("click", async () => {
+                try {
+                  await window.VCLData.logoutAccount();
+                  window.location.href = "login.html";
+          '''
+          new_nav_logout = '''      menu.querySelector("[data-nav-account-logout]")?.addEventListener("click", async () => {
+                try {
+                  navState?.write({ loggedIn: false });
+                  await window.VCLData.logoutAccount();
+                  window.location.href = "login.html";
+          '''
+          assert script.count(old_nav_logout) == 1
+          script = script.replace(old_nav_logout, new_nav_logout, 1)
+
+          old_admin_session = '''      if (!session) {
+                window.location.href = "login.html";
+                return false;
+              }
+          '''
+          new_admin_session = '''      if (!session) {
+                document.documentElement.classList.remove("vcl-cached-admin");
+                window.location.href = "login.html";
+                return false;
+              }
+          '''
+          assert script.count(old_admin_session) >= 1
+          # Only replace the occurrence inside checkAdminAccess by anchoring from the function.
+          admin_idx = script.index('async function checkAdminAccess()')
+          before, rest = script[:admin_idx], script[admin_idx:]
+          assert rest.count(old_admin_session) >= 1
+          rest = rest.replace(old_admin_session, new_admin_session, 1)
+          script = before + rest
+
+          old_denied = '''      if (!profile || profile.role !== "admin") {
+                if (adminLoading) adminLoading.hidden = true;
+          '''
+          new_denied = '''      if (!profile || profile.role !== "admin") {
+                document.documentElement.classList.remove("vcl-cached-admin");
+                if (adminLoading) adminLoading.hidden = true;
+          '''
+          assert script.count(old_denied) == 1
+          script = script.replace(old_denied, new_denied, 1)
+
+          old_allowed = '''      if (adminLoading) adminLoading.hidden = true;
+              if (adminDenied) adminDenied.hidden = true;
+              if (adminDashboard) adminDashboard.hidden = false;
+
+              return true;
+          '''
+          new_allowed = '''      if (adminLoading) adminLoading.hidden = true;
+              if (adminDenied) adminDenied.hidden = true;
+              if (adminDashboard) adminDashboard.hidden = false;
+              document.documentElement.classList.remove("vcl-cached-admin");
+
+              return true;
+          '''
+          assert script.count(old_allowed) == 1
+          script = script.replace(old_allowed, new_allowed, 1)
+
+          script_path.write_text(script, encoding='utf-8')
+          PY
+
+      - name: Run static frontend audit
+        run: node tools/vcl-static-audit.mjs
+
+      - name: Commit persistent nav shell
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/apply-persistent-nav-shell.yml
+          git add '*.html' assets/css/account-interface-v4.css assets/js/navStateBootstrap.js script.js
+          git commit -m "Stabilize shared nav across page loads"
+          git push origin HEAD:stabilization/vcl-2.1-cleanup
