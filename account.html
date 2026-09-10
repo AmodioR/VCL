@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=2.1-live-broadcast-01">
+  <link rel="stylesheet" href="assets/css/account-interface-v4.css?v=2.1-account-v4-01">
   <link rel="stylesheet" href="assets/css/direct-team-transfers.css?v=2.1-direct-transfers-01">
   <link rel="stylesheet" href="assets/css/tournament-loans.css?v=2.1-tournament-loans-01">
 </head>
@@ -39,72 +40,120 @@
   </div>
 </header>
 
-<main class="account-main-v2" data-account-page>
-  <section class="account-hero-v2" id="account-overview">
-    <div class="container account-hero-v2__inner reveal">
-      <div class="account-identity-v2">
-        <div class="account-avatar-v2" aria-hidden="true"><span data-account-avatar>V</span></div>
-        <div class="account-identity-v2__copy">
-          <span class="account-eyebrow-v2">Mit VCL</span>
-          <h1 data-account-name>Loader account...</h1>
-          <p data-account-email>Henter din VCL-konto fra Supabase.</p>
-        </div>
-      </div>
-
-      <div class="account-actions-v2">
-        <a href="player-profile.html" data-account-public-profile hidden>Se offentlig profil <span aria-hidden="true">→</span></a>
-        <button type="button" data-logout-button>Log ud</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="account-dashboard-v3">
+<main class="account-main-v2 account-dashboard-v4" data-account-page>
+  <section class="account-v4-shell">
     <div class="container">
-      <div class="account-dashboard-heading-v3 reveal">
-        <div>
-          <span>Overblik</span>
-          <h2>Din VCL-status</h2>
+      <div class="account-v4-heading reveal">
+        <div class="account-v4-heading__copy">
+          <span>Mit VCL</span>
+          <h1>Konto</h1>
         </div>
-        <p>Det vigtigste om din profil, dit hold og din adgang samlet ét sted.</p>
+        <p>Dit personlige VCL-overblik. Profil, hold, status og indstillinger samlet uden unødig støj.</p>
       </div>
 
-      <div class="account-status-grid-v3 reveal">
-        <article class="account-status-item-v3">
-          <span>Spillerprofil</span>
-          <strong data-overview-player-status>Kontrollerer profil...</strong>
-          <p data-overview-player-meta>Henter din spillerstatus.</p>
-          <a href="#player-settings">Administrér <span aria-hidden="true">→</span></a>
-        </article>
+      <section class="account-v4-hero reveal" aria-label="Kontooverblik">
+        <div class="account-v4-identity">
+          <div class="account-avatar-v2" aria-hidden="true"><span data-account-avatar>V</span></div>
+          <div class="account-v4-identity__copy">
+            <span class="account-v4-kicker">VCL spiller</span>
+            <h2 data-account-name>Loader account...</h2>
+            <p class="account-v4-bio" data-account-hero-bio>Henter din spillerprofil...</p>
+            <small class="account-v4-player-meta" data-overview-player-meta>Kontrollerer din VCL-status.</small>
+            <div class="account-v4-actions">
+              <a href="player-profile.html" data-account-public-profile hidden>Se offentlig profil <span aria-hidden="true">→</span></a>
+              <a href="#avatar-editor">Profilbillede <span aria-hidden="true">↓</span></a>
+            </div>
+            <span class="sr-only" data-account-email>Henter konto...</span>
+          </div>
+        </div>
 
-        <article class="account-status-item-v3">
-          <span>Hold</span>
+        <a class="account-v4-team" href="teams.html" data-overview-team-link>
+          <span>Nuværende hold</span>
+          <img data-account-team-logo src="assets/teams/default-team.png" alt="" hidden>
           <strong data-overview-team-status>Kontrollerer hold...</strong>
-          <p data-overview-team-meta>Henter din holdstatus.</p>
-          <a href="teams.html" data-overview-team-link>Se VCL-hold <span aria-hidden="true">→</span></a>
-        </article>
+          <small data-overview-team-meta>Henter din holdstatus.</small>
+        </a>
 
-        <article class="account-status-item-v3">
+        <div class="account-v4-access">
           <span>Adgang</span>
-          <strong data-overview-access-status>Player</strong>
+          <div class="account-v4-access__badges">
+            <span class="account-v4-access__badge account-v4-access__badge--dynamic" data-overview-access-status>Spiller</span>
+          </div>
           <p data-overview-access-meta>Standard VCL-adgang.</p>
-          <a href="#vcl-tools" data-overview-tools-link hidden>Åbn værktøjer <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+
+      <section class="account-v4-stats reveal" aria-label="VCL statistik">
+        <article class="account-v4-stat">
+          <span>Leaderboard</span>
+          <strong data-account-stat-rank>—</strong>
+          <small data-account-stat-tier>Unranked</small>
         </article>
-      </div>
+        <article class="account-v4-stat">
+          <span>VCL Points</span>
+          <strong data-account-stat-points>0</strong>
+          <small>Career total</small>
+        </article>
+        <article class="account-v4-stat">
+          <span>Championship</span>
+          <strong data-account-stat-championship>0</strong>
+          <small>Sejre</small>
+        </article>
+        <article class="account-v4-stat">
+          <span>Contender</span>
+          <strong data-account-stat-contender>0</strong>
+          <small>Sejre</small>
+        </article>
+        <article class="account-v4-stat">
+          <span>Academy</span>
+          <strong data-account-stat-academy>0</strong>
+          <small>Sejre</small>
+        </article>
+      </section>
+
+      <details class="account-v4-avatar-editor" id="avatar-editor">
+        <summary>
+          <span>Redigér offentligt profilbillede</span>
+          <span data-player-avatar-status-label>Kontrollerer avatar...</span>
+        </summary>
+
+        <section class="account-avatar-manager-v1" data-player-avatar-manager hidden>
+          <div class="account-avatar-manager-v1__intro">
+            <span>Profilbillede</span>
+            <h3>Din offentlige avatar</h3>
+            <p>Nye billeder bliver først synlige offentligt efter admin-godkendelse.</p>
+          </div>
+
+          <div class="account-avatar-manager-v1__workspace">
+            <div class="account-avatar-preview-v1" data-player-avatar-preview aria-label="Nuværende profilbillede">
+              <span data-player-avatar-fallback>V</span>
+              <img data-player-avatar-image alt="" hidden>
+            </div>
+
+            <div class="account-avatar-manager-v1__controls">
+              <div class="account-avatar-status-v1" data-player-avatar-review-status>
+                <p data-player-avatar-status-copy>Henter avatarstatus.</p>
+              </div>
+
+              <input class="sr-only" data-player-avatar-input id="player-avatar-input" type="file" accept="image/png,image/jpeg,image/webp">
+              <div class="account-avatar-manager-v1__actions">
+                <label class="account-avatar-pick-v1" for="player-avatar-input">Vælg billede</label>
+                <button type="button" data-player-avatar-submit disabled>Send til godkendelse</button>
+                <button class="account-avatar-remove-v1" type="button" data-player-avatar-remove hidden>Fjern nuværende</button>
+              </div>
+              <p class="account-avatar-file-v1" data-player-avatar-file-info>PNG, JPG eller WEBP · maks. 2 MB før behandling.</p>
+              <p class="notice" data-player-avatar-message aria-live="polite"></p>
+            </div>
+          </div>
+        </section>
+      </details>
+
+      <div data-account-quick-access hidden><div data-account-quick-actions></div></div>
+      <span class="sr-only" data-overview-player-status>Kontrollerer profil...</span>
     </div>
   </section>
 
-  <section class="account-tools-v3 account-flow-section" id="vcl-tools" data-account-quick-access hidden>
-    <div class="container account-tools-v3__inner">
-      <div class="account-tools-heading-v3">
-        <span>VCL Tools</span>
-        <h2>Dine arbejds­værktøjer</h2>
-        <p>Direkte adgang til de funktioner din rolle giver dig. Captain- og adminværktøjer ligger altid højt på din account.</p>
-      </div>
-      <div class="account-quick-access__actions" data-account-quick-actions></div>
-    </div>
-  </section>
-
-  <section class="account-attention-v3">
+  <section class="account-attention-v3 account-v4-attention">
     <div class="container account-attention-v3__inner">
       <section class="account-flow-section account-attention-item-v3" data-claim-invite-section hidden>
         <div class="account-section-heading-v2">
@@ -152,100 +201,70 @@
     </div>
   </section>
 
-  <section class="account-profile-zone-v3" id="player-settings" data-claimed-player-section>
-    <div class="container">
-      <div class="account-section-heading-v3 reveal">
-        <div>
+  <section class="account-v4-content" id="player-settings" data-claimed-player-section>
+    <div class="container account-v4-grid">
+      <section class="account-v4-card">
+        <div class="account-v4-card-heading">
           <span>Spilleridentitet</span>
           <h2>Min spillerprofil</h2>
-        </div>
-        <p>Din offentlige VCL-identitet, Free Agent-status og de oplysninger andre spillere ser.</p>
-      </div>
-
-      <div class="account-empty-state-v2 account-empty-state" data-no-claimed-player>
-        <span>Ikke forbundet</span>
-        <div>
-          <strong>Du har ikke en VCL-spillerprofil endnu</strong>
-          <p>Opret en Free Agent-profil, eller brug et claim-link fra en captain til at forbinde en eksisterende spiller.</p>
-        </div>
-      </div>
-
-      <form class="auth-form account-form account-form--rows account-form-v2 account-create-player-v3" data-free-agent-form hidden>
-        <div class="account-fields-v2 account-fields-v2--grid">
-          <label><span>Alias / Gamertag</span><input type="text" name="alias" placeholder="Dit gamertag" required></label>
-          <label><span>Discord</span><input type="text" name="discord" placeholder="Dit Discord-brugernavn"></label>
-          <label><span>Primær rolle</span><select name="primary_role"><option value="">Vælg rolle</option><option value="SMG">SMG</option><option value="AR">AR</option><option value="Flex">Flex</option><option value="OBJ">OBJ</option><option value="IGL / Captain type">IGL / Captain type</option><option value="Player">Player</option></select></label>
-          <label><span>Niveau</span><select name="level"><option value="">Vælg niveau</option><option value="Academy">Academy</option><option value="Contender">Contender</option><option value="Championship">Championship</option><option value="Academy / Contender">Academy / Contender</option></select></label>
-          <label class="account-form__textarea-row account-field-wide-v2"><span>Free Agent bio</span><textarea name="bio" rows="5" placeholder="Skriv kort om din rolle, erfaring og hvad du søger."></textarea></label>
-        </div>
-        <div class="account-form__footer account-form-v2__footer"><p class="notice" data-free-agent-status aria-live="polite"></p><button type="submit">Opret Free Agent-profil <span aria-hidden="true">→</span></button></div>
-      </form>
-
-      <div class="claimed-player-summary account-player-overview account-player-overview-v2" data-claimed-player-summary hidden>
-        <div class="account-player-overview__identity"><span>Forbundet profil</span><strong data-claimed-player-name>—</strong><p data-claimed-player-meta>Henter spillerdata...</p></div>
-        <a class="claimed-player-team-link account-player-overview__team" data-claimed-player-team-link href="teams.html"><img src="assets/teams/default-team.png" alt="" data-claimed-player-team-logo hidden><span><small>Nuværende hold</small><strong data-claimed-player-team>—</strong></span></a>
-        <div class="account-player-overview__stats"><small>VCL-status</small><p data-claimed-player-stats>—</p></div>
-        <a class="account-player-overview__link" href="player-profile.html" data-claimed-player-link>Se offentlig profil <span aria-hidden="true">→</span></a>
-      </div>
-
-      <section class="account-avatar-manager-v1" data-player-avatar-manager hidden>
-        <div class="account-avatar-manager-v1__intro">
-          <span>Profilbillede</span>
-          <h3>Din offentlige avatar</h3>
-          <p>Vælg et billede, så klargør VCL det automatisk til 512 × 512 WEBP. Nye billeder bliver først synlige offentligt efter admin-godkendelse.</p>
+          <p>Din offentlige VCL-identitet, Free Agent-status og de oplysninger andre spillere ser.</p>
         </div>
 
-        <div class="account-avatar-manager-v1__workspace">
-          <div class="account-avatar-preview-v1" data-player-avatar-preview aria-label="Nuværende profilbillede">
-            <span data-player-avatar-fallback>V</span>
-            <img data-player-avatar-image alt="" hidden>
-          </div>
-
-          <div class="account-avatar-manager-v1__controls">
-            <div class="account-avatar-status-v1" data-player-avatar-review-status>
-              <span data-player-avatar-status-label>Intet profilbillede</span>
-              <p data-player-avatar-status-copy>Upload et billede, hvis du vil have en personlig avatar på VCL.</p>
-            </div>
-
-            <input class="sr-only" data-player-avatar-input id="player-avatar-input" type="file" accept="image/png,image/jpeg,image/webp">
-            <div class="account-avatar-manager-v1__actions">
-              <label class="account-avatar-pick-v1" for="player-avatar-input">Vælg billede</label>
-              <button type="button" data-player-avatar-submit disabled>Send til godkendelse</button>
-              <button class="account-avatar-remove-v1" type="button" data-player-avatar-remove hidden>Fjern nuværende</button>
-            </div>
-            <p class="account-avatar-file-v1" data-player-avatar-file-info>PNG, JPG eller WEBP · maks. 2 MB før behandling.</p>
-            <p class="notice" data-player-avatar-message aria-live="polite"></p>
+        <div class="account-empty-state-v2 account-empty-state" data-no-claimed-player>
+          <span>Ikke forbundet</span>
+          <div>
+            <strong>Du har ikke en VCL-spillerprofil endnu</strong>
+            <p>Opret en Free Agent-profil, eller brug et claim-link fra en captain til at forbinde en eksisterende spiller.</p>
           </div>
         </div>
+
+        <form class="auth-form account-form account-form--rows account-form-v2 account-create-player-v3" data-free-agent-form hidden>
+          <div class="account-fields-v2 account-fields-v2--grid">
+            <label><span>Alias / Gamertag</span><input type="text" name="alias" placeholder="Dit gamertag" required></label>
+            <label><span>Discord</span><input type="text" name="discord" placeholder="Dit Discord-brugernavn"></label>
+            <label><span>Primær rolle</span><select name="primary_role"><option value="">Vælg rolle</option><option value="SMG">SMG</option><option value="AR">AR</option><option value="Flex">Flex</option><option value="OBJ">OBJ</option><option value="IGL / Captain type">IGL / Captain type</option><option value="Player">Player</option></select></label>
+            <label><span>Niveau</span><select name="level"><option value="">Vælg niveau</option><option value="Academy">Academy</option><option value="Contender">Contender</option><option value="Championship">Championship</option><option value="Academy / Contender">Academy / Contender</option></select></label>
+            <label class="account-form__textarea-row account-field-wide-v2"><span>Free Agent bio</span><textarea name="bio" rows="4" placeholder="Skriv kort om din rolle, erfaring og hvad du søger."></textarea></label>
+          </div>
+          <div class="account-form__footer account-form-v2__footer"><p class="notice" data-free-agent-status aria-live="polite"></p><button type="submit">Opret Free Agent-profil <span aria-hidden="true">→</span></button></div>
+        </form>
+
+        <form class="auth-form account-form account-form--rows account-form-v2 account-player-form-v2" data-player-profile-form hidden>
+          <div class="account-fields-v2 account-fields-v2--grid">
+            <label><span>Discord på offentlig profil</span><input type="text" name="discord" placeholder="Dit Discord-brugernavn"></label>
+            <label><span>Primær rolle</span><select name="primary_role"><option value="">Vælg rolle</option><option value="SMG">SMG</option><option value="AR">AR</option><option value="Flex">Flex</option><option value="OBJ">OBJ</option><option value="IGL / Captain type">IGL / Captain type</option><option value="Player">Player</option></select></label>
+            <label><span>Niveau</span><select name="level"><option value="">Vælg niveau</option><option value="Academy">Academy</option><option value="Contender">Contender</option><option value="Championship">Championship</option><option value="Academy / Contender">Academy / Contender</option></select></label>
+            <label class="account-form__textarea-row account-field-wide-v2"><span>Offentlig bio</span><textarea name="bio" rows="4" placeholder="Skriv kort om din rolle, spillestil og hvad du søger."></textarea></label>
+            <label class="checkbox-label auth-checkbox account-free-agent-toggle account-toggle-v2 account-field-wide-v2"><input type="checkbox" name="is_free_agent"><span>Vis mig som aktiv Free Agent på Roster Market</span></label>
+          </div>
+          <div class="account-form__footer account-form-v2__footer"><p class="notice" data-player-profile-status aria-live="polite"></p><button type="submit">Gem spillerprofil <span aria-hidden="true">→</span></button></div>
+        </form>
       </section>
 
-      <form class="auth-form account-form account-form--rows account-form-v2 account-player-form-v2" data-player-profile-form hidden>
-        <div class="account-fields-v2 account-fields-v2--grid">
-          <label><span>Discord på offentlig profil</span><input type="text" name="discord" placeholder="Dit Discord-brugernavn"></label>
-          <label><span>Primær rolle</span><select name="primary_role"><option value="">Vælg rolle</option><option value="SMG">SMG</option><option value="AR">AR</option><option value="Flex">Flex</option><option value="OBJ">OBJ</option><option value="IGL / Captain type">IGL / Captain type</option><option value="Player">Player</option></select></label>
-          <label><span>Niveau</span><select name="level"><option value="">Vælg niveau</option><option value="Academy">Academy</option><option value="Contender">Contender</option><option value="Championship">Championship</option><option value="Academy / Contender">Academy / Contender</option></select></label>
-          <label class="account-form__textarea-row account-field-wide-v2"><span>Offentlig bio</span><textarea name="bio" rows="5" placeholder="Skriv kort om din rolle, spillestil og hvad du søger."></textarea></label>
-          <label class="checkbox-label auth-checkbox account-free-agent-toggle account-toggle-v2 account-field-wide-v2"><input type="checkbox" name="is_free_agent"><span>Vis mig som aktiv Free Agent på Roster Market</span></label>
+      <aside class="account-v4-card" id="account-settings">
+        <div class="account-v4-card-heading">
+          <span>Konto</span>
+          <h2>Kontoindstillinger</h2>
+          <p>Basisoplysninger til dit VCL-login og dit personlige kontooverblik.</p>
         </div>
-        <div class="account-form__footer account-form-v2__footer"><p class="notice" data-player-profile-status aria-live="polite"></p><button type="submit">Gem spillerprofil <span aria-hidden="true">→</span></button></div>
-      </form>
-    </div>
-  </section>
 
-  <section class="account-settings-v3" id="account-settings">
-    <div class="container account-settings-v3__layout">
-      <div class="account-section-heading-v3 account-section-heading-v3--settings reveal">
-        <div><span>Konto</span><h2>Kontoindstillinger</h2></div>
-        <p>Basisoplysninger til dit VCL-login. De er bevidst placeret nederst, så account først fungerer som dit overblik.</p>
-      </div>
+        <form class="auth-form account-form account-form--rows account-form-v2" data-account-form>
+          <div class="account-fields-v2">
+            <label><span>Display name</span><input type="text" name="display_name" placeholder="Dit VCL navn" required></label>
+            <label><span>Discord</span><input type="text" name="discord" placeholder="Dit Discord-brugernavn"></label>
+          </div>
+          <div class="account-form__footer account-form-v2__footer"><p class="notice" data-account-status-message aria-live="polite"></p><button type="submit">Gem ændringer <span aria-hidden="true">→</span></button></div>
+        </form>
 
-      <form class="auth-form account-form account-form--rows account-form-v2" data-account-form>
-        <div class="account-fields-v2">
-          <label><span>Display name</span><input type="text" name="display_name" placeholder="Dit VCL navn" required></label>
-          <label><span>Discord</span><input type="text" name="discord" placeholder="Dit Discord-brugernavn"></label>
+        <div class="account-v4-account-summary">
+          <div class="claimed-player-summary account-player-overview account-player-overview-v2" data-claimed-player-summary hidden>
+            <div class="account-player-overview__identity"><span>Forbundet profil</span><strong data-claimed-player-name>—</strong><p data-claimed-player-meta>Henter spillerdata...</p></div>
+            <a class="claimed-player-team-link account-player-overview__team" data-claimed-player-team-link href="teams.html"><img src="assets/teams/default-team.png" alt="" data-claimed-player-team-logo hidden><span><small>Holdmedlemskab</small><strong data-claimed-player-team>—</strong></span></a>
+            <div class="account-player-overview__stats"><small>VCL-status</small><p data-claimed-player-stats>—</p></div>
+            <a class="account-player-overview__link" href="player-profile.html" data-claimed-player-link>Se offentlig profil <span aria-hidden="true">→</span></a>
+          </div>
         </div>
-        <div class="account-form__footer account-form-v2__footer"><p class="notice" data-account-status-message aria-live="polite"></p><button type="submit">Gem ændringer <span aria-hidden="true">→</span></button></div>
-      </form>
+      </aside>
     </div>
   </section>
 </main>
