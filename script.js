@@ -2557,6 +2557,7 @@ if (claimedPlayerSummary && publicStats) {
         authNavButton.removeAttribute("aria-controls");
         authNavButton.href = "login.html";
         authNavButton.innerHTML = "<span>Login</span>";
+        authNavButton.classList.add("auth-nav-ready");
         return;
       }
 
@@ -2579,6 +2580,8 @@ if (claimedPlayerSummary && publicStats) {
       const menu = ensureAccountMenu();
       if (!menu) return;
 
+      authNavButton.classList.remove("auth-nav-ready");
+      accountMenuShell?.classList.add("auth-nav-ready");
       authNavButton.href = "account.html";
       authNavButton.classList.add("nav-account-trigger");
       authNavButton.setAttribute("aria-haspopup", "menu");

@@ -5,6 +5,23 @@
 ========================================================= */
 
 /* ---------- Shared authenticated account menu ---------- */
+/* Keep the static Login/Account placeholder from flashing before Supabase resolves auth. */
+.site-header .nav-actions > a.btn:not(.nav-account-trigger) {
+  visibility: hidden;
+}
+
+.site-header .nav-actions > a.btn.auth-nav-ready:not(.nav-account-trigger) {
+  visibility: visible;
+}
+
+.nav-account-shell {
+  visibility: hidden;
+}
+
+.nav-account-shell.auth-nav-ready {
+  visibility: visible;
+}
+
 .nav-actions .nav-account-trigger {
   min-height: 40px;
   max-width: 190px;
