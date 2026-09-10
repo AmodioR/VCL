@@ -1800,7 +1800,6 @@ async function renderAccountQuickAccess(profile) {
     setOverviewText(overviewTeamMeta, `Captain${myCaptainData.team.tier ? ` · ${myCaptainData.team.tier}` : ""}`);
     if (overviewTeamLink && myCaptainData.team.slug) {
       overviewTeamLink.href = `team-profile.html?team=${encodeURIComponent(myCaptainData.team.slug)}`;
-      overviewTeamLink.innerHTML = 'Se holdprofil <span aria-hidden="true">→</span>';
     }
   }
 
@@ -2096,12 +2095,18 @@ async function loadClaimInvite() {
       setOverviewText(overviewTeamMeta, "Du er ikke registreret på et VCL-hold endnu.");
       if (overviewTeamLink) {
         overviewTeamLink.href = "teams.html";
-        overviewTeamLink.innerHTML = 'Se VCL-hold <span aria-hidden="true">→</span>';
       }
 
       setText("[data-account-avatar]", displayName.charAt(0).toUpperCase());
       setText("[data-account-name]", displayName);
       setText("[data-account-email]", email);
+      setText("[data-account-hero-bio]", "Ingen offentlig spillerbio endnu.");
+      setText("[data-account-stat-rank]", "—");
+      setText("[data-account-stat-tier]", "Unranked");
+      setText("[data-account-stat-points]", "0");
+      setText("[data-account-stat-championship]", "0");
+      setText("[data-account-stat-contender]", "0");
+      setText("[data-account-stat-academy]", "0");
       setText("[data-account-role]", role);
       setText("[data-account-discord]", discord);
       setText("[data-side-email]", email);
@@ -2135,6 +2140,7 @@ async function loadClaimInvite() {
           playerProfileForm.level.value = myClaimedPlayer.level || "";
           playerProfileForm.bio.value = myClaimedPlayer.bio || "";
           playerProfileForm.is_free_agent.checked = Boolean(myClaimedPlayer.is_free_agent);
+          setText("[data-account-hero-bio]", myClaimedPlayer.bio || "Ingen offentlig spillerbio endnu.");
 
           const publicProfileLink = document.querySelector("[data-account-public-profile]");
 
@@ -2158,7 +2164,6 @@ async function loadClaimInvite() {
             setOverviewText(overviewTeamMeta, "Aktivt roster-medlem");
             if (overviewTeamLink && claimedTeam.slug) {
               overviewTeamLink.href = `team-profile.html?team=${encodeURIComponent(claimedTeam.slug)}`;
-              overviewTeamLink.innerHTML = 'Se holdprofil <span aria-hidden="true">→</span>';
             }
           }
 
@@ -2182,6 +2187,29 @@ if (claimedPlayerSummary && publicStats) {
   const claimedTeamLogo = claimedTeam?.logo_url || publicStats.current_team_logo_url || "assets/teams/default-team.png";
   const claimedRank = claimedLeaderboard?.rank ?? claimedLeaderboard?.leaderboard_rank ?? null;
   const claimedPoints = claimedLeaderboard?.points ?? publicStats.points ?? 0;
+  const claimedTier = claimedLeaderboard?.tier || claimedLeaderboard?.level || publicStats.level || "Unranked";
+  const championshipWins = publicStats.championship_wins ?? claimedLeaderboard?.championship_wins ?? 0;
+  const contenderWins = publicStats.contender_wins ?? claimedLeaderboard?.contender_wins ?? 0;
+  const academyWins = publicStats.academy_wins ?? claimedLeaderboard?.academy_wins ?? 0;
+
+  setText("[data-account-stat-rank]", claimedRank ? `#${claimedRank}` : "—");
+  setText("[data-account-stat-tier]", claimedTier);
+  setText("[data-account-stat-points]", claimedPoints);
+  setText("[data-account-stat-championship]", championshipWins);
+  setText("[data-account-stat-contender]", contenderWins);
+  setText("[data-account-stat-academy]", academyWins);
+
+  const accountTeamLogo = $("[data-account-team-logo]");
+  if (accountTeamLogo) {
+    accountTeamLogo.hidden = !claimedTeamName;
+    if (claimedTeamName) {
+      accountTeamLogo.src = claimedTeamLogo;
+      accountTeamLogo.alt = `${claimedTeamName} logo`;
+      accountTeamLogo.addEventListener("error", () => {
+        accountTeamLogo.src = "assets/teams/default-team.png";
+      }, { once: true });
+    }
+  }
 
   setText(
     "[data-claimed-player-team]",
@@ -2466,36 +2494,150 @@ if (claimedPlayerSummary && publicStats) {
     loadAccountPage();
   }
     /* =========================
-     AUTH NAV BUTTON
+     AUTH NAV ACCOUNT MENU
   ========================= */
 
   if (window.VCLData?.getSession) {
     const authNavButton = document.querySelector(".site-header .nav-actions a.btn");
+    let accountMenuShell = null;
+    let accountMenu = null;
+
+    const closeAccountMenu = () => {
+      if (!accountMenu || !authNavButton) return;
+      accountMenu.hidden = true;
+      authNavButton.setAttribute("aria-expanded", "false");
+    };
+
+    const ensureAccountMenu = () => {
+      if (!authNavButton) return null;
+      if (accountMenuShell && accountMenu) return accountMenu;
+
+      accountMenuShell = document.createElement("div");
+      accountMenuShell.className = "nav-account-shell";
+      authNavButton.parentNode.insertBefore(accountMenuShell, authNavButton);
+      accountMenuShell.appendChild(authNavButton);
+
+      accountMenu = document.createElement("div");
+      accountMenu.className = "nav-account-menu";
+      accountMenu.id = "nav-account-menu";
+      accountMenu.hidden = true;
+      accountMenuShell.appendChild(accountMenu);
+
+      if (!authNavButton.dataset.accountMenuBound) {
+        authNavButton.dataset.accountMenuBound = "true";
+        authNavButton.addEventListener("click", (event) => {
+          if (!accountMenu) return;
+          event.preventDefault();
+          const shouldOpen = accountMenu.hidden;
+          accountMenu.hidden = !shouldOpen;
+          authNavButton.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+        });
+      }
+
+      return accountMenu;
+    };
 
     async function updateAuthNavButton() {
       if (!authNavButton) return;
 
       const session = await window.VCLData.getSession();
-      const label = authNavButton.querySelector("span");
 
-      if (session) {
-        authNavButton.href = "account.html";
-
-        if (label) {
-          label.textContent = "Account";
-        } else {
-          authNavButton.textContent = "Account";
+      if (!session) {
+        closeAccountMenu();
+        if (accountMenuShell) {
+          accountMenuShell.parentNode.insertBefore(authNavButton, accountMenuShell);
+          accountMenuShell.remove();
+          accountMenuShell = null;
+          accountMenu = null;
         }
-      } else {
+
+        authNavButton.classList.remove("nav-account-trigger");
+        authNavButton.removeAttribute("aria-haspopup");
+        authNavButton.removeAttribute("aria-expanded");
+        authNavButton.removeAttribute("aria-controls");
         authNavButton.href = "login.html";
-
-        if (label) {
-          label.textContent = "Login";
-        } else {
-          authNavButton.textContent = "Login";
-        }
+        authNavButton.innerHTML = "<span>Login</span>";
+        return;
       }
+
+      const [profileResult, playerResult, captainResult] = await Promise.allSettled([
+        window.VCLData.getCurrentProfile(),
+        window.VCLData.getMyClaimedPlayer(),
+        window.VCLData.getMyCaptainTeam()
+      ]);
+
+      const profile = profileResult.status === "fulfilled" ? profileResult.value : null;
+      const player = playerResult.status === "fulfilled" ? playerResult.value : null;
+      const captainData = captainResult.status === "fulfilled" ? captainResult.value : null;
+      const role = String(profile?.role || "player").toLowerCase();
+      const isAdmin = role === "admin";
+      const isCaptain = Boolean(captainData?.team);
+      const displayName = player?.alias || profile?.display_name || "Account";
+      const avatarUrl = player?.avatar_url || "";
+      const initial = String(displayName || "V").trim().charAt(0).toUpperCase() || "V";
+
+      const menu = ensureAccountMenu();
+      if (!menu) return;
+
+      authNavButton.href = "account.html";
+      authNavButton.classList.add("nav-account-trigger");
+      authNavButton.setAttribute("aria-haspopup", "menu");
+      authNavButton.setAttribute("aria-expanded", "false");
+      authNavButton.setAttribute("aria-controls", "nav-account-menu");
+      authNavButton.innerHTML = `
+        <span class="nav-account-trigger__avatar">${
+          avatarUrl
+            ? `<img src="${escapeHTML(avatarUrl)}" alt="">`
+            : escapeHTML(initial)
+        }</span>
+        <span class="nav-account-trigger__label">${escapeHTML(displayName)}</span>
+        <span class="nav-account-trigger__chevron" aria-hidden="true"></span>
+      `;
+
+      const links = [
+        `<a class="nav-account-menu__link" role="menuitem" href="account.html"><span>Min konto</span><span>→</span></a>`
+      ];
+
+      if (player?.slug) {
+        links.push(`<a class="nav-account-menu__link" role="menuitem" href="player-profile.html?player=${encodeURIComponent(player.slug)}"><span>Offentlig profil</span><span>→</span></a>`);
+      }
+
+      if (isCaptain) {
+        links.push(`<a class="nav-account-menu__link nav-account-menu__link--role" role="menuitem" href="team-dashboard.html"><span><span class="nav-account-menu__role">Captain</span>Team dashboard</span><span>→</span></a>`);
+      }
+
+      if (isAdmin) {
+        links.push(`<a class="nav-account-menu__link nav-account-menu__link--role" role="menuitem" href="admin.html"><span><span class="nav-account-menu__role">Admin</span>Admin panel</span><span>→</span></a>`);
+      }
+
+      menu.innerHTML = `
+        <div class="nav-account-menu__identity">
+          <small>Logget ind som</small>
+          <strong>${escapeHTML(displayName)}</strong>
+        </div>
+        <div class="nav-account-menu__links" role="menu">${links.join("")}</div>
+        <button type="button" class="nav-account-menu__logout" data-nav-account-logout>Log ud</button>
+      `;
+
+      menu.querySelector("[data-nav-account-logout]")?.addEventListener("click", async () => {
+        try {
+          await window.VCLData.logoutAccount();
+          window.location.href = "login.html";
+        } catch (error) {
+          console.error("Kunne ikke logge ud:", error);
+        }
+      });
     }
+
+    document.addEventListener("click", (event) => {
+      if (accountMenuShell && !accountMenuShell.contains(event.target)) {
+        closeAccountMenu();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeAccountMenu();
+    });
 
     updateAuthNavButton();
 
