@@ -1,0 +1,51 @@
+name: Fix account team logo size
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+    paths:
+      - .github/workflows/fix-account-team-logo-size.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+          fetch-depth: 0
+
+      - name: Constrain account team logo
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('assets/css/account-interface-v4.css')
+          text = path.read_text()
+          marker = '.account-v4-team:hover strong { color: #65b6ff; }'
+          addition = '''\n\n.account-v4-team img[data-account-team-logo] {\n  width: 82px;\n  height: 82px;\n  max-width: 82px;\n  flex: 0 0 82px;\n  align-self: flex-start;\n  margin-top: 10px;\n  object-fit: contain;\n  object-position: left center;\n}\n'''
+
+          if addition.strip() in text:
+              raise SystemExit('Team logo sizing rule already exists')
+          if text.count(marker) != 1:
+              raise SystemExit(f'Expected one insertion marker, found {text.count(marker)}')
+
+          text = text.replace(marker, marker + addition, 1)
+          path.write_text(text)
+          PY
+
+      - name: Run static frontend audit
+        run: node tools/vcl-static-audit.mjs
+
+      - name: Commit fix
+        run: |
+          git rm .github/workflows/fix-account-team-logo-size.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/css/account-interface-v4.css
+          git commit -m "Constrain account team logo size"
+          git push origin HEAD:stabilization/vcl-2.1-cleanup
