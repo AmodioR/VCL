@@ -123,6 +123,25 @@
   background: rgba(105, 65, 198, 0.06);
 }
 
+/* Tournament-specific loan / stand-in moves belong to the roster activity
+   component itself rather than a second override stylesheet. */
+.roster-activity-row[data-event-type="loan_from_team"] .roster-activity-row__time span,
+.roster-activity-row[data-event-type="loan_free_agent"] .roster-activity-row__time span {
+  color: #b54708;
+  border-color: rgba(181, 71, 8, 0.2);
+  background: rgba(247, 144, 9, 0.08);
+}
+
+.roster-activity-row[data-event-type="loan_from_team"],
+.roster-activity-row[data-event-type="loan_free_agent"] {
+  background: linear-gradient(90deg, rgba(247, 144, 9, 0.035), transparent 55%);
+}
+
+.roster-activity-row[data-event-type="loan_from_team"] .roster-activity-route__arrow,
+.roster-activity-row[data-event-type="loan_free_agent"] .roster-activity-route__arrow {
+  color: #d97706;
+}
+
 .roster-activity-row__story {
   display: flex;
   align-items: center;

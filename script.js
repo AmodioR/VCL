@@ -115,7 +115,7 @@
     const siteHeader = document.querySelector(".site-header");
 
     // Admin workspace already has its own dense fixed navigation.
-    if (!siteHeader || document.querySelector(".admin-workspace-page")) {
+    if (!siteHeader || document.querySelector(".admin-v2")) {
       return;
     }
 
@@ -576,7 +576,7 @@
         const [entries, matches, results] = await Promise.all([
           VCLData.getTournamentEntries(tournament.id),
           VCLData.getTournamentMatches(tournament.id),
-          VCLData.getTournamentResults ? VCLData.getTournamentResults(tournament.id) : Promise.resolve([])
+          VCLData.getTournamentResults(tournament.id)
         ]);
 
         setText("[data-tournament-series]", tournamentSeriesLabel(tournament.series_slug));
@@ -711,7 +711,7 @@
         setText("[data-tournament-name]", "Turneringen kunne ikke indlæses");
         setText(
           "[data-tournament-description]",
-          error.message || "Tjek at tournament-migrationen er kørt i Supabase."
+          error.message || "Turneringen kunne ikke indlæses. Prøv igen om et øjeblik."
         );
       }
     })();
@@ -1108,18 +1108,66 @@ const playerProfilePage = $(".player-profile-page:not(.account-page):not(.team-p
 
   if (playerProfilePage && window.VCLData) {
     const params = new URLSearchParams(window.location.search);
-    const playerSlug = params.get("player") || "amodio";
+    const playerSlug = params.get("player") || "";
+
+    function renderMissingPlayerProfile() {
+      setText("[data-player-roster-status]", "Ikke fundet");
+      setText("[data-player-name]", "Spillerprofil ikke fundet");
+      setText("[data-player-bio]", "Kontrollér linket, eller gå tilbage til leaderboardet.");
+      setText("[data-player-rank]", "—");
+      setText("[data-player-rank-tier]", "UNRANKED");
+      setText("[data-player-points]", "—");
+      setText("[data-player-championship-wins]", "—");
+      setText("[data-player-contender-wins]", "—");
+      setText("[data-player-academy-wins]", "—");
+      setText("[data-player-info-primary]", "—");
+      setText("[data-player-info-level]", "—");
+      setText("[data-player-info-status]", "Ikke fundet");
+      setText("[data-player-info-discord]", "—");
+
+      const tags = $("[data-player-tags]");
+      if (tags) tags.innerHTML = "";
+
+      const teamPill = $("[data-player-team-pill]");
+      if (teamPill) teamPill.hidden = true;
+
+      const teamFallback = $("[data-player-team-fallback]");
+      if (teamFallback) teamFallback.hidden = false;
+      setText("[data-player-team-fallback-title]", "Ingen spiller valgt");
+      setText("[data-player-team-fallback-copy]", "Åbn en spiller fra leaderboardet eller holdoversigten.");
+
+      const rosterAction = $("[data-player-roster-action]");
+      if (rosterAction) rosterAction.hidden = true;
+
+      const historyList = $("[data-player-history-list]");
+      if (historyList) {
+        historyList.innerHTML = `
+          <article class="player-history-v3__item player-history-v3__item--empty">
+            <span class="player-history-v3__placement">—</span>
+            <div>
+              <strong>Ingen spillerprofil valgt</strong>
+              <p>Gå tilbage til leaderboardet og vælg en spiller.</p>
+            </div>
+          </article>
+        `;
+      }
+
+      document.title = "Spillerprofil ikke fundet — VCL";
+    }
 
     async function loadPlayerProfile() {
-      const context = window.VCLData.getPlayerProfileContext
-        ? await window.VCLData.getPlayerProfileContext(playerSlug)
-        : null;
-      const player = context?.player || await window.VCLData.getPlayerBySlug(playerSlug);
+      if (!playerSlug) {
+        renderMissingPlayerProfile();
+        return;
+      }
+      const context = await window.VCLData.getPlayerProfileContext(playerSlug);
+      const player = context?.player || null;
       const leaderboardEntry = context?.leaderboardEntry || null;
       const team = context?.team || null;
 
       if (!player) {
         console.warn("Ingen spiller fundet:", playerSlug);
+        renderMissingPlayerProfile();
         return;
       }
 
@@ -1624,7 +1672,7 @@ async function preparePlayerAvatar(file) {
 }
 
 async function loadPlayerAvatarManager(player) {
-  if (!playerAvatarManager || !player || !window.VCLData.getMyPlayerAvatarStatus) {
+  if (!playerAvatarManager || !player) {
     if (playerAvatarManager) playerAvatarManager.hidden = true;
     return;
   }
@@ -1634,7 +1682,7 @@ async function loadPlayerAvatarManager(player) {
     currentPlayerAvatarStatus = await window.VCLData.getMyPlayerAvatarStatus();
   } catch (error) {
     console.error(error);
-    setPlayerAvatarMessage("Avatarstatus kunne ikke hentes. Har du kørt avatar-migrationen i Supabase?", "error");
+    setPlayerAvatarMessage("Avatarstatus kunne ikke hentes. Prøv igen om et øjeblik.", "error");
     return;
   }
 
@@ -1642,7 +1690,7 @@ async function loadPlayerAvatarManager(player) {
   let previewUrl = currentPlayerAvatarStatus?.avatar_url || null;
   const status = currentPlayerAvatarStatus?.submission_status || "";
 
-  if (status === "pending" && currentPlayerAvatarStatus?.pending_storage_path && window.VCLData.createMyPendingAvatarPreview) {
+  if (status === "pending" && currentPlayerAvatarStatus?.pending_storage_path) {
     const pendingUrl = await window.VCLData.createMyPendingAvatarPreview(currentPlayerAvatarStatus.pending_storage_path);
     if (pendingUrl) previewUrl = pendingUrl;
   }
@@ -1709,9 +1757,7 @@ async function renderAccountQuickAccess(profile) {
 
   myCaptainData = null;
   try {
-    if (window.VCLData?.getMyCaptainTeam) {
-      myCaptainData = await window.VCLData.getMyCaptainTeam();
-    }
+    myCaptainData = await window.VCLData.getMyCaptainTeam();
   } catch (error) {
     console.warn("Kunne ikke tjekke captain adgang:", error);
   }
@@ -1754,7 +1800,6 @@ async function renderAccountQuickAccess(profile) {
     setOverviewText(overviewTeamMeta, `Captain${myCaptainData.team.tier ? ` · ${myCaptainData.team.tier}` : ""}`);
     if (overviewTeamLink && myCaptainData.team.slug) {
       overviewTeamLink.href = `team-profile.html?team=${encodeURIComponent(myCaptainData.team.slug)}`;
-      overviewTeamLink.innerHTML = 'Se holdprofil <span aria-hidden="true">→</span>';
     }
   }
 
@@ -2050,12 +2095,18 @@ async function loadClaimInvite() {
       setOverviewText(overviewTeamMeta, "Du er ikke registreret på et VCL-hold endnu.");
       if (overviewTeamLink) {
         overviewTeamLink.href = "teams.html";
-        overviewTeamLink.innerHTML = 'Se VCL-hold <span aria-hidden="true">→</span>';
       }
 
       setText("[data-account-avatar]", displayName.charAt(0).toUpperCase());
       setText("[data-account-name]", displayName);
       setText("[data-account-email]", email);
+      setText("[data-account-hero-bio]", "Ingen offentlig spillerbio endnu.");
+      setText("[data-account-stat-rank]", "—");
+      setText("[data-account-stat-tier]", "Unranked");
+      setText("[data-account-stat-points]", "0");
+      setText("[data-account-stat-championship]", "0");
+      setText("[data-account-stat-contender]", "0");
+      setText("[data-account-stat-academy]", "0");
       setText("[data-account-role]", role);
       setText("[data-account-discord]", discord);
       setText("[data-side-email]", email);
@@ -2080,8 +2131,6 @@ async function loadClaimInvite() {
           }
           if (freeAgentForm) {
   freeAgentForm.hidden = true;
-  await loadTeamInvites();
-  await loadClaimInvite();
 }
 
           playerProfileForm.hidden = false;
@@ -2091,6 +2140,7 @@ async function loadClaimInvite() {
           playerProfileForm.level.value = myClaimedPlayer.level || "";
           playerProfileForm.bio.value = myClaimedPlayer.bio || "";
           playerProfileForm.is_free_agent.checked = Boolean(myClaimedPlayer.is_free_agent);
+          setText("[data-account-hero-bio]", myClaimedPlayer.bio || "Ingen offentlig spillerbio endnu.");
 
           const publicProfileLink = document.querySelector("[data-account-public-profile]");
 
@@ -2098,10 +2148,8 @@ async function loadClaimInvite() {
             publicProfileLink.href = `player-profile.html?player=${encodeURIComponent(myClaimedPlayer.slug)}`;
             publicProfileLink.hidden = false;
           }
-          const claimedContext = window.VCLData.getPlayerProfileContext
-            ? await window.VCLData.getPlayerProfileContext(myClaimedPlayer.slug)
-            : null;
-          const publicStats = claimedContext?.player || await window.VCLData.getPlayerBySlug(myClaimedPlayer.slug);
+          const claimedContext = await window.VCLData.getPlayerProfileContext(myClaimedPlayer.slug);
+          const publicStats = claimedContext?.player || null;
           const claimedLeaderboard = claimedContext?.leaderboardEntry || null;
           const claimedTeam = claimedContext?.team || null;
 
@@ -2116,7 +2164,6 @@ async function loadClaimInvite() {
             setOverviewText(overviewTeamMeta, "Aktivt roster-medlem");
             if (overviewTeamLink && claimedTeam.slug) {
               overviewTeamLink.href = `team-profile.html?team=${encodeURIComponent(claimedTeam.slug)}`;
-              overviewTeamLink.innerHTML = 'Se holdprofil <span aria-hidden="true">→</span>';
             }
           }
 
@@ -2140,6 +2187,29 @@ if (claimedPlayerSummary && publicStats) {
   const claimedTeamLogo = claimedTeam?.logo_url || publicStats.current_team_logo_url || "assets/teams/default-team.png";
   const claimedRank = claimedLeaderboard?.rank ?? claimedLeaderboard?.leaderboard_rank ?? null;
   const claimedPoints = claimedLeaderboard?.points ?? publicStats.points ?? 0;
+  const claimedTier = claimedLeaderboard?.tier || claimedLeaderboard?.level || publicStats.level || "Unranked";
+  const championshipWins = publicStats.championship_wins ?? claimedLeaderboard?.championship_wins ?? 0;
+  const contenderWins = publicStats.contender_wins ?? claimedLeaderboard?.contender_wins ?? 0;
+  const academyWins = publicStats.academy_wins ?? claimedLeaderboard?.academy_wins ?? 0;
+
+  setText("[data-account-stat-rank]", claimedRank ? `#${claimedRank}` : "—");
+  setText("[data-account-stat-tier]", claimedTier);
+  setText("[data-account-stat-points]", claimedPoints);
+  setText("[data-account-stat-championship]", championshipWins);
+  setText("[data-account-stat-contender]", contenderWins);
+  setText("[data-account-stat-academy]", academyWins);
+
+  const accountTeamLogo = $("[data-account-team-logo]");
+  if (accountTeamLogo) {
+    accountTeamLogo.hidden = !claimedTeamName;
+    if (claimedTeamName) {
+      accountTeamLogo.src = claimedTeamLogo;
+      accountTeamLogo.alt = `${claimedTeamName} logo`;
+      accountTeamLogo.addEventListener("error", () => {
+        accountTeamLogo.src = "assets/teams/default-team.png";
+      }, { once: true });
+    }
+  }
 
   setText(
     "[data-claimed-player-team]",
@@ -2200,6 +2270,12 @@ if (claimedPlayerSummary && publicStats) {
   }
 }
       }
+
+      // Invitations belong to the signed-in account flow, not only to users who
+      // already have a claimed player. This is especially important after login
+      // with ?claim=, where an existing account may not have a player yet.
+      await loadTeamInvites();
+      await loadClaimInvite();
     }
 
     if (playerAvatarInput) {
@@ -2284,22 +2360,20 @@ if (claimedPlayerSummary && publicStats) {
           return;
         }
 
-        if (window.VCLData?.isProfileUsernameAvailable) {
-  const currentProfile = await window.VCLData.getCurrentProfile();
+        const currentProfile = await window.VCLData.getCurrentProfile();
 
-  const usernameAvailable = await window.VCLData.isProfileUsernameAvailable(
-    updates.display_name,
-    currentProfile?.id || null
-  );
+        const usernameAvailable = await window.VCLData.isProfileUsernameAvailable(
+          updates.display_name,
+          currentProfile?.id || null
+        );
 
-  if (!usernameAvailable) {
-    setAccountMessage(
-      "Det brugernavn er allerede taget. Vælg et andet.",
-      "error"
-    );
-    return;
-  }
-}
+        if (!usernameAvailable) {
+          setAccountMessage(
+            "Det brugernavn er allerede taget. Vælg et andet.",
+            "error"
+          );
+          return;
+        }
 
         try {
           setAccountMessage("Gemmer ændringer...", "info");
@@ -2420,36 +2494,153 @@ if (claimedPlayerSummary && publicStats) {
     loadAccountPage();
   }
     /* =========================
-     AUTH NAV BUTTON
+     AUTH NAV ACCOUNT MENU
   ========================= */
 
   if (window.VCLData?.getSession) {
     const authNavButton = document.querySelector(".site-header .nav-actions a.btn");
+    let accountMenuShell = null;
+    let accountMenu = null;
+
+    const closeAccountMenu = () => {
+      if (!accountMenu || !authNavButton) return;
+      accountMenu.hidden = true;
+      authNavButton.setAttribute("aria-expanded", "false");
+    };
+
+    const ensureAccountMenu = () => {
+      if (!authNavButton) return null;
+      if (accountMenuShell && accountMenu) return accountMenu;
+
+      accountMenuShell = document.createElement("div");
+      accountMenuShell.className = "nav-account-shell";
+      authNavButton.parentNode.insertBefore(accountMenuShell, authNavButton);
+      accountMenuShell.appendChild(authNavButton);
+
+      accountMenu = document.createElement("div");
+      accountMenu.className = "nav-account-menu";
+      accountMenu.id = "nav-account-menu";
+      accountMenu.hidden = true;
+      accountMenuShell.appendChild(accountMenu);
+
+      if (!authNavButton.dataset.accountMenuBound) {
+        authNavButton.dataset.accountMenuBound = "true";
+        authNavButton.addEventListener("click", (event) => {
+          if (!accountMenu) return;
+          event.preventDefault();
+          const shouldOpen = accountMenu.hidden;
+          accountMenu.hidden = !shouldOpen;
+          authNavButton.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+        });
+      }
+
+      return accountMenu;
+    };
 
     async function updateAuthNavButton() {
       if (!authNavButton) return;
 
       const session = await window.VCLData.getSession();
-      const label = authNavButton.querySelector("span");
 
-      if (session) {
-        authNavButton.href = "account.html";
-
-        if (label) {
-          label.textContent = "Account";
-        } else {
-          authNavButton.textContent = "Account";
+      if (!session) {
+        closeAccountMenu();
+        if (accountMenuShell) {
+          accountMenuShell.parentNode.insertBefore(authNavButton, accountMenuShell);
+          accountMenuShell.remove();
+          accountMenuShell = null;
+          accountMenu = null;
         }
-      } else {
+
+        authNavButton.classList.remove("nav-account-trigger");
+        authNavButton.removeAttribute("aria-haspopup");
+        authNavButton.removeAttribute("aria-expanded");
+        authNavButton.removeAttribute("aria-controls");
         authNavButton.href = "login.html";
-
-        if (label) {
-          label.textContent = "Login";
-        } else {
-          authNavButton.textContent = "Login";
-        }
+        authNavButton.innerHTML = "<span>Login</span>";
+        authNavButton.classList.add("auth-nav-ready");
+        return;
       }
+
+      const [profileResult, playerResult, captainResult] = await Promise.allSettled([
+        window.VCLData.getCurrentProfile(),
+        window.VCLData.getMyClaimedPlayer(),
+        window.VCLData.getMyCaptainTeam()
+      ]);
+
+      const profile = profileResult.status === "fulfilled" ? profileResult.value : null;
+      const player = playerResult.status === "fulfilled" ? playerResult.value : null;
+      const captainData = captainResult.status === "fulfilled" ? captainResult.value : null;
+      const role = String(profile?.role || "player").toLowerCase();
+      const isAdmin = role === "admin";
+      const isCaptain = Boolean(captainData?.team);
+      const displayName = player?.alias || profile?.display_name || "Account";
+      const avatarUrl = player?.avatar_url || "";
+      const initial = String(displayName || "V").trim().charAt(0).toUpperCase() || "V";
+
+      const menu = ensureAccountMenu();
+      if (!menu) return;
+
+      authNavButton.classList.remove("auth-nav-ready");
+      accountMenuShell?.classList.add("auth-nav-ready");
+      authNavButton.href = "account.html";
+      authNavButton.classList.add("nav-account-trigger");
+      authNavButton.setAttribute("aria-haspopup", "menu");
+      authNavButton.setAttribute("aria-expanded", "false");
+      authNavButton.setAttribute("aria-controls", "nav-account-menu");
+      authNavButton.innerHTML = `
+        <span class="nav-account-trigger__avatar">${
+          avatarUrl
+            ? `<img src="${escapeHTML(avatarUrl)}" alt="">`
+            : escapeHTML(initial)
+        }</span>
+        <span class="nav-account-trigger__label">${escapeHTML(displayName)}</span>
+        <span class="nav-account-trigger__chevron" aria-hidden="true"></span>
+      `;
+
+      const links = [
+        `<a class="nav-account-menu__link" role="menuitem" href="account.html"><span>Min konto</span><span>→</span></a>`
+      ];
+
+      if (player?.slug) {
+        links.push(`<a class="nav-account-menu__link" role="menuitem" href="player-profile.html?player=${encodeURIComponent(player.slug)}"><span>Offentlig profil</span><span>→</span></a>`);
+      }
+
+      if (isCaptain) {
+        links.push(`<a class="nav-account-menu__link nav-account-menu__link--role" role="menuitem" href="team-dashboard.html"><span><span class="nav-account-menu__role">Captain</span>Team dashboard</span><span>→</span></a>`);
+      }
+
+      if (isAdmin) {
+        links.push(`<a class="nav-account-menu__link nav-account-menu__link--role" role="menuitem" href="admin.html"><span><span class="nav-account-menu__role">Admin</span>Admin panel</span><span>→</span></a>`);
+      }
+
+      menu.innerHTML = `
+        <div class="nav-account-menu__identity">
+          <small>Logget ind som</small>
+          <strong>${escapeHTML(displayName)}</strong>
+        </div>
+        <div class="nav-account-menu__links" role="menu">${links.join("")}</div>
+        <button type="button" class="nav-account-menu__logout" data-nav-account-logout>Log ud</button>
+      `;
+
+      menu.querySelector("[data-nav-account-logout]")?.addEventListener("click", async () => {
+        try {
+          await window.VCLData.logoutAccount();
+          window.location.href = "login.html";
+        } catch (error) {
+          console.error("Kunne ikke logge ud:", error);
+        }
+      });
     }
+
+    document.addEventListener("click", (event) => {
+      if (accountMenuShell && !accountMenuShell.contains(event.target)) {
+        closeAccountMenu();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeAccountMenu();
+    });
 
     updateAuthNavButton();
 
@@ -2649,10 +2840,6 @@ if (status) {
 }
 
 await loadTeamDashboard();
-
-if (window.refreshCaptainRosterControls) {
-  await window.refreshCaptainRosterControls();
-}
     } catch (error) {
       console.error(error);
 
@@ -2723,46 +2910,185 @@ function renderRosterSwapForm(members = []) {
   `;
 }
 
-    const renderRoster = (members = []) => {
+    const buildTeamDashboardClaimLink = (token) => {
+      const baseUrl = `${window.location.origin}${window.location.pathname.replace(
+        "team-dashboard.html",
+        "signup.html"
+      )}`;
+
+      return `${baseUrl}?claim=${encodeURIComponent(token)}`;
+    };
+
+    const copyTeamDashboardText = async (value) => {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+        return;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = value;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      textarea.remove();
+    };
+
+    const renderRoster = (members = [], captainPlayerId = "") => {
       if (!rosterList) return;
 
       if (!members.length) {
         rosterList.innerHTML = `
           <div class="team-dashboard-empty-v2">
             <strong>Ingen spillere på rosteren</strong>
-            <p>Der er endnu ikke registreret aktive roster members på holdet.</p>
+            <p>Der er endnu ikke registreret spillere på holdet.</p>
           </div>
         `;
         return;
       }
 
-      rosterList.innerHTML = members
+      const sortedMembers = [...members].sort((a, b) => {
+        const order = { active: 1, bench: 2 };
+        return (order[a.roster_status] || 9) - (order[b.roster_status] || 9);
+      });
+
+      rosterList.innerHTML = sortedMembers
         .map((member) => {
           const player = member.players || {};
-          const name = player.alias || "Ukendt spiller";
-          const slug = player.slug || "";
-          const role = player.primary_role || "Player";
-          const isCaptain = member.member_role === "captain";
-          const rosterStatus = member.roster_status === "bench" ? "Substitute" : "Starter";
-          const claimed = Boolean(player.claimed_by_profile_id) || player.claim_status === "claimed" || isCaptain;
+          const isCaptain =
+            member.player_id === captainPlayerId || member.member_role === "captain";
+          const isClaimed =
+            isCaptain ||
+            Boolean(player.claimed_by_profile_id) ||
+            player.claim_status === "claimed";
+          const rosterStatus = member.roster_status === "active" ? "Starter" : "Substitute";
+          const playerId = player.id || member.player_id || "";
+          const playerAlias = player.alias || "Ukendt spiller";
+          const playerSlug = player.slug || "";
+
+          const claimButton = !isClaimed && playerId
+            ? `
+                <button
+                  type="button"
+                  data-create-claim-invite
+                  data-player-id="${escapeHTML(playerId)}"
+                  data-player-alias="${escapeHTML(playerAlias)}"
+                >
+                  Lav claim link
+                </button>
+              `
+            : "";
 
           return `
             <article class="team-dashboard-roster-row-v2">
               <div class="team-dashboard-roster-row-v2__status">
                 <strong>${escapeHTML(rosterStatus)}</strong>
                 ${isCaptain ? "<span>Captain</span>" : ""}
-                <span class="${claimed ? "is-claimed" : "is-unclaimed"}">${claimed ? "Claimed" : "Unclaimed"}</span>
+                <span class="${isClaimed ? "is-claimed" : "is-unclaimed"}">${isClaimed ? "Claimed" : "Unclaimed"}</span>
               </div>
+
               <div class="team-dashboard-roster-row-v2__player">
                 <strong>
-                  ${slug ? `<a href="player-profile.html?player=${encodeURIComponent(slug)}">${escapeHTML(name)}</a>` : escapeHTML(name)}
+                  ${
+                    playerSlug
+                      ? `<a href="player-profile.html?player=${encodeURIComponent(playerSlug)}">${escapeHTML(playerAlias)}</a>`
+                      : escapeHTML(playerAlias)
+                  }
                 </strong>
-                <span>${escapeHTML(role)}</span>
+                <span>${escapeHTML(player.primary_role || "Player")}</span>
+              </div>
+
+              <div class="team-dashboard-roster-row-v2__actions">
+                <button
+                  type="button"
+                  data-remove-roster-member
+                  data-team-member-id="${escapeHTML(member.id)}"
+                  data-player-alias="${escapeHTML(playerAlias)}"
+                  ${isCaptain ? "disabled" : ""}
+                >
+                  ${isCaptain ? "Captain" : "Fjern spiller"}
+                </button>
+
+                ${claimButton}
+              </div>
+
+              <div class="team-dashboard-roster-row-v2__feedback">
+                <p class="notice" data-roster-action-status="${escapeHTML(member.id)}"></p>
+                <p class="notice" data-claim-action-status="${escapeHTML(playerId)}"></p>
               </div>
             </article>
           `;
         })
         .join("");
+
+      $$("[data-remove-roster-member]", rosterList).forEach((button) => {
+        button.addEventListener("click", async () => {
+          const teamMemberId = button.dataset.teamMemberId;
+          const playerAlias = button.dataset.playerAlias || "spilleren";
+          const status = rosterList.querySelector(`[data-roster-action-status="${teamMemberId}"]`);
+
+          if (!confirm(`Er du sikker på, at du vil fjerne ${playerAlias} fra rosteret? Spilleren bliver Free Agent igen.`)) {
+            return;
+          }
+
+          try {
+            button.disabled = true;
+            button.textContent = "Fjerner...";
+            if (status) {
+              status.textContent = "Fjerner spiller fra roster...";
+              status.dataset.status = "info";
+            }
+
+            await window.VCLData.captainRemoveRosterMember(teamMemberId);
+            await loadTeamDashboard();
+          } catch (error) {
+            console.error(error);
+            button.disabled = false;
+            button.textContent = "Fjern spiller";
+            if (status) {
+              status.textContent = error.message || "Kunne ikke fjerne spiller.";
+              status.dataset.status = "error";
+            }
+          }
+        });
+      });
+
+      $$("[data-create-claim-invite]", rosterList).forEach((button) => {
+        button.addEventListener("click", async () => {
+          const playerId = button.dataset.playerId;
+          const playerAlias = button.dataset.playerAlias || "spilleren";
+          const status = rosterList.querySelector(`[data-claim-action-status="${playerId}"]`);
+
+          try {
+            button.disabled = true;
+            button.textContent = "Laver link...";
+            if (status) {
+              status.textContent = `Laver claim link til ${playerAlias}...`;
+              status.dataset.status = "info";
+            }
+
+            const invite = await window.VCLData.captainCreateClaimInvite(playerId);
+            const claimLink = buildTeamDashboardClaimLink(invite.token);
+            await copyTeamDashboardText(claimLink);
+
+            button.textContent = "Link kopieret";
+            if (status) {
+              status.innerHTML = `Claim link kopieret:<br><a href="${escapeHTML(claimLink)}">${escapeHTML(claimLink)}</a>`;
+              status.dataset.status = "success";
+            }
+          } catch (error) {
+            console.error(error);
+            button.disabled = false;
+            button.textContent = "Lav claim link";
+            if (status) {
+              status.textContent = error.message || "Kunne ikke lave claim link.";
+              status.dataset.status = "error";
+            }
+          }
+        });
+      });
     };
 
     const renderCaptainSelect = (members = [], currentCaptainId = "") => {
@@ -2852,9 +3178,7 @@ function renderRosterSwapForm(members = []) {
   teamSettingsForm.name.value = team.name || "";
   teamSettingsForm.tagline.value = team.tagline || "";
   teamSettingsForm.description.value = team.description || "";
-  const tierField = teamSettingsForm.elements.namedItem("tier");
   const statusField = teamSettingsForm.elements.namedItem("status");
-  if (tierField) tierField.value = team.tier || "Academy";
   if (statusField) statusField.value = team.status || "active";
 }
 
@@ -2962,7 +3286,7 @@ renderCaptainSelect(members, team.captain_player_id);
       name: String(formData.get("name") || "").trim(),
       tagline: String(formData.get("tagline") || "").trim(),
       description: String(formData.get("description") || "").trim(),
-      tier: String(formData.get("tier") || "Academy").trim(),
+      tier: String(currentDashboardTeam?.tier || "Academy").trim(),
       status: String(formData.get("status") || "active").trim()
     };
 
@@ -3064,7 +3388,7 @@ renderCaptainSelect(members, team.captain_player_id);
 
   if (teamProfilePage && window.VCLData?.getTeamProfile) {
     const params = new URLSearchParams(window.location.search);
-    const teamSlug = params.get("team") || "frontline";
+    const teamSlug = params.get("team") || "";
 
     const setTeamProfileText = (selector, value) => {
       const element = $(selector);
@@ -3359,7 +3683,9 @@ renderCaptainSelect(members, team.captain_player_id);
     };
 
     async function loadPublicTeamProfile() {
-      const teamData = await window.VCLData.getTeamProfile(teamSlug);
+      const teamData = teamSlug
+        ? await window.VCLData.getTeamProfile(teamSlug)
+        : null;
 
       if (!teamData) {
         setTeamProfileText("[data-team-profile-tier]", "Ikke fundet");
@@ -3408,9 +3734,7 @@ renderCaptainSelect(members, team.captain_player_id);
 
       renderPublicRoster(members, team.captain_player_id);
 
-      const achievements = window.VCLData.getTeamAchievements
-        ? await window.VCLData.getTeamAchievements(team.slug)
-        : [];
+      const achievements = await window.VCLData.getTeamAchievements(team.slug);
 
       renderTeamAchievements(achievements);
 
@@ -3611,423 +3935,6 @@ renderCaptainSelect(members, team.captain_player_id);
     loadLiveFreeAgents();
   }
    /* =========================
-     CAPTAIN ROSTER CONTROLS
-  ========================= */
-
-  const captainRosterControlsPage = $("[data-team-dashboard-page]");
-  const captainRosterControlsList = $("[data-team-roster-list]");
-
-  if (
-    captainRosterControlsPage &&
-    captainRosterControlsList &&
-    window.VCLData?.getMyCaptainTeam
-  ) {
-    function buildClaimLink(token) {
-  const baseUrl = `${window.location.origin}${window.location.pathname.replace(
-    "team-dashboard.html",
-    "signup.html"
-  )}`;
-
-  return `${baseUrl}?claim=${encodeURIComponent(token)}`;
-}
-
-    async function copyText(text) {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(text);
-        return;
-      }
-
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.setAttribute("readonly", "");
-      textarea.style.position = "fixed";
-      textarea.style.left = "-9999px";
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      textarea.remove();
-    }
-
-    async function renderCaptainRosterControls() {
-      if (
-        !window.VCLData?.captainSetRosterStatus ||
-        !window.VCLData?.captainRemoveRosterMember ||
-        !window.VCLData?.captainCreateClaimInvite
-      ) {
-        console.warn("Captain roster/claim functions mangler i VCLData.");
-        return;
-      }
-
-      const access = await window.VCLData.getMyCaptainTeam();
-
-      if (!access?.team) {
-        return;
-      }
-
-      const team = access.team;
-      const captainPlayerId =
-        access.captain_player?.id || team.captain_player_id || "";
-
-      const members = access.members || [];
-
-      if (!members.length) {
-        captainRosterControlsList.innerHTML = `
-          <div class="team-dashboard-empty-v2">
-            <strong>Ingen spillere på rosteren</strong>
-            <p>Der er endnu ikke registreret spillere på holdet.</p>
-          </div>
-        `;
-        return;
-      }
-
-      const sortedMembers = [...members].sort((a, b) => {
-        const order = {
-          active: 1,
-          bench: 2
-        };
-
-        return (order[a.roster_status] || 9) - (order[b.roster_status] || 9);
-      });
-
-      captainRosterControlsList.innerHTML = sortedMembers
-        .map((member) => {
-          const player = member.players || {};
-          const isCaptain =
-            member.player_id === captainPlayerId ||
-            member.member_role === "captain";
-
-          const isClaimed =
-  member.player_id === captainPlayerId ||
-  Boolean(player.claimed_by_profile_id) ||
-  player.claim_status === "claimed";
-
-          const canCreateClaimInvite = !isClaimed;
-
-          const currentStatus = member.roster_status || "bench";
-          const statusLabel = currentStatus === "active" ? "Starter" : "Substitute";
-
-          const claimButton = canCreateClaimInvite
-  ? `
-    <button
-      type="button"
-      data-create-claim-invite
-      data-player-id="${escapeHTML(player.id || member.player_id)}"
-      data-player-alias="${escapeHTML(player.alias || "spilleren")}"
-    >
-      Lav claim link
-    </button>
-  `
-  : "";
-
-          return `
-            <article class="team-dashboard-roster-row-v2">
-              <div class="team-dashboard-roster-row-v2__status">
-                <strong>${escapeHTML(statusLabel)}</strong>
-                ${isCaptain ? "<span>Captain</span>" : ""}
-                <span class="${isClaimed ? "is-claimed" : "is-unclaimed"}">${isClaimed ? "Claimed" : "Unclaimed"}</span>
-              </div>
-
-              <div class="team-dashboard-roster-row-v2__player">
-                <strong>
-                  <a href="player-profile.html?player=${encodeURIComponent(player.slug || "")}">
-                    ${escapeHTML(player.alias || "Ukendt spiller")}
-                  </a>
-                </strong>
-                <span>${escapeHTML(player.primary_role || "Player")}</span>
-              </div>
-
-              <div class="team-dashboard-roster-row-v2__actions">
-                <button
-                  type="button"
-                  data-remove-roster-member
-                  data-team-member-id="${escapeHTML(member.id)}"
-                  data-player-alias="${escapeHTML(player.alias || "spilleren")}" 
-                  ${isCaptain ? "disabled" : ""}
-                >
-                  ${isCaptain ? "Captain" : "Fjern spiller"}
-                </button>
-
-                ${claimButton}
-              </div>
-
-              <div class="team-dashboard-roster-row-v2__feedback">
-                <p class="notice" data-roster-action-status="${escapeHTML(member.id)}"></p>
-                <p class="notice" data-claim-action-status="${escapeHTML(player.id || member.player_id)}"></p>
-              </div>
-            </article>
-          `;
-        })
-        .join("");
-
-      $$("[data-remove-roster-member]").forEach((button) => {
-        button.addEventListener("click", async () => {
-          const teamMemberId = button.dataset.teamMemberId;
-          const playerAlias = button.dataset.playerAlias || "spilleren";
-          const status = $(`[data-roster-action-status="${teamMemberId}"]`);
-
-          const confirmed = confirm(
-            `Er du sikker på, at du vil fjerne ${playerAlias} fra rosteret? Spilleren bliver Free Agent igen.`
-          );
-
-          if (!confirmed) {
-            return;
-          }
-
-          try {
-            button.disabled = true;
-            button.textContent = "Fjerner...";
-
-            if (status) {
-              status.textContent = "Fjerner spiller fra roster...";
-              status.dataset.status = "info";
-            }
-
-            await window.VCLData.captainRemoveRosterMember(teamMemberId);
-
-            await renderCaptainRosterControls();
-          } catch (error) {
-            console.error(error);
-
-            if (status) {
-              status.textContent =
-                error.message || "Kunne ikke fjerne spiller.";
-              status.dataset.status = "error";
-            }
-
-            button.disabled = false;
-          }
-        });
-      });
-
-      $$("[data-create-claim-invite]").forEach((button) => {
-        button.addEventListener("click", async () => {
-          const playerId = button.dataset.playerId;
-          const playerAlias = button.dataset.playerAlias || "spilleren";
-          const status = $(`[data-claim-action-status="${playerId}"]`);
-
-          try {
-            button.disabled = true;
-            button.textContent = "Laver link...";
-
-            if (status) {
-              status.textContent = `Laver claim link til ${playerAlias}...`;
-              status.dataset.status = "info";
-            }
-
-            const invite = await window.VCLData.captainCreateClaimInvite(playerId);
-            const claimLink = buildClaimLink(invite.token);
-
-            await copyText(claimLink);
-
-            button.textContent = "Link kopieret";
-
-            if (status) {
-              status.innerHTML = `
-                Claim link kopieret:
-                <br>
-                <a href="${escapeHTML(claimLink)}">${escapeHTML(claimLink)}</a>
-              `;
-              status.dataset.status = "success";
-            }
-          } catch (error) {
-            console.error(error);
-
-            button.disabled = false;
-            button.textContent = "Lav claim link";
-
-            if (status) {
-              status.textContent =
-                error.message || "Kunne ikke lave claim link.";
-              status.dataset.status = "error";
-            }
-          }
-        });
-      });
-    }
-
-    async function forceCaptainRosterRender() {
-  try {
-    await renderCaptainRosterControls();
-  } catch (error) {
-    console.error("Kunne ikke rendere captain roster controls:", error);
-  }
-}
-
-window.refreshCaptainRosterControls = forceCaptainRosterRender;
-
-forceCaptainRosterRender();
-
-    window.addEventListener("load", () => {
-      setTimeout(forceCaptainRosterRender, 250);
-      setTimeout(forceCaptainRosterRender, 900);
-      setTimeout(forceCaptainRosterRender, 1600);
-    });
-  }
-
-    /* =========================
-     CLAIM INVITE PAGE HANDLER
-  ========================= */
-
-  const accountClaimToken = new URLSearchParams(window.location.search).get("claim");
-
-  if (
-    window.location.pathname.includes("account") &&
-    accountClaimToken &&
-    window.VCLData?.getClaimInviteByToken &&
-    window.VCLData?.acceptClaimInvite
-  ) {
-    async function renderClaimInviteFromUrl() {
-      let claimSection = $("[data-claim-invite-section]");
-      let claimBox = $("[data-claim-invite-box]");
-
-      if (!claimSection || !claimBox) {
-        const target =
-          $(".account-page .container") ||
-          $("main .container") ||
-          $("main");
-
-        if (!target) return;
-
-        claimSection = document.createElement("section");
-        claimSection.className = "profile-section account-claim-section";
-        claimSection.setAttribute("data-claim-invite-section", "");
-
-        claimSection.innerHTML = `
-          <div class="profile-section-head">
-            <p class="section-kicker">Claim invite</p>
-            <h2>Claim player profile</h2>
-            <p>
-              Du er blevet inviteret til at claime en eksisterende VCL player profile.
-            </p>
-          </div>
-
-          <div class="team-history-list" data-claim-invite-box>
-            <article>
-              <span>Loading</span>
-              <strong>Henter claim invite</strong>
-              <p>Vi tjekker linket i Supabase.</p>
-            </article>
-          </div>
-        `;
-
-        target.prepend(claimSection);
-        claimBox = claimSection.querySelector("[data-claim-invite-box]");
-      }
-
-      claimSection.hidden = false;
-
-      const freeAgentForm = $("[data-free-agent-form]");
-      if (freeAgentForm) {
-        freeAgentForm.hidden = true;
-      }
-
-      const invite = await window.VCLData.getClaimInviteByToken(accountClaimToken);
-
-      if (!invite) {
-        claimBox.innerHTML = `
-          <article>
-            <span>Invalid</span>
-            <strong>Claim link kunne ikke findes</strong>
-            <p>Linket er ugyldigt eller findes ikke længere.</p>
-          </article>
-        `;
-        return;
-      }
-
-      const isExpired =
-        invite.expires_at && new Date(invite.expires_at) <= new Date();
-
-      if (invite.status !== "pending" || isExpired) {
-        claimBox.innerHTML = `
-          <article>
-            <span>${escapeHTML(invite.status || "Unavailable")}</span>
-            <strong>${escapeHTML(invite.player_alias || "Player profile")}</strong>
-            <p>Dette claim link er ikke længere aktivt.</p>
-          </article>
-        `;
-        return;
-      }
-
-      claimBox.innerHTML = `
-        <article class="claim-invite-card">
-          <span>Pending claim</span>
-
-          <strong>${escapeHTML(invite.player_alias || "Ukendt spiller")}</strong>
-
-          <p>
-            Du er inviteret til at claime denne player profile
-            ${
-              invite.team_name
-                ? `fra <strong>${escapeHTML(invite.team_name)}</strong>.`
-                : "."
-            }
-          </p>
-
-          ${
-            invite.invited_by_player_alias
-              ? `<p>Inviteret af ${escapeHTML(invite.invited_by_player_alias)}.</p>`
-              : ""
-          }
-
-          <div class="claim-invite-card__actions">
-            <button type="button" data-accept-claim-invite-from-url>
-              Claim profile
-            </button>
-
-            <a href="player-profile.html?player=${encodeURIComponent(invite.player_slug || "")}">
-              Se public profile
-            </a>
-          </div>
-
-          <p class="notice" data-claim-invite-url-status></p>
-        </article>
-      `;
-
-      const button = claimBox.querySelector("[data-accept-claim-invite-from-url]");
-      const status = claimBox.querySelector("[data-claim-invite-url-status]");
-
-      button.addEventListener("click", async () => {
-        try {
-          button.disabled = true;
-          button.textContent = "Claimer...";
-
-          if (status) {
-            status.textContent = "Claimer player profile...";
-            status.dataset.status = "info";
-          }
-
-          await window.VCLData.acceptClaimInvite(accountClaimToken);
-
-          if (status) {
-            status.textContent = "Player profile claimet.";
-            status.dataset.status = "success";
-          }
-
-          window.location.href = "account.html";
-        } catch (error) {
-          console.error(error);
-
-          button.disabled = false;
-          button.textContent = "Claim profile";
-
-          if (status) {
-            status.textContent =
-              error.message || "Kunne ikke claime player profile.";
-            status.dataset.status = "error";
-          }
-        }
-      });
-    }
-
-    renderClaimInviteFromUrl();
-
-    window.addEventListener("load", () => {
-      setTimeout(renderClaimInviteFromUrl, 300);
-      setTimeout(renderClaimInviteFromUrl, 1000);
-    });
-  }
-
-    /* =========================
      SIGNUP CLAIM-AWARE HANDLER
   ========================= */
 
@@ -4617,7 +4524,7 @@ let cachedAdminTeamSignups = [];
     }
 
     async function loadAdminTournaments() {
-      if (!adminTournamentList || !window.VCLData.getAdminTournaments) return;
+      if (!adminTournamentList) return;
 
       try {
         cachedAdminTournaments = await window.VCLData.getAdminTournaments();
@@ -4626,9 +4533,9 @@ let cachedAdminTeamSignups = [];
         console.error(error);
         adminTournamentList.innerHTML = `
           <article class="admin-setup-required">
-            <span>Setup required</span>
-            <strong>Turneringsmodulet mangler i Supabase</strong>
-            <p>Kør <code>20260715_tournament_core.sql</code> i Supabase SQL Editor.</p>
+            <span>Fejl</span>
+            <strong>Turneringerne kunne ikke hentes</strong>
+            <p>Prøv igen om et øjeblik. Hvis fejlen fortsætter, kontrollér forbindelsen til VCL-databasen.</p>
           </article>
         `;
       }
@@ -4994,7 +4901,7 @@ let cachedAdminTeamSignups = [];
         adminSettlementPreview.innerHTML = `
           <div class="tournament-empty-state">
             <strong>Preview kunne ikke beregnes</strong>
-            <p>Kontrollér Supabase-migrationen og prøv igen.</p>
+            <p>Kontrollér turneringsdataene og prøv igen.</p>
           </div>
         `;
         adminFinalizeTournament.disabled = true;
@@ -5045,7 +4952,7 @@ let cachedAdminTeamSignups = [];
     }
 
     async function loadAdminTournamentSettlement(tournamentId) {
-      if (!adminTournamentSettlement || !window.VCLData.getTournamentSettlementPreview) return;
+      if (!adminTournamentSettlement) return;
 
       try {
         if (adminSettlementStatus) {
@@ -5620,7 +5527,7 @@ function closeAdminNewsEditForm() {
 }
 
     async function loadAdminNews() {
-  if (!adminNewsList || !window.VCLData.getAdminNewsPosts) return;
+  if (!adminNewsList) return;
 
   const posts = await window.VCLData.getAdminNewsPosts();
   cachedAdminNewsPosts = posts;
@@ -5921,7 +5828,7 @@ if (adminUnclaimedSearch) {
 }
 
 async function loadAdminTeamSignups() {
-  if (!adminTeamSignupsList || !window.VCLData.getAdminTeamSignups) {
+  if (!adminTeamSignupsList) {
     return;
   }
 
@@ -6136,48 +6043,46 @@ function bindAdminSignupActions() {
           status.dataset.status = "info";
         }
 
-        if (window.VCLData.adminValidateTeamSignup) {
-          const validation = await window.VCLData.adminValidateTeamSignup(signupId);
+        const validation = await window.VCLData.adminValidateTeamSignup(signupId);
 
-          const errors = Array.isArray(validation.errors)
-            ? validation.errors
-            : [];
+        const errors = Array.isArray(validation.errors)
+          ? validation.errors
+          : [];
 
-          const warnings = Array.isArray(validation.warnings)
-            ? validation.warnings
-            : [];
+        const warnings = Array.isArray(validation.warnings)
+          ? validation.warnings
+          : [];
 
-          if (!validation.valid || errors.length) {
+        if (!validation.valid || errors.length) {
+          if (status) {
+            status.dataset.status = "error";
+            status.innerHTML = `
+              <strong>Kan ikke godkendes:</strong>
+              <ul>
+                ${errors
+                  .map((error) => `<li>${escapeHTML(error)}</li>`)
+                  .join("")}
+              </ul>
+            `;
+          }
+
+          return;
+        }
+
+        if (warnings.length) {
+          const continueWithWarnings = confirm(
+            `Advarsler for ${teamName}:\n\n${warnings
+              .map((warning) => `- ${warning}`)
+              .join("\n")}\n\nVil du stadig godkende holdet?`
+          );
+
+          if (!continueWithWarnings) {
             if (status) {
-              status.dataset.status = "error";
-              status.innerHTML = `
-                <strong>Kan ikke godkendes:</strong>
-                <ul>
-                  ${errors
-                    .map((error) => `<li>${escapeHTML(error)}</li>`)
-                    .join("")}
-                </ul>
-              `;
+              status.textContent = "Approval afbrudt.";
+              status.dataset.status = "info";
             }
 
             return;
-          }
-
-          if (warnings.length) {
-            const continueWithWarnings = confirm(
-              `Advarsler for ${teamName}:\n\n${warnings
-                .map((warning) => `- ${warning}`)
-                .join("\n")}\n\nVil du stadig godkende holdet?`
-            );
-
-            if (!continueWithWarnings) {
-              if (status) {
-                status.textContent = "Approval afbrudt.";
-                status.dataset.status = "info";
-              }
-
-              return;
-            }
           }
         }
 
@@ -6279,14 +6184,6 @@ function bindAdminSignupActions() {
         if (status) {
           status.textContent = `Finder unclaimed spillere på ${teamName}...`;
           status.dataset.status = "info";
-        }
-
-        if (!window.VCLData.getAdminSignupClaimTargets) {
-          throw new Error("getAdminSignupClaimTargets mangler i vclData.js");
-        }
-
-        if (!window.VCLData.adminCreateClaimInvite) {
-          throw new Error("adminCreateClaimInvite mangler i vclData.js");
         }
 
         const targets = await window.VCLData.getAdminSignupClaimTargets(signupId);
@@ -6413,7 +6310,7 @@ adminSignupFilters.forEach((button) => {
 });
 
     async function loadAdminPendingAvatars() {
-      if (!adminAvatarList || !window.VCLData.getAdminPendingPlayerAvatars) return;
+      if (!adminAvatarList) return;
       try {
         const submissions = await window.VCLData.getAdminPendingPlayerAvatars();
         if (!submissions.length) {
@@ -6475,12 +6372,12 @@ adminSignupFilters.forEach((button) => {
         });
       } catch (error) {
         console.error(error);
-        adminAvatarList.innerHTML = `<article><span>Fejl</span><strong>Kunne ikke hente profilbilleder</strong><p>Kør avatar-migrationen i Supabase og prøv igen.</p></article>`;
+        adminAvatarList.innerHTML = `<article><span>Fejl</span><strong>Kunne ikke hente profilbilleder</strong><p>Prøv igen om et øjeblik.</p></article>`;
       }
     }
 
     async function loadAdminUnclaimedProfiles() {
-      if (!adminUnclaimedList || !window.VCLData.getAdminUnclaimedProfiles) {
+      if (!adminUnclaimedList) {
         return;
       }
 
@@ -6593,68 +6490,6 @@ adminSignupFilters.forEach((button) => {
         });
       });
     }
-
-    /* =========================
-   ADMIN COMPACT NAV TABS
-========================= */
-
-const adminCompactNav = document.querySelector(".admin-compact-nav");
-
-if (adminCompactNav) {
-  const adminTabLinks = Array.from(
-    adminCompactNav.querySelectorAll('a[href^="#"]')
-  );
-
-  const adminTabSections = adminTabLinks
-    .map((link) => {
-      const targetId = link.getAttribute("href");
-      return document.querySelector(targetId);
-    })
-    .filter(Boolean);
-
-  function setAdminTab(targetHash, updateUrl = true) {
-    const targetSection = document.querySelector(targetHash);
-
-    if (!targetSection) return;
-
-    adminTabSections.forEach((section) => {
-      section.hidden = section !== targetSection;
-    });
-
-    adminTabLinks.forEach((link) => {
-      link.classList.toggle(
-        "is-active",
-        link.getAttribute("href") === targetHash
-      );
-    });
-
-    if (updateUrl) {
-      window.history.replaceState({}, "", targetHash);
-    }
-  }
-
-  adminTabLinks.forEach((link) => {
-    link.addEventListener("click", (event) => {
-      event.preventDefault();
-
-      const targetHash = link.getAttribute("href");
-      setAdminTab(targetHash);
-    });
-  });
-
-  const validStartHash = adminTabLinks.some((link) => {
-    return link.getAttribute("href") === window.location.hash;
-  });
-
-  const startHash = validStartHash
-    ? window.location.hash
-    : adminTabLinks[0]?.getAttribute("href");
-
-  if (startHash) {
-    setAdminTab(startHash, false);
-  }
-}
-
     if (adminNewsForm) {
       adminNewsForm.addEventListener("submit", async (event) => {
         event.preventDefault();

@@ -160,11 +160,6 @@
       });
 
       if (error) {
-        const migrationMissing = ['42883', 'PGRST202', 'PGRST204'].includes(error.code);
-        if (migrationMissing) {
-          console.warn('Tournament roster migration er ikke installeret endnu.', error);
-          return null;
-        }
         throw error;
       }
 
@@ -355,7 +350,7 @@
             Spillere, der ikke vælges, forbliver stadig på holdets permanente roster.
           </p>
           <small>
-            Stand-ins og lån bliver håndteret separat i den kommende loan-funktion og ændrer ikke permanent team membership.
+            Stand-ins og lån håndteres separat i turneringsrosteren og ændrer ikke permanent team membership.
           </small>
         </div>
 
@@ -476,12 +471,8 @@
     } catch (error) {
       console.error('Kunne ikke gemme tournament roster:', error);
       if (submitButton) submitButton.disabled = false;
-
-      const migrationMissing = ['42883', 'PGRST202', 'PGRST204'].includes(error?.code);
       setStatus(
-        migrationMissing
-          ? 'Tournament roster-systemet mangler Supabase-migrationen.'
-          : error?.message || 'Holdets tournament roster kunne ikke gemmes.',
+        error?.message || 'Holdets tournament roster kunne ikke gemmes.',
         'error'
       );
     }

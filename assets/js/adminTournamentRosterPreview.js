@@ -101,10 +101,7 @@
         .order('created_at', { ascending: true });
 
       if (error) {
-        const migrationMissing = ['42P01', 'PGRST205'].includes(error.code);
-        if (!migrationMissing) {
-          console.warn('Kunne ikke hente tournament rosters i admin:', error);
-        }
+        console.warn('Kunne ikke hente tournament rosters i admin:', error);
         return;
       }
 

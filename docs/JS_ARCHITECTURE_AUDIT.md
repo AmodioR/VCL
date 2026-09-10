@@ -1,0 +1,211 @@
+# VCL 2.1 JavaScript architecture audit
+
+Scope: Pass C stabilization audit of the current browser JavaScript. No feature work.
+
+## Current shared bootstrap that belongs in `script.js`
+
+- DOM helpers (`$`, `$$`, `setText`, `escapeHTML`)
+- small shared formatting helpers
+- initial VCLData/Supabase readiness handling
+- global live tournament bar
+- active primary navigation state
+- mobile navigation toggle
+- shared reveal animation bootstrap
+- authenticated header button state
+
+## Page-specific behaviour currently living in `script.js`
+
+These sections should eventually move into page-owned modules, preserving current behaviour:
+
+- public tournament hub
+- public tournament detail
+- teams directory
+- leaderboard
+- player profile
+- permanent team registration submit flow
+- account dashboard and avatar/profile handling
+- team dashboard
+- public team profile
+- Roster Market Free Agent rendering/invites
+- account claim-invite handling
+- signup claim-aware submit flow
+- signup claim preview
+- login claim-aware submit flow
+- admin dashboard, news, team signups, avatars and tournaments
+- news listing
+- news article
+
+## Confirmed cleanup / ownership decisions
+
+### 1. Duplicate account claim-invite ownership — resolved
+
+The account dashboard's `loadClaimInvite()` is the canonical owner.
+
+- `account.html` already contains the intended claim-invite section.
+- the account flow already loads the invite together with the rest of the account state.
+- the later standalone handler duplicated the same `?claim=` lookup/render/accept flow.
+
+Resolved: the standalone `CLAIM INVITE PAGE HANDLER` was removed from `script.js`; `loadClaimInvite()` is now the only account claim-invite runtime owner.
+
+### 2. Team dashboard roster ownership — resolved
+
+The duplicate `CAPTAIN ROSTER CONTROLS` renderer has been folded into the canonical `TEAM DASHBOARD` roster renderer. The dashboard now has one owner for `[data-team-roster-list]`, including remove-player and claim-link actions, and lineup swaps refresh that same owner.
+
+### 3. Login / signup / claim auth flow — audited
+
+`signup.html` and `login.html` each have one active form owner in `script.js`, and both load Supabase SDK -> `supabaseClient.js` -> `vclData.js` -> `script.js` in the expected order.
+
+- signup has one `signUpAccount()` submit path
+- login has one `loginAccount()` submit path
+- signup claim preview is presentation-only and does not duplicate account claim acceptance ownership
+- the signup claim branch and login claim forwarding intentionally preserve the `?claim=` token
+
+No duplicate auth handler was removed because no competing runtime owner was found.
+
+### 4. Team invite recipient compatibility — resolved
+
+`VCLData.getMyTeamInvites()` previously probed legacy recipient fields (`player_id`, `recipient_player_id`, `target_player_id`) before falling back to the canonical field. The live schema is now normalized, so the method queries `team_invites_view.invited_player_id` directly.
+
+This keeps the website aligned with the cleaned live Supabase contract instead of silently supporting retired schema names.
+
+### 5. Runtime Supabase contract sweep — resolved
+
+Runtime relation, RPC and Storage references have been cross-checked against `supabase/live-object-manifest.json`.
+
+- the remaining retired `leaderboard_view` fallback was removed; `public_vcl_leaderboard_view` is now the only leaderboard source
+- previously retired `player_stats` and `roster_posts` are not referenced by runtime JavaScript
+- retired team-invite identifiers are no longer used by runtime JavaScript
+- the static audit now fails if known retired backend identifiers are reintroduced
+
+This closes the known dead-schema compatibility gap between the website runtime and the cleaned live Supabase backend.
+
+### 6. Public news listing + article ownership — audited
+
+The public news list and article page each have one runtime owner in `script.js` and both read published content through `VCLData.getNewsPosts()`.
+
+- homepage featured news remains a separate page-owned module and does not compete with the news page renderer
+- the news page owns featured/list rendering, loading, empty and retry states
+- the article page owns `?slug=` resolution and article rendering
+- no retired relation, duplicate submit handler or competing renderer was found
+
+No runtime code was removed here because the ownership is already clean.
+
+### 7. Admin team-signup runtime compatibility — resolved
+
+The live backend already contains the current linked approval RPC and the canonical `team_signups` relation.
+
+- `VCLData.getAdminTeamSignups()` now reads the canonical `team_signups` query directly instead of silently switching to `admin_team_signups_view` after arbitrary query errors
+- `VCLData.adminApproveTeamSignup()` now calls `admin_approve_team_signup_linked` directly instead of probing for the function and falling back to `admin_approve_team_signup_strict`
+
+Historical signup RPC variants can remain in Supabase until a dedicated backend retirement audit proves they have no remaining dependencies; the browser runtime no longer needs to pretend the canonical path may be absent.
+
+### 8. Teams directory / player profile / team profile — audited
+
+The three public identity surfaces now have clear runtime ownership and use the current VCLData contract.
+
+- Teams directory has one renderer and one `getTeams()` + `getPlayers()` load path.
+- Player profile now calls canonical `getPlayerProfileContext()` directly instead of probing for it and issuing a second `getPlayerBySlug()` fallback query.
+- Team profile now calls canonical `getTeamAchievements()` directly instead of treating the method as optional.
+- The synthetic `getTeams()` / `getPlayers()` page-view models are still intentionally retained because the directory currently consumes slugs as its local identifiers; changing that shape is a normalization refactor, not dead-code cleanup.
+
+Static audit passed after the profile fallback cleanup.
+
+### 9. Tournament hub / detail — audited
+
+The public tournament hub already had one `getPublicTournaments()` owner. The tournament detail flow is now aligned with the same public contract.
+
+- `VCLData.getTournamentBySlug()` now reads `public_tournaments_view` instead of the base `tournaments` table.
+- Tournament detail now calls canonical `getTournamentResults()` directly instead of treating it as an optional migration-dependent method.
+- The `?id=` URL alias is intentionally retained as harmless external-link compatibility; all current internal links use `?tournament=`.
+- Entries, matches, results and live rendering each have one runtime owner on the detail page.
+
+Static audit passed after the tournament contract cleanup.
+
+### 10. Account Dashboard — audited
+
+The Account Dashboard now consistently assumes the current VCLData contract instead of probing for methods that are part of the shipped application.
+
+- captain quick-access calls canonical `getMyCaptainTeam()` directly
+- avatar manager calls canonical `getMyPlayerAvatarStatus()` and `createMyPendingAvatarPreview()` directly
+- claimed-player summary calls canonical `getPlayerProfileContext()` directly instead of issuing a fallback `getPlayerBySlug()` query
+- username updates always use canonical `isProfileUsernameAvailable()` validation
+- claim invites remain owned by the Account Dashboard
+- permanent transfer requests remain owned by `accountTransferInvites.js`
+- tournament stand-in requests remain owned by `accountTournamentLoanInvites.js`
+- permanent leave-team control remains owned by `accountTeamMembership.js`
+
+These supporting modules write to separate Account Dashboard regions, so no competing renderer was found. Static audit passed after removing the obsolete Account Dashboard compatibility guards.
+
+### 11. Team Dashboard supporting modules — audited
+
+The captain workspace has one main owner in `script.js` plus one isolated permanent-transfer module.
+
+- `script.js` owns captain access, roster rendering, claim links, lineup swaps, team settings/logo updates and captain transfer.
+- `teamTransferManager.js` is loaded only by `team-dashboard.html` and owns only `[data-direct-transfer-section]`.
+- its four runtime RPCs (`get_my_team_transfer_candidates`, `get_my_captain_transfer_requests`, `create_player_transfer_request`, `cancel_my_player_transfer_request`) are all present in the reconciled live-object manifest.
+- the candidate payload uses `alias` / `avatar_url`, while transfer history intentionally uses `player_alias` / `player_avatar_url`; the dual display helper is therefore payload normalization, not retired-schema compatibility.
+- no migration-presence fallback, duplicate click owner or competing renderer was found in the transfer module.
+
+No runtime code was removed in this step because the Team Dashboard module boundary is already clean. Moving direct-transfer RPC calls behind VCLData would be an architectural refactor rather than dead-code cleanup, so it is intentionally deferred.
+
+### 12. Admin Dashboard — audited
+
+The admin workspace now has explicit, deterministic dependencies and consistently uses the shipped VCLData contract.
+
+- `admin.html` explicitly loads `admin-tournament-roster.css`, `adminHomeLatestResult.js` and `adminTournamentRosterPreview.js`; `adminWorkspace.js` no longer injects scripts or styles at runtime.
+- `adminWorkspace.js` owns workspace navigation and summary counters only; it does not compete with the main admin business-logic renderer.
+- `adminHomeLatestResult.js` exclusively owns the homepage latest-result editor and uses current `home_featured_results` / `public_home_latest_result_view` backend contracts.
+- `adminTournamentRosterPreview.js` exclusively enhances tournament-entry cards with canonical `tournament_roster_players` snapshots.
+- main admin loaders now call canonical VCLData methods directly for tournaments, settlement, news, team signups, validation, claim targets, avatar moderation and unclaimed profiles instead of treating shipped methods as optional.
+- the explicit “method mangler i vclData.js” compatibility errors for signup claim links were removed.
+
+Static audit passed after both the deterministic dependency cleanup and the method-guard cleanup.
+
+### 13. Final `vclData.js` caller / output-shape sweep — complete
+
+A branch-local caller audit mapped all 82 VCLData methods against runtime JavaScript and HTML before any deletion.
+
+Six methods had no external runtime reference. One of them, `getPlayerBySlug()`, is still an internal dependency of `getPlayerProfileContext()` and was therefore retained. The five confirmed dead browser wrappers were removed:
+
+- `adminAdjustPlayerPoints()`
+- `adminAwardTournamentPoints()`
+- `captainSetRosterStatus()`
+- `getOpenTournamentsForSignup()`
+- `requestMyTeamTournamentEntry()`
+
+Their underlying Supabase RPCs were not removed by this JavaScript pass; only unused browser wrappers were deleted.
+
+Leaderboard normalization was also reviewed. Its current aliases are still actively consumed by the existing leaderboard/profile rendering path, so a coordinated canonical-shape rewrite would be a normalization refactor rather than dead-code cleanup. They are intentionally retained for VCL 2.1 to avoid creating regression risk solely to reduce adapter code.
+
+`getPlayerBySlug()` is the important exception to the external-caller rule: it has no direct page caller but is deliberately kept because `getPlayerProfileContext()` calls it internally.
+
+The temporary caller-audit workflow was removed after the cleanup, and the static frontend audit passed before the dead wrappers were committed.
+
+## Pass C result
+
+**Pass C is complete for VCL 2.1 stabilization.** Ownership, active compatibility paths, backend contracts and VCLData callers have been reviewed. No further JavaScript restructuring is required before CSS/UI QA; future module extraction should be driven by maintainability work rather than this stabilization gate.
+
+## Remaining architecture debt
+
+- `script.js` is still large, but verified page ownership is more important than splitting it during stabilization.
+- leaderboard aliases can be normalized in a future coordinated refactor after VCL 2.1 is stable.
+- direct-transfer/loan modules can be moved behind a stricter common data-adapter boundary later if desired.
+
+These are maintainability items, not blockers for the current cleanup pass.
+
+## Audit order
+
+1. account claim invite — done
+2. team-dashboard roster ownership — done
+3. auth/signup handlers — done
+4. team invite recipient compatibility — done
+5. runtime Supabase contract sweep — done
+6. public news + article — done
+7. teams / player / team profile — done
+8. tournament hub / detail — done
+9. account dashboard — done
+10. team dashboard supporting modules — done
+11. admin dashboard — done
+12. final `vclData.js` compatibility/caller sweep — done
+
+Every cleanup must preserve the existing HTML contract and current Supabase/VCLData behavior. No new features during this pass.

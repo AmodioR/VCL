@@ -66,10 +66,6 @@
     return savedTagline;
   }
 
-  if (team.slug === "dysteria") return "VCL Champions 2026";
-  if (team.slug === "frontline") return "Academy Cup Winners";
-  if (team.slug === "frontline-ghost") return "Frontlines second team";
-
   return `${team.tier || "VCL"} roster`;
 }
 
@@ -195,43 +191,6 @@
       return data;
     },
 
-    async adminAdjustPlayerPoints({
-      playerId,
-      pointsDelta,
-      reason,
-      sourceType = "manual",
-      sourceRef = null
-    }) {
-      const { data, error } = await db.rpc("admin_adjust_player_points", {
-        p_player_id: playerId,
-        p_points_delta: Number(pointsDelta),
-        p_reason: reason || "Admin point adjustment",
-        p_source_type: sourceType || "manual",
-        p_source_ref: sourceRef || null
-      });
-
-      if (error) {
-        console.error("Kunne ikke opdatere player points:", error);
-        throw error;
-      }
-
-      return Array.isArray(data) ? data[0] : data;
-    },
-
-    async adminAwardTournamentPoints({ tournamentRef, awards }) {
-      const { data, error } = await db.rpc("admin_award_tournament_points", {
-        p_tournament_ref: tournamentRef,
-        p_awards: Array.isArray(awards) ? awards : []
-      });
-
-      if (error) {
-        console.error("Kunne ikke tildele tournament points:", error);
-        throw error;
-      }
-
-      return data;
-    },
-
     async getAdminNewsPosts() {
   const { data, error } = await db
     .from("news_posts_view")
@@ -330,71 +289,45 @@ async deleteNewsPost(postId) {
 },
 
 async getAdminTeamSignups() {
-  try {
-    const { data, error } = await db
-      .from("team_signups")
-      .select(`
-        *,
-        tournaments:tournament_id (
-          id,
-          slug,
-          name,
-          status,
-          starts_at
-        ),
-        approved_team:approved_team_id (
-          id,
-          slug,
-          name
-        )
-      `)
-      .order("created_at", { ascending: false });
+  const { data, error } = await db
+    .from("team_signups")
+    .select(`
+      *,
+      tournaments:tournament_id (
+        id,
+        slug,
+        name,
+        status,
+        starts_at
+      ),
+      approved_team:approved_team_id (
+        id,
+        slug,
+        name
+      )
+    `)
+    .order("created_at", { ascending: false });
 
-    if (error) throw error;
-
-    return (data || []).map((signup) => ({
-      ...signup,
-      tournament_label:
-        signup.tournaments?.name || signup.tournament_label || signup.series_slug || "VCL Signup",
-      tournament_slug:
-        signup.tournaments?.slug || signup.tournament_slug || "",
-      approved_team_slug:
-        signup.approved_team?.slug || signup.approved_team_slug || ""
-    }));
-  } catch (error) {
-    console.warn(
-      "Primær team-registration query fejlede. Bruger kompatibilitets-view:",
-      error
-    );
-
-    const { data, error: compatError } = await db
-      .from("admin_team_signups_view")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (compatError) {
-      console.error("Kunne ikke hente team signups:", compatError);
-      return [];
-    }
-
-    return data || [];
+  if (error) {
+    console.error("Kunne ikke hente team signups:", error);
+    throw error;
   }
+
+  return (data || []).map((signup) => ({
+    ...signup,
+    tournament_label:
+      signup.tournaments?.name || signup.tournament_label || signup.series_slug || "VCL Signup",
+    tournament_slug:
+      signup.tournaments?.slug || signup.tournament_slug || "",
+    approved_team_slug:
+      signup.approved_team?.slug || signup.approved_team_slug || ""
+  }));
 },
 
 async adminApproveTeamSignup(signupId) {
-  let { data, error } = await db.rpc("admin_approve_team_signup_linked", {
+  const { data, error } = await db.rpc("admin_approve_team_signup_linked", {
     p_signup_id: signupId
   });
-
-  const linkedFunctionMissing =
-    error &&
-    ["42883", "PGRST202", "PGRST204"].includes(error.code);
-
-  if (linkedFunctionMissing) {
-    ({ data, error } = await db.rpc("admin_approve_team_signup_strict", {
-      p_signup_id: signupId
-    }));
-  }
 
   if (error) {
     console.error("Kunne ikke approve team signup:", error);
@@ -635,14 +568,7 @@ async getNewsPosts() {
     "created_at"
   ].join(",");
 
-  const sources = [
-    // Preferred public view. It exposes published posts only.
-    "public_news_posts_view",
-    // Safe fallback when the table already has a public SELECT policy.
-    "news_posts",
-    // Compatibility fallback for installations that still expose the previous public view.
-    "news_posts_view"
-  ];
+  const sources = ["public_news_posts_view"];
 
   let lastError = null;
 
@@ -949,20 +875,6 @@ async transferMyTeamCaptain(newCaptainPlayerId) {
   return Array.isArray(data) ? data[0] : data;
 },
 
-async captainSetRosterStatus(teamMemberId, rosterStatus) {
-  const { data, error } = await db.rpc("captain_set_roster_status", {
-    p_team_member_id: teamMemberId,
-    p_roster_status: rosterStatus
-  });
-
-  if (error) {
-    console.error("Kunne ikke ændre roster status:", error);
-    throw error;
-  }
-
-  return Array.isArray(data) ? data[0] : data;
-},
-
 async captainRemoveRosterMember(teamMemberId) {
   const { data, error } = await db.rpc("captain_remove_roster_member", {
     p_team_member_id: teamMemberId
@@ -995,21 +907,6 @@ async captainRemoveRosterMember(teamMemberId) {
       return data || [];
     },
 
-    async getOpenTournamentsForSignup() {
-      const { data, error } = await db
-        .from("public_tournaments_view")
-        .select("*")
-        .eq("status", "open")
-        .order("starts_at", { ascending: true, nullsFirst: false });
-
-      if (error) {
-        console.warn("Kunne ikke hente åbne turneringer:", error);
-        return [];
-      }
-
-      return data || [];
-    },
-
 
     async getMyActiveTeamContext() {
       const user = await this.getCurrentUser();
@@ -1037,21 +934,6 @@ async captainRemoveRosterMember(teamMemberId) {
       }
 
       return data || [];
-    },
-
-    async requestMyTeamTournamentEntry(tournamentId) {
-      if (!tournamentId) throw new Error("Vælg en konkret turnering først.");
-
-      const { data, error } = await db.rpc("request_my_team_tournament_entry", {
-        p_tournament_id: tournamentId
-      });
-
-      if (error) {
-        console.error("Kunne ikke sende turneringstilmeldingen:", error);
-        throw error;
-      }
-
-      return Array.isArray(data) ? data[0] || null : data || null;
     },
 
     async getLiveTournamentMatches() {
@@ -1154,7 +1036,7 @@ async captainRemoveRosterMember(teamMemberId) {
 
     async getTournamentBySlug(slug) {
       const { data, error } = await db
-        .from("tournaments")
+        .from("public_tournaments_view")
         .select("*")
         .eq("slug", slug)
         .maybeSingle();
@@ -1452,8 +1334,7 @@ async captainRemoveRosterMember(teamMemberId) {
 
     async getLeaderboard() {
       const liveSources = [
-        "public_vcl_leaderboard_view",
-        "leaderboard_view"
+        "public_vcl_leaderboard_view"
       ];
 
       for (const source of liveSources) {
@@ -1746,48 +1627,19 @@ async getMyTeamInvites() {
     return [];
   }
 
-  const recipientColumns = [
-    "player_id",
-    "invited_player_id",
-    "recipient_player_id",
-    "target_player_id"
-  ];
+  const { data, error } = await db
+    .from("team_invites_view")
+    .select("*")
+    .eq("status", "pending")
+    .eq("invited_player_id", claimedPlayer.id)
+    .order("created_at", { ascending: false });
 
-  let lastSchemaError = null;
-
-  for (const column of recipientColumns) {
-    const { data, error } = await db
-      .from("team_invites_view")
-      .select("*")
-      .eq("status", "pending")
-      .eq(column, claimedPlayer.id)
-      .order("created_at", { ascending: false });
-
-    if (!error) {
-      return data || [];
-    }
-
-    // Older/newer versions of the view may use a different recipient column name.
-    // Only continue to the next candidate for schema/column errors; real permission or
-    // connection errors should not be hidden by trying a broader query.
-    const isMissingColumn =
-      error.code === "42703" ||
-      error.code === "PGRST204" ||
-      /column .* does not exist|could not find .* column/i.test(error.message || "");
-
-    if (!isMissingColumn) {
-      console.error("Kunne ikke hente mine team invites:", error);
-      return [];
-    }
-
-    lastSchemaError = error;
+  if (error) {
+    console.error("Kunne ikke hente mine team invites:", error);
+    return [];
   }
 
-  console.error(
-    "team_invites_view mangler et kendt recipient-felt. Invitationer skjules for at undgå at vise andre spilleres invites.",
-    lastSchemaError
-  );
-  return [];
+  return data || [];
 },
 
 async acceptTeamInvite(inviteId) {
@@ -2042,33 +1894,12 @@ async getTeamAchievements(teamSlug) {
         .from("team_signups")
         .insert(signup);
 
-      if (!error) return true;
-
-      const missingTournamentColumns = ["PGRST204", "42703"].includes(error.code);
-
-      if (missingTournamentColumns) {
-        console.warn(
-          "Tournament migration er ikke kørt endnu. Sender signup uden de nye tournament-felter.",
-          error
-        );
-
-        const compatSignup = { ...signup };
-        delete compatSignup.tournament_id;
-        delete compatSignup.tournament_slug;
-        delete compatSignup.discord_confirmed;
-        delete compatSignup.checkin_confirmed;
-
-        const { error: compatError } = await db
-          .from("team_signups")
-          .insert(compatSignup);
-
-        if (!compatError) return true;
-        console.error("Kunne ikke sende schema-kompatibel team registration:", compatError);
-        throw compatError;
+      if (error) {
+        console.error("Kunne ikke sende team signup:", error);
+        throw error;
       }
 
-      console.error("Kunne ikke sende team signup:", error);
-      throw error;
+      return true;
     }
   };
 

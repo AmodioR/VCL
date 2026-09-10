@@ -9,9 +9,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=2.1-live-broadcast-01">
+  <link rel="stylesheet" href="assets/css/account-interface-v4.css?v=2.1-account-v4-01">
+  <link rel="stylesheet" href="assets/css/admin-tournament-roster.css?v=2.1-tournament-roster-01">
+  <link rel="stylesheet" href="assets/css/admin-interface-v3.css?v=2.1-admin-v3-01">
 </head>
 
-<body class="admin-page admin-v2 theme-light-canvas">
+<body class="admin-page admin-v2 admin-v3 theme-light-canvas">
 <header class="site-header">
   <div class="container nav">
     <a class="brand brand--logo-only" href="index.html" aria-label="VCL forside">
@@ -36,11 +39,12 @@
     </div>
   </div>
 </header>
+<script src="assets/js/navStateBootstrap.js?v=2.1-nav-state-01"></script>
 
 <main class="admin-main-v2">
   <section class="admin-gate-v2">
     <div class="container">
-      <div class="admin-access-v2" data-admin-loading>
+      <div class="admin-access-v2" data-admin-loading hidden>
         <span>VCL Admin</span>
         <strong>Kontrollerer adgang</strong>
         <p>Vi henter din konto og bekræfter dine administratorrettigheder.</p>
@@ -389,5 +393,8 @@
 <script src="assets/js/vclData.js?v=2.1-live-broadcast-01"></script>
 <script src="script.js?v=2.1-live-broadcast-01"></script>
 <script src="assets/js/adminWorkspace.js?v=2.1-live-broadcast-01"></script>
+<script src="assets/js/adminHomeLatestResult.js?v=2.1-home-result-02"></script>
+<script src="assets/js/adminInterfaceV3.js?v=2.1-admin-v3-01"></script>
+<script src="assets/js/adminTournamentRosterPreview.js?v=2.1-tournament-roster-01"></script>
 </body>
 </html>
