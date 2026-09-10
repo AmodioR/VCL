@@ -378,6 +378,18 @@
 
 .account-v4-team:hover strong { color: #65b6ff; }
 
+.account-v4-team img[data-account-team-logo] {
+  width: 82px;
+  height: 82px;
+  max-width: 82px;
+  flex: 0 0 82px;
+  align-self: flex-start;
+  margin-top: 10px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+
 .account-v4-access__badges {
   display: flex;
   flex-wrap: wrap;
