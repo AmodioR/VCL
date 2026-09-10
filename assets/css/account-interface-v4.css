@@ -5,21 +5,24 @@
 ========================================================= */
 
 /* ---------- Shared authenticated account menu ---------- */
-/* Keep the static Login/Account placeholder from flashing before Supabase resolves auth. */
-.site-header .nav-actions > a.btn:not(.nav-account-trigger) {
-  visibility: hidden;
-}
+/* Stable multi-page nav shell: same geometry on every page, with cached visual auth state. */
+html { scrollbar-gutter: stable; }
 
-.site-header .nav-actions > a.btn.auth-nav-ready:not(.nav-account-trigger) {
-  visibility: visible;
-}
+@media (min-width: 1081px) {
+  .site-header .nav {
+    grid-template-columns: 126px minmax(0, 1fr) 190px;
+  }
 
-.nav-account-shell {
-  visibility: hidden;
-}
+  .site-header .nav-actions {
+    width: 190px;
+    justify-content: flex-end;
+  }
 
-.nav-account-shell.auth-nav-ready {
-  visibility: visible;
+  .site-header .nav-account-shell {
+    width: 190px;
+    display: flex;
+    justify-content: flex-end;
+  }
 }
 
 .nav-actions .nav-account-trigger {
