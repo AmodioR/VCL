@@ -1,0 +1,104 @@
+name: Apply auth visibility gate
+
+on:
+  push:
+    branches:
+      - stabilization/vcl-2.1-cleanup
+    paths:
+      - .github/workflows/apply-auth-visibility-gate.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/vcl-2.1-cleanup
+
+      - name: Hide auth-dependent UI until access is known
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          css_path = Path('assets/css/account-interface-v4.css')
+          css = css_path.read_text(encoding='utf-8')
+          marker = '/* ---------- Shared authenticated account menu ---------- */\n'
+          addition = '''/* Keep the static Login/Account placeholder from flashing before Supabase resolves auth. */
+          .site-header .nav-actions > a.btn:not(.nav-account-trigger) {
+            visibility: hidden;
+          }
+
+          .site-header .nav-actions > a.btn.auth-nav-ready:not(.nav-account-trigger) {
+            visibility: visible;
+          }
+
+          .nav-account-shell {
+            visibility: hidden;
+          }
+
+          .nav-account-shell.auth-nav-ready {
+            visibility: visible;
+          }
+
+          '''
+          if addition not in css:
+              assert css.count(marker) == 1
+              css = css.replace(marker, marker + addition, 1)
+          css_path.write_text(css, encoding='utf-8')
+
+          script_path = Path('script.js')
+          script = script_path.read_text(encoding='utf-8')
+
+          old_logged_out = '''        authNavButton.href = "login.html";
+                  authNavButton.innerHTML = "<span>Login</span>";
+                  return;
+          '''
+          new_logged_out = '''        authNavButton.href = "login.html";
+                  authNavButton.innerHTML = "<span>Login</span>";
+                  authNavButton.classList.add("auth-nav-ready");
+                  return;
+          '''
+          assert script.count(old_logged_out) == 1
+          script = script.replace(old_logged_out, new_logged_out, 1)
+
+          old_menu_ready = '''      const menu = ensureAccountMenu();
+                if (!menu) return;
+
+                authNavButton.href = "account.html";
+          '''
+          new_menu_ready = '''      const menu = ensureAccountMenu();
+                if (!menu) return;
+
+                authNavButton.classList.remove("auth-nav-ready");
+                accountMenuShell?.classList.add("auth-nav-ready");
+                authNavButton.href = "account.html";
+          '''
+          assert script.count(old_menu_ready) == 1
+          script = script.replace(old_menu_ready, new_menu_ready, 1)
+          script_path.write_text(script, encoding='utf-8')
+
+          admin_path = Path('admin.html')
+          admin = admin_path.read_text(encoding='utf-8')
+          old_admin = '<div class="admin-access-v2" data-admin-loading>'
+          new_admin = '<div class="admin-access-v2" data-admin-loading hidden>'
+          assert admin.count(old_admin) == 1
+          admin = admin.replace(old_admin, new_admin, 1)
+          admin_path.write_text(admin, encoding='utf-8')
+          PY
+
+      - name: Run static frontend audit
+        run: node tools/vcl-static-audit.mjs
+
+      - name: Commit visibility gate
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/apply-auth-visibility-gate.yml
+          git add assets/css/account-interface-v4.css script.js admin.html
+          git commit -m "Prevent auth and admin access flicker"
+          git push origin HEAD:stabilization/vcl-2.1-cleanup
