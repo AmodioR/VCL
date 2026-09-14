@@ -182,6 +182,18 @@
         return;
       }
 
+      if (data?.status === 'invalidated') {
+  if (status) {
+    status.textContent =
+      data.message ||
+      'Stand-in requesten er ikke længere gyldig. Captain skal sende en ny request.';
+    status.dataset.status = 'error';
+  }
+
+  window.setTimeout(load, 600);
+  return;
+}
+
       if (status) {
         status.textContent = decision === 'accept'
           ? `Accepteret. Du er nu reserveret som stand-in for ${data?.requesting_team_name || 'holdet'} i ${data?.tournament_name || 'turneringen'}.`

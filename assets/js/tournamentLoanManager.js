@@ -671,13 +671,19 @@
       setStatus('Gemmer permanent lineup og accepterede stand-ins som én tournament roster…', 'info');
 
       const client = await getDb();
-      const { error } = await client.rpc('submit_my_team_tournament_roster_v2', {
+      const { data, error } = await client.rpc('submit_my_team_tournament_roster_v2', {
         p_tournament_id: tournament.id,
         p_starter_ids: teamStarterIds,
         p_substitute_ids: teamSubstituteIds,
         p_loan_request_ids: loanRequestIds
       });
       if (error) throw error;
+
+      if (data?.status === 'invalidated') {
+  throw new Error(
+    data.message || 'En eller flere stand-ins er ikke længere gyldige. Opdater rosteren og prøv igen.'
+  );
+}
 
       setStatus(
         loanRequestIds.length
