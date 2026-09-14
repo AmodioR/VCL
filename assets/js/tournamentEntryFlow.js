@@ -117,10 +117,13 @@
     const members = activeMembers();
 
     const savedPlayers = Array.isArray(savedRoster?.players)
-      ? savedRoster.players.filter((player) => player?.player_id)
+      ? savedRoster.players.filter((player) =>
+          player?.player_id && player.source === 'team' &&
+          members.some((member) => String(member.players.id) === String(player.player_id))
+        )
       : [];
 
-    if (savedPlayers.length) {
+    if (savedRoster?.entry) {
       savedPlayers.forEach((player) => {
         if (player.role === 'starter' || player.role === 'substitute') {
           selection.set(String(player.player_id), player.role);
@@ -163,10 +166,13 @@
         throw error;
       }
 
-      return data || null;
+      if (!data || !Array.isArray(data.players)) {
+        throw new Error('Den gemte roster kunne ikke valideres.');
+      }
+      return data;
     } catch (error) {
       console.warn('Kunne ikke hente gemt tournament roster:', error);
-      return null;
+      throw error;
     }
   }
 
@@ -198,7 +204,8 @@
     }
 
     if (submitButton) {
-      submitButton.disabled = starters !== starterLimit;
+      // Only the loan-aware owner may enable saving after context validation.
+      submitButton.disabled = true;
     }
   }
 
@@ -270,6 +277,8 @@
         : 'Bekræft roster og send tilmelding';
 
     rosterBox.hidden = false;
+    rosterBox.dataset.rosterLoaded = 'true';
+    rosterBox.dataset.rosterLocked = String(locked);
     rosterBox.innerHTML = `
       <div class="tournament-roster-builder-v1__head">
         <div>
@@ -356,7 +365,7 @@
 
         ${locked
           ? '<span class="tournament-roster-builder-v1__locked">Roster låst</span>'
-          : `<button type="button" class="tournament-entry-cta-v2" data-submit-tournament-roster>${escapeHTML(submitLabel)} <span aria-hidden="true">→</span></button>`}
+          : `<button type="button" class="tournament-entry-cta-v2" data-submit-tournament-roster disabled>${escapeHTML(submitLabel)} <span aria-hidden="true">→</span></button>`}
       </div>
     `;
 
@@ -417,65 +426,11 @@
     renderRosterBuilder(existing);
   }
 
-  async function submitRoster(event) {
-    const submitButton = event?.currentTarget;
-    if (!tournament?.id || !context?.is_captain) return;
-
-    const starterIds = selectedIds('starter');
-    const substituteIds = selectedIds('substitute');
-
-    if (starterIds.length !== requiredStarters()) {
-      setStatus(`Vælg præcis ${requiredStarters()} starters før du sender tilmeldingen.`, 'error');
-      return;
-    }
-
-    if (substituteIds.length > maxSubstitutes()) {
-      setStatus(`Du kan højst vælge ${maxSubstitutes()} substitutes.`, 'error');
-      return;
-    }
-
-    try {
-      if (submitButton) {
-        submitButton.disabled = true;
-        submitButton.textContent = currentRequest() ? 'Gemmer roster…' : 'Sender tilmelding…';
-      }
-
-      setStatus(
-        currentRequest()
-          ? 'Gemmer tournament roster…'
-          : 'Bekræfter roster og sender turneringstilmeldingen til VCL…',
-        'info'
-      );
-
-      const db = await waitForDatabase();
-      const { error } = await db.rpc('submit_my_team_tournament_roster', {
-        p_tournament_id: tournament.id,
-        p_starter_ids: starterIds,
-        p_substitute_ids: substituteIds
-      });
-
-      if (error) throw error;
-
-      const VCLData = await waitForDataLayer();
-      requests = await VCLData.getMyTeamTournamentEntries();
-      savedRoster = await loadSavedRoster();
-      initialiseSelection();
-      render();
-
-      setStatus(
-        currentRequest()?.status === 'approved'
-          ? 'Tournament roster gemt. Holdet er fortsat godkendt til turneringen.'
-          : 'Tournament roster gemt. Tilmeldingen afventer VCL-godkendelse.',
-        'success'
-      );
-    } catch (error) {
-      console.error('Kunne ikke gemme tournament roster:', error);
-      if (submitButton) submitButton.disabled = false;
-      setStatus(
-        error?.message || 'Holdets tournament roster kunne ikke gemmes.',
-        'error'
-      );
-    }
+  function submitRoster(event) {
+    // The loan manager owns all writes, even for a roster with zero loans.
+    // If it failed to load, never fall back to a different RPC.
+    event?.preventDefault();
+    setStatus('Rosteroplysninger er ikke klar. Genindlæs siden og prøv igen.', 'error');
   }
 
   async function initialise(loadedTournament = null) {
@@ -509,6 +464,8 @@
       render();
     } catch (error) {
       console.error('Turneringstilmelding kunne ikke initialiseres:', error);
+      if (rosterBox) rosterBox.dataset.rosterLoaded = 'false';
+      hideRosterBuilder();
 
       if (section && tournament?.status === 'open') {
         section.hidden = false;

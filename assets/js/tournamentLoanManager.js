@@ -18,6 +18,7 @@
   let tournament = null;
   let loanContext = null;
   let contextLoading = false;
+  let contextPromise = null;
   let actionRunning = false;
   let activeSearch = '';
   let refreshTimer = null;
@@ -121,15 +122,30 @@
     return Number.isFinite(value) && value >= 0 ? value : 2;
   }
 
+  function rosterEditable() {
+    const entry = loanContext?.entry;
+    const closesAt = loanContext?.tournament?.signup_closes_at;
+    return Boolean(
+      loanContext && !contextLoading &&
+      rosterBox.dataset.rosterLoaded === 'true' &&
+      rosterBox.dataset.rosterLocked !== 'true' &&
+      loanContext.tournament?.status === 'open' &&
+      !entry?.roster_locked_at &&
+      !['checked_in', 'disqualified'].includes(entry?.status) &&
+      (!closesAt || new Date(closesAt).getTime() > Date.now())
+    );
+  }
+
   function updateCombinedSummary() {
-    if (!loanContext || !isRosterBuilderVisible()) return;
+    if (!isRosterBuilderVisible()) return;
 
     const summary = rosterBox.querySelector('[data-tournament-roster-summary]');
     const submitButton = rosterBox.querySelector('[data-submit-tournament-roster]');
     const counts = combinedCounts();
     const startersRequired = requiredStarters();
     const substituteLimit = maxSubstitutes();
-    const ready = counts.starters === startersRequired && counts.substitutes <= substituteLimit;
+    const ready = rosterEditable() && !actionRunning &&
+      counts.starters === startersRequired && counts.substitutes <= substituteLimit;
 
     if (summary) {
       summary.innerHTML = `
@@ -197,7 +213,7 @@
   }
 
   function activeRequestMarkup(request) {
-    const canCancel = request.status === 'pending' || (request.status === 'accepted' && !request.entry_id);
+    const canCancel = rosterEditable() && ['pending', 'accepted'].includes(request.status);
     const roleLabel = request.requested_role === 'starter' ? 'Starter' : 'Substitute';
     const replaceCopy = request.replaces_player_alias
       ? ` · erstatter ${escapeHTML(request.replaces_player_alias)}`
@@ -220,7 +236,7 @@
           <span data-state="${escapeHTML(request.status)}">${escapeHTML(requestStatusLabel(request))}</span>
           ${request.status === 'pending' && request.expires_at ? `<small>Udløber ${escapeHTML(formatDate(request.expires_at))}</small>` : ''}
         </div>
-        ${canCancel ? `<button type="button" class="tournament-loan-request__cancel" data-cancel-loan-request="${escapeHTML(request.id)}">Annuller</button>` : ''}
+        ${canCancel ? `<button type="button" class="tournament-loan-request__cancel" data-cancel-loan-request="${escapeHTML(request.id)}">${request.entry_id ? 'Fjern fra roster' : 'Annuller'}</button>` : ''}
       </article>
     `;
   }
@@ -254,8 +270,10 @@
     if (!loanContext || !isRosterBuilderVisible()) return;
 
     rosterBox.querySelector('[data-tournament-loan-panel]')?.remove();
+    bindPermanentSelectors();
 
-    if (loanContext.tournament?.allows_loans === false || maxLoans() <= 0) {
+    const loansAllowed = loanContext.tournament?.allows_loans !== false && maxLoans() > 0;
+    if (!loansAllowed && !activeRequests().length) {
       updateCombinedSummary();
       return;
     }
@@ -263,7 +281,7 @@
     const active = activeRequests();
     const candidates = Array.isArray(loanContext.candidates) ? loanContext.candidates : [];
     const activeCount = active.length;
-    const canRequestMore = activeCount < maxLoans();
+    const canRequestMore = rosterEditable() && loansAllowed && activeCount < maxLoans();
     const footer = rosterBox.querySelector('.tournament-roster-builder-v1__footer');
     if (!footer) return;
 
@@ -539,50 +557,69 @@
   }
 
   async function cancelRequest(requestId, button) {
-    if (!requestId || actionRunning) return;
-    if (!window.confirm('Annuller denne stand-in request?')) return;
+    if (!requestId || actionRunning || !rosterEditable()) return;
+    const request = activeRequests().find((item) => String(item.id) === String(requestId));
+    const message = request?.entry_id
+      ? 'Fjern stand-in fra rosteren? Vælg en erstatning og gem rosteren igen bagefter.'
+      : 'Annuller denne stand-in request?';
+    if (!window.confirm(message)) return;
 
     actionRunning = true;
     try {
       button.disabled = true;
       const client = await getDb();
-      const { error } = await client.rpc('cancel_my_tournament_loan_request', {
+      const { data, error } = await client.rpc('cancel_my_tournament_loan_request', {
         p_request_id: requestId
       });
       if (error) throw error;
       await refreshContext(activeSearch);
-      setStatus('Stand-in requesten er annulleret.', 'success');
+      if (loanContext) {
+        setStatus(data?.roster_requires_confirmation
+          ? 'Stand-in fjernet. Vælg en erstatning og gem rosteren igen for at bekræfte lineup.'
+          : 'Stand-in requesten er annulleret.', 'success');
+      }
     } catch (error) {
       console.error('Stand-in request kunne ikke annulleres:', error);
       button.disabled = false;
       setStatus(error?.message || 'Requesten kunne ikke annulleres.', 'error');
     } finally {
       actionRunning = false;
+      updateCombinedSummary();
     }
   }
 
   async function loadContext(search = '', { quiet = false } = {}) {
-    if (contextLoading || !tournament?.id) return loanContext;
+    if (contextPromise) return contextPromise;
+    if (!tournament?.id) return null;
     contextLoading = true;
-    try {
-      const client = await getDb();
-      const { data, error } = await client.rpc('get_my_tournament_loan_context', {
-        p_tournament_id: tournament.id,
-        p_search: search || null
-      });
-
-      if (error) {
-        throw error;
+    updateCombinedSummary();
+    contextPromise = (async () => {
+      try {
+        const client = await getDb();
+        const { data, error } = await client.rpc('get_my_tournament_loan_context', {
+          p_tournament_id: tournament.id,
+          p_search: search || null
+        });
+        if (error) throw error;
+        if (data?.roster_integrity_version !== 1 ||
+            String(data?.tournament?.id) !== String(tournament.id) ||
+            !Array.isArray(data?.requests)) {
+          throw new Error('Rosteroplysninger kunne ikke valideres. Genindlæs siden og prøv igen.');
+        }
+        loanContext = data;
+        return loanContext;
+      } catch (error) {
+        loanContext = null;
+        if (!quiet) console.warn('Tournament stand-ins kunne ikke indlæses:', error);
+        setStatus('Rosteroplysninger kunne ikke indlæses. Gem er deaktiveret; genindlæs siden og prøv igen.', 'error');
+        return null;
+      } finally {
+        contextLoading = false;
+        contextPromise = null;
+        updateCombinedSummary();
       }
-
-      loanContext = data || null;
-      return loanContext;
-    } catch (error) {
-      if (!quiet) console.warn('Tournament stand-ins kunne ikke indlæses:', error);
-      return null;
-    } finally {
-      contextLoading = false;
-    }
+    })();
+    return contextPromise;
   }
 
   async function refreshContext(search = '', options = {}) {
@@ -600,7 +637,11 @@
   }
 
   async function submitRosterV2(button) {
-    if (actionRunning || !loanContext || !tournament?.id) return;
+    if (actionRunning || !rosterEditable() || !tournament?.id) {
+      updateCombinedSummary();
+      setStatus('Rosteroplysninger er ikke klar, eller rosteren er låst.', 'error');
+      return;
+    }
 
     const teamStarterIds = permanentSelects()
       .filter((select) => select.value === 'starter')
@@ -653,12 +694,13 @@
       await refreshContext(activeSearch, { quiet: true });
     } finally {
       actionRunning = false;
+      updateCombinedSummary();
     }
   }
 
   document.addEventListener('click', (event) => {
     const button = event.target.closest?.('[data-submit-tournament-roster]');
-    if (!button || !rosterBox.contains(button) || !loanContext) return;
+    if (!button || !rosterBox.contains(button)) return;
 
     event.preventDefault();
     event.stopImmediatePropagation();
